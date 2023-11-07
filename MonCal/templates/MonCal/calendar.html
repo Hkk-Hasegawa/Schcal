@@ -1,0 +1,48 @@
+{% extends 'MonCal/base.html' %}
+
+{% block content %}
+
+    <h1>{{ subject.name }}</h1>
+    <p>{{ start_day }} - {{ end_day }}</p>
+    <table class="table table-bordered text-center" style="table-layout: fixed;width: 100%" border="1">
+        <tr>
+            <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
+            {% for day in days %}
+                {% if day in public_holidays %}
+                    <th style="background-color: yellow">{{ day | date:"d(D)" }}</th>
+                {% elif day.weekday == 5 %}
+                    <th style="color: blue;">{{ day | date:"d(D)" }}</th>
+                {% elif day.weekday == 6 %}
+                    <th style="color: red;">{{ day | date:"d(D)" }}</th>
+                {% else %}
+                    <th>{{ day | date:"d(D)" }}</th>
+                {% endif %}
+            {% endfor %}
+            <td><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></td>
+        </tr>
+
+        {% for time, schedules in calendar.items %}
+            <tr style="font-size:12px">
+                <td>
+                    {{ time }}
+                </td>
+                {% for dt, book in schedules.items %}
+                    <td>
+                        {% if dt < today %}
+                            -
+                        {% elif book == 'Nothing' %}
+                            <a href="">予約可能</a>
+                        {% else %}
+                            book
+                        {% endif %}
+                    </td>
+
+                {% endfor %}
+                <td>
+                    {{ time }}
+                </td>
+            </tr>
+        {% endfor %}
+
+    </table>
+{% endblock %}
