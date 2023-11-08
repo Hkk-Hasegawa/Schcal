@@ -12,7 +12,7 @@ class Schedule(models.Model):
     def __str__(self):
         start = timezone.localtime(self.start).strftime('%Y/%m/%d %H:%M:%S')
         end = timezone.localtime(self.end).strftime('%Y/%m/%d %H:%M:%S')
-        return f'{self.name} {start} ~ {end} {self.staff}'
+        return f'{self.user} {start} ~ {end} {self.subject_name}'
 
 class Suresubject(models.Model):
     name=models.CharField('対象名',max_length=31)

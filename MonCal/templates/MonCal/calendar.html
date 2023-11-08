@@ -8,9 +8,7 @@
         <tr>
             <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
-                {% if day in public_holidays %}
-                    <th style="background-color: yellow">{{ day | date:"d(D)" }}</th>
-                {% elif day.weekday == 5 %}
+                {% if day.weekday == 5 %}
                     <th style="color: blue;">{{ day | date:"d(D)" }}</th>
                 {% elif day.weekday == 6 %}
                     <th style="color: red;">{{ day | date:"d(D)" }}</th>
@@ -31,9 +29,9 @@
                         {% if dt < today %}
                             -
                         {% elif book == 'Nothing' %}
-                            <a href="">予約可能</a>
+                            <a href="{% url 'MonCal:booking' subject.pk dt.year dt.month dt.day time %}">使用可能</a>
                         {% else %}
-                            book
+                            {{book}}
                         {% endif %}
                     </td>
 

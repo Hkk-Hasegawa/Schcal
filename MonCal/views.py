@@ -1,7 +1,8 @@
 import datetime
 from django.conf import settings
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
 from django.utils import timezone
 from django.views import generic
 from .models import Suresubject, Schedule,Calsetting
@@ -9,6 +10,47 @@ from .models import Suresubject, Schedule,Calsetting
 class Surelist(generic.ListView):
     model = Suresubject
     ordering = 'name'
+
+class Booking(generic.CreateView):
+    model = Schedule
+    fields = ('user',)
+    template_name = 'MonCal/booking.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subject'] = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
+        return context
+
+    def form_valid(self, form):
+        subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        time = self.kwargs.get('time')
+        hour=int(time[0:2])
+        minute=int(time[3:5])
+        print('time:' + time)
+        print('hour:' + str(hour))
+        print('minute:' + str(minute))
+        for calitem in Calsetting.objects.all():
+            if str(calitem.subject_name) == str(subject.name):
+                timestep=calitem.Step
+        start = datetime.datetime(year=year, month=month, day=day, hour=hour,minute= minute)
+        if minute + timestep < 59:
+            end = datetime.datetime(year=year, month=month , day=day, hour=hour,minute= minute + timestep)
+        else:
+            end = datetime.datetime(year=year, month=month , day=day, hour=hour+1,minute= minute + timestep - 60)
+        print('start:' + str(start))
+        print('end:' + str(end))
+        if Schedule.objects.filter(subject_name=subject).exclude(Q(start__gt=end) | Q(end__lt=start)).exists():
+            messages.error(self.request, 'すみません、入れ違いで予約がありました。別の日時はどうですか。')
+        else:
+            schedule = form.save(commit=False)
+            schedule.subject_name = subject
+            schedule.start = start
+            schedule.end = end
+            schedule.save()
+        return redirect('MonCal:calendar', pk=subject.pk, year=year, month=month, day=day)
 
 class SureCalendar(generic.TemplateView):
     template_name = 'MonCal/calendar.html'
@@ -61,7 +103,7 @@ class SureCalendar(generic.TemplateView):
         for schedule in Schedule.objects.filter(subject_name=subject).exclude(Q(start__gt=end_time) | Q(end__lt=start_time)):
             local_dt = timezone.localtime(schedule.start)
             booking_date = local_dt.date()
-            booking_time = str(local_dt.teme())
+            booking_time = str(local_dt.time())
             booking_time=booking_time[0:5]
             if booking_time in calendar and booking_date in calendar[booking_time]:
                 calendar[booking_time][booking_date] = schedule.user

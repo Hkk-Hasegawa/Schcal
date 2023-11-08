@@ -30,7 +30,9 @@
         <a href="">ログイン</a>
     {% endif %}
 </nav>
-
+{% for message in messages %}
+    <p> {{ message }}</p>
+{% endfor %}
 {% block content %}{% endblock %}
 
 </body>
