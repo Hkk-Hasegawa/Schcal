@@ -1,16 +1,24 @@
 <!DOCTYPE html>
-<html lang="ja">
 
+<html lang="ja">
+    {% load static %}
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>予約サイト</title>
+    <title>平成共有予約サイト</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}"/>
+    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    {{ form.media }}   
+    <script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
     <style>
         body {
             width: 960px;
             margin: 0 auto;
             padding-top: 50px;
+            font-size: medium;
         }
 
         nav > a {
@@ -21,19 +29,20 @@
 
 <body>
 
-<nav>
-    <a href="{% url 'MonCal:suresubject_list' %}">ホーム</a>
-    {% if user.is_authenticated %}
-        <a href="">マイページ</a>
-        <a href="">ログアウト</a>
-    {% else %}
-        <a href="">ログイン</a>
-    {% endif %}
-</nav>
-{% for message in messages %}
-    <p> {{ message }}</p>
-{% endfor %}
-{% block content %}{% endblock %}
-
+    <nav>
+        <a href="{% url 'MonCal:suresubject_list' %}">ホーム</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'MonCal:my_page' %}">マイページ</a>
+            <a href="{% url 'MonCal:logout' %}">ログアウト</a>
+        {% else %}
+            <a href="{% url 'MonCal:login' %}">ログイン</a>
+        {% endif %}
+    </nav>
+    {% for message in messages %}
+        <p> {{ message }}</p>
+    {% endfor %}
+    
+    {% block content %}{% endblock %}
+    
 </body>
 </html>

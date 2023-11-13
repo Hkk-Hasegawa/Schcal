@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'MonCal.apps.MoncalConfig',
+    "betterforms",
 ]
 
 MIDDLEWARE = [
@@ -124,3 +125,12 @@ STATIC_ROOT = BASE_DIR / 'static'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ログインページのURL
+LOGIN_URL = 'MonCal:login'
+
+# ログイン後にリダイレクトされるURL
+LOGIN_REDIRECT_URL = 'MonCal:suresubject_list'
+
+# ログアウト後にリダイレクトされるURL
+LOGOUT_REDIRECT_URL = 'MonCal:suresubject_list'

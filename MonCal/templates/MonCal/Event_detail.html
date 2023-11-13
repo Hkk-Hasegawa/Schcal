@@ -1,0 +1,33 @@
+{% extends 'MonCal/base.html' %}
+
+{% block content %}
+    <h1>{{ event.title }}の詳細</h1>
+    {% if host.user == user %}
+    <table>
+        <tr>
+        <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' event.pk %}">編集</a></button></td>
+        <td>
+            <form action="{% url 'MonCal:Event_delete' event.pk %}" method="POST">
+                {% csrf_token %}
+                <button type="submit">削除</button>
+            </form>
+        </td>
+        </tr>
+    </table>
+    {% endif %}
+    <p><div>時間:{{ event.start }} ~{{ event.end }}</div></p>
+    <p><div>{{ event.subject_name }}を使用</div></p>
+    <p>参加者</p>
+    <ul>
+        <li>{{ event.user }}</li>
+        {% for member in event.member.all %}
+            {% if host != member %}
+                <li>{{ member}}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    <p>内容</p>
+    <div>{{ event.detail }}</div>
+
+
+{% endblock %}

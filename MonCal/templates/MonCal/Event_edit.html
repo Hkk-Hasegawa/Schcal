@@ -1,13 +1,12 @@
 {% extends 'MonCal/base.html' %}
-
 {% block content %}
-
-    <h1><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a></h1>
-    
-    <p>{{ start_day }} - {{ end_day }}</p>
+<article>
+  <h1>内容の変更</h1>
+  <h2>対象:{{event.subject_name}}</h2>
+  <p>{{ start_day }} - {{ end_day }}</p>
     <table  width="60%" hight="100%" border="1"  align="left">
         <tr>
-            <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
+            <td><a href="{% url 'MonCal:Event_edit' event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
                 {% if day.weekday == 5 %}
                     <th style="color: blue;">{{ day | date:"d(D)" }}</th>
@@ -17,7 +16,7 @@
                     <th>{{ day | date:"d(D)" }}</th>
                 {% endif %}
             {% endfor %}
-            <td><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></td>
+            <td><a href="{% url 'MonCal:Event_edit' event.pk next.year next.month next.day %}">次週</a></td>
         </tr>
 
         {% for time, schedules in calendar.items %}
@@ -45,10 +44,22 @@
             </tr>
         {% endfor %}
     </table>
-    <form action="" method="POST">
-        {{ form.as_p }}
-        {% csrf_token %}
-        <button type="submit">送信</button>
+  <div class="mt-3">
+    <form method="POST">
+      {% csrf_token %}
+      {% for field in form.visible_fields %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+          {{ field.help_text }}
+        </div>
+      {% endfor %}
+      {% for field in form.hidden_fields %}
+        {{ field }}
+      {% endfor %}
+      <input class="btn btn-primary" type="submit" value="更新" />
     </form>
-    <br clear="left">
+  </div>
+</article>
 {% endblock %}
