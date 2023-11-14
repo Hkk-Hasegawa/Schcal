@@ -199,9 +199,7 @@ def makecalendar(subject,base_date,context):
             whileboolen=True
             while whileboolen:
                 int_time=int_time + datetime.timedelta(minutes=timestep)
-                print(int_time)
                 endtime=timezone.localtime(schedule.end)
-                print(endtime)
                 if int_time.time() < endtime.time():
                     booking_time=int_time.time()
                     calendar[booking_time][booking_date] = 'same'
