@@ -3,7 +3,7 @@
 {% block content %}
     <h1>{{ event.title }}の詳細</h1>
     {% if host.user == user %}
-    <table>
+    <table frame="void">
         <tr>
         <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' event.pk %}">編集</a></button></td>
         <td>
