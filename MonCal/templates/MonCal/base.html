@@ -17,10 +17,12 @@
     
     <script>
         function indate(dateV){
+            
             let newdateV = dateV.replace(/(年|月)/g, '-');
             let indateV = newdateV.replace('日', '');
             var Myelement = document.getElementById("id_date");
             Myelement.value = indateV;
+            
         }
     </script>
     <style>

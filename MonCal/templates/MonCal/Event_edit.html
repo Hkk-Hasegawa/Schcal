@@ -9,11 +9,11 @@
             <td><a href="{% url 'MonCal:Event_edit' event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
               {% if day.weekday == 5 %}
-                <th ><button style="color: blue;" name={{ day }}  onclick="indate(name)">{{ day | date:"d(D)" }}</button></th>
+                <th ><div style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
               {% elif day.weekday == 6 %}
-                <th><button style="color: red;" name={{ day }}  onclick="indate(name)">{{ day | date:"d(D)" }}</button></th>
+                <th><div style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
               {% else %}
-                <th><button name={{ day }}  onclick="indate(name)">{{ day | date:"d(D)" }}</button></th>
+                <th><div onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
               {% endif %}
             {% endfor %}
             <td><a href="{% url 'MonCal:Event_edit' event.pk next.year next.month next.day %}">次週</a></td>
