@@ -9,7 +9,7 @@
         <td>
             <form action="{% url 'MonCal:Event_delete' event.pk %}" method="POST">
                 {% csrf_token %}
-                <button type="submit">削除</button>
+                <button style="color: red;" type="submit" onclick="return confirm('削除しますか?')">削除</button>
             </form>
         </td>
         </tr>

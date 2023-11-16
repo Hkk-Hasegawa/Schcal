@@ -7,12 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>平成共有予約サイト</title>
+    <!---->
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}"/>
     <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
     {{ form.media }}   
     <script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
     <script type="text/javascript" src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
+    
     <script>
         function indate(dateV){
             let newdateV = dateV.replace(/(年|月)/g, '-');
@@ -22,6 +24,9 @@
         }
     </script>
     <style>
+        li {
+            font-size: large;
+        }
         body {
             width: 960px;
             margin: 0 auto;

@@ -4,9 +4,9 @@ from django.db import models
 from django.utils import timezone
 
 class Schedule(models.Model):
-    date=models.DateField('日付', blank=True,null=True)
-    starttime=models.TimeField('開始時刻', blank=True,null=True)
-    endtime=models.TimeField('終了時刻', blank=True,null=True)
+    date=models.DateField('日付', null=True)
+    starttime=models.TimeField('開始時刻', null=True)
+    endtime=models.TimeField('終了時刻', null=True)
     start = models.DateTimeField( null=True)
     end = models.DateTimeField( null=True)
     frame=models.PositiveSmallIntegerField('コマ数', default=1)

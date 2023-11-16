@@ -3,8 +3,8 @@
 <article>
   <h1>内容の変更</h1>
   <h2>対象:{{event.subject_name}}</h2>
-  <p>{{ start_day }} - {{ end_day }}</p>
     <table  width="60%" hight="100%" border="1"  align="left">
+      <caption>{{ start_day }} - {{ end_day }}</caption>
         <tr>
             <td><a href="{% url 'MonCal:Event_edit' event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
@@ -58,7 +58,7 @@
       {% for field in form.hidden_fields %}
         {{ field }}
       {% endfor %}
-      <input class="btn btn-primary" type="submit" value="更新" />
+      <button type="submit">更新</button>
     </form>
   </div>
 </article>
