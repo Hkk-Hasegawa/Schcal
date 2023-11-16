@@ -4,22 +4,20 @@
 
     <h1><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a></h1>
     
-    <table  width="60%" hight="100%" border="1" style="border-collapse: collapse" align="left">
-        <caption>{{ start_day }} - {{ end_day }}</caption>
+    <p>{{ start_day }} - {{ end_day }}</p>
+    <table  width="60%" hight="100%" border="1"  align="left">
         <tr>
-            
-            <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}" >前週</a></td>
+            <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
                 {% if day.weekday == 5 %}
-                <th ><div style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
+                    <th ><div style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
                 {% elif day.weekday == 6 %}
-                <th><div style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
+                    <th><div style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
                 {% else %}
-                <th><div onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
+                    <th><div onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
                 {% endif %}
             {% endfor %}
             <td><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></td>
-            
         </tr>
 
         {% for time, schedules in calendar.items %}
@@ -47,12 +45,10 @@
             </tr>
         {% endfor %}
     </table>
-    
     <form action="" method="POST">
         {{ form.as_p }}
         {% csrf_token %}
-        <button type="submit">登録</button>
-        <button type="reset">取消</button>
+        <button type="submit">送信</button>
     </form>
     <br clear="left">
 {% endblock %}

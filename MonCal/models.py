@@ -1,14 +1,11 @@
 
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 
 class Schedule(models.Model):
-    date=models.DateField('日付', null=True)
-    starttime=models.TimeField('開始時刻', null=True)
-    endtime=models.TimeField('終了時刻', null=True)
-    start = models.DateTimeField( null=True)
-    end = models.DateTimeField( null=True)
+    date=models.DateField('日付', blank=True,null=True)
+    starttime=models.TimeField('開始時刻', blank=True,null=True)
+    endtime=models.TimeField('終了時刻', blank=True,null=True)
     frame=models.PositiveSmallIntegerField('コマ数', default=1)
     subject_name = models.ForeignKey('Suresubject', verbose_name='予約対象', \
                                      on_delete=models.CASCADE)
@@ -18,9 +15,7 @@ class Schedule(models.Model):
     title=models.CharField('タイトル',max_length=31, null=True)
     detail=models.TextField('詳細',null=True,blank=True)
     def __str__(self):
-        start = timezone.localtime(self.start).strftime('%Y/%m/%d %H:%M:%S')
-        end = timezone.localtime(self.end).strftime('%Y/%m/%d %H:%M:%S')
-        return f'{self.title}:{start} ~ {end} {self.subject_name}'
+        return f'{self.title}：{self.date}：{self.starttime} ~ {self.endtime} ：{self.subject_name}'
 
 class Suresubject(models.Model):
     name=models.CharField('対象名',max_length=31)
