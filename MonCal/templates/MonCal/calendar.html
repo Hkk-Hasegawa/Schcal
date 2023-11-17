@@ -33,8 +33,10 @@
                         
                         {% elif book == 'same' %}
                             ↓↓
+                        {% elif book.date in days %}
+                            <a href="{% url 'MonCal:Event_detail' book.pk %}">{{book.title}}</a>
                         {% else %}
-                        <a href="{% url 'MonCal:Event_detail' book.pk %}">{{book.title}}</a>
+                            <a href="{% url 'MonCal:Event_detail' book.pk %}">{{book.title}}</a>
                         {% endif %}
                     </td>
 

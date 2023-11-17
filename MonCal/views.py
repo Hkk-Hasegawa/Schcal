@@ -1,12 +1,12 @@
+from xmlrpc.client import boolean
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from django.utils import timezone
 from django.views import generic
 from django.urls import reverse_lazy
-from .models import Suresubject, Schedule,Person
+from .models import Suresubject, Schedule,Person,Cycle,Excludeday
 from .forms import Scheduleform
 import datetime
 User = get_user_model()
@@ -14,7 +14,6 @@ User = get_user_model()
 #管理者か判定
 class OnlyUserMixin(UserPassesTestMixin):
     raise_exception = True
-
     def test_func(self):
         return self.kwargs['pk'] == self.request.user.pk or self.request.user.is_superuser
 #予約対象一覧ページ
@@ -70,10 +69,16 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
         schedule = form.save(commit=False)
         end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
         schedule.endtime=end.time()
+        cyboolen=False
+        for cysche in cyclejudge(subject,schedule.date):
+            if cysche.starttime <= schedule.endtime or cysche.endtime <= schedule.starttime:
+                cyboolen=True
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
-        elif  Schedule.objects.filter(date=schedule.date,subject_name=subject).exclude(Q(starttime__gt= schedule.endtime) | Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists():
-        #elif True:
+        elif  Schedule.objects.filter(date=schedule.date,subject_name=subject)\
+                        .exclude(Q(starttime__gt= schedule.endtime) | \
+                                 Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists()\
+                or cyboolen:
             messages.error(self.request, 'すでに予約がありました。')
         else:
             schedule.subject_name = subject
@@ -88,11 +93,14 @@ class EventDetail(LoginRequiredMixin,generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        
         host=Person.objects.get(user=event.user)
+        context['Boolen']=Cycle.objects.filter(schedule=event).exists()
         context['event']=event
         context['host']=host
         context['user']=self.request.user
         return context
+    
 #スケジュールの編集
 class EventEdit(LoginRequiredMixin,generic.UpdateView):
     model = Schedule
@@ -144,10 +152,20 @@ class EventDelete(LoginRequiredMixin, generic.DeleteView):
     success_url = reverse_lazy('MonCal:my_page')
 #予定一覧
 def myschedule(context,usrpk):
+    #単発予定リスト
     dt_today =datetime.date.today()
     dt_nextmon=dt_today  + datetime.timedelta(days=30)  
-    schedule= Schedule.objects.filter(Q(user__pk=usrpk)|Q(member__user__pk=usrpk),date__gte=dt_today,date__lte=dt_nextmon).order_by('date','starttime')
+    schedule= Schedule.objects.filter(Q(user__pk=usrpk)|Q(member__user__pk=usrpk),\
+                                      date__gte=dt_today,date__lte=dt_nextmon).order_by('date','starttime')
     context['schedule_list'] = schedule.distinct()
+    #定期予定リスト
+    #cydic={}
+    #for cycle in Cycle.objects.filter(Q(schedule__user__pk=usrpk)|Q(schedule__member__user__pk=usrpk))\
+                                #.exclude(schedule__date__gte=dt_today,schedule__date__lte=dt_nextmon):
+        #cyshce=cycle.schedule
+        #cy_dt=datetime.datetime.combine(cyshce.date, cyshce.starttime)
+        #cydic[cy_dt]=cyshce
+        #context['cycle_list']
     return context
 #時刻の選択肢作成
 def choicetime(subject):
@@ -161,6 +179,21 @@ def choicetime(subject):
         looptime=loopdate.time()
     category_choice = tuple(choicelist)
     return(category_choice)
+#繰り返し予定の判定
+def cyclejudge(subject,date):
+    rt=[]
+    for cycle in Cycle.objects.filter(schedule__subject_name=subject,\
+                                      schedule__date__lte=date):
+            if cycle.unit == 'week':
+                step=7 * cycle.step
+                unit='day'
+            else:
+                step=1 * cycle.step
+                unit=cycle.unit
+            daysdiff=(date-cycle.schedule.date).days
+            if unit =='day' and (daysdiff % step) == 0:
+                rt.append(cycle.schedule)
+    return(rt)
 #カレンダー作成
 def makecalendar(subject,base_date,context):
     head_time=subject.head_time
@@ -179,23 +212,16 @@ def makecalendar(subject,base_date,context):
         for day in days:
             row[day] = 'Nothing'
         calendar[loop_time.time()] = row
-        loop_time = loop_time + datetime.timedelta(minutes=timestep)    
+        loop_time = loop_time + datetime.timedelta(minutes=timestep) 
+    for day in days: 
+        for cycle_sche in cyclejudge(subject,day):
+            calendar=scheincal(calendar,cycle_sche,day)
+                
     # カレンダー表示する最初と最後の日時の間にある予約を取得する
-    for schedule in Schedule.objects.filter(subject_name=subject).exclude(Q(date__gt=end_day) | Q(date__lt=start_day)):
-        booking_date = schedule.date
-        int_time=schedule.starttime
-        booking_time = int_time
-        if booking_time in calendar and booking_date in calendar[booking_time]:   
-            calendar[booking_time][booking_date] = schedule
-            int_time=datetime.datetime.combine(booking_date, int_time)
-            whileboolen=True
-            while whileboolen:
-                int_time=int_time + datetime.timedelta(minutes=timestep)
-                if int_time.time() < schedule.endtime:
-                    booking_time=int_time.time()
-                    calendar[booking_time][booking_date] = 'same'
-                else:
-                    whileboolen=False
+    for schedule in Schedule.objects.filter(subject_name=subject)\
+                        .exclude(Q(date__gt=end_day) | Q(date__lt=start_day)):
+        if schedule.starttime in calendar and schedule.date in calendar[schedule.starttime]: 
+            calendar=scheincal(calendar,schedule,schedule.date)  
     context['subject'] =subject
     context['calendar'] =calendar
     context['days'] = days
@@ -205,3 +231,20 @@ def makecalendar(subject,base_date,context):
     context['next'] = context['days'][-1] + datetime.timedelta(days=1)
     context['today'] = datetime.date.today()
     return(context)
+#カレンダーに予定を入力
+def scheincal(calendar,schedule,date):
+    booking_date = date
+    booking_time = schedule.starttime
+    subject=schedule.subject_name
+    timestep=subject.Step
+    calendar[booking_time][booking_date] = schedule
+    int_time=datetime.datetime.combine(booking_date, schedule.starttime)
+    whileboolen=True
+    while whileboolen:
+        int_time=int_time + datetime.timedelta(minutes=timestep)
+        if int_time.time() < schedule.endtime:
+            booking_time=int_time.time()
+            calendar[booking_time][booking_date] = 'same'
+        else:
+            whileboolen=False
+    return(calendar)

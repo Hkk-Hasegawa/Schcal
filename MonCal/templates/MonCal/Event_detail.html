@@ -14,7 +14,11 @@
         </tr>
     </table>
     {% endif %}
-    <p><div>時間：{{ event.date }}{{ event.starttime }} ~{{ event.endtime }}</div></p>
+    {% if Boolen %}
+        <p><div>時間：{{ event.starttime }} ~{{ event.endtime }}</div></p>
+    {% else %}
+        <p><div>時間：{{ event.date }}{{ event.starttime }} ~{{ event.endtime }}</div></p>
+    {% endif %}
     <p><div>{{ event.subject_name }}を使用</div></p>
     <p>参加者</p>
     <ul>
