@@ -20,6 +20,14 @@
             var Myelement = document.getElementById("id_date");
             Myelement.value = indateV;
         }
+        function cyclenone(){
+            document.getElementById('cycleform').style.visibility = 'none'
+
+        }
+        function cycleinline(){
+            document.getElementById('cycleform').style.visibility = 'inline'
+
+        }
     </script>
     <style>
         li {
@@ -35,6 +43,8 @@
         nav > a {
             margin-right: 10px;
         }
+        #cycleform { display: none;  }
+        
     </style>
 </head>
 

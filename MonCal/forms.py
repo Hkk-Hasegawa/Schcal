@@ -17,3 +17,4 @@ class Scheduleform(forms.ModelForm):
         self.base_fields["starttime"].choices = categories
         self.base_fields["endtime"].choices = categories
         super().__init__(*args, **kwargs)
+

@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import generic
 from django.urls import reverse_lazy
+from django import forms
 from .models import Suresubject, Schedule,Person,Cycle,Excludeday
 from .forms import Scheduleform
 import datetime
@@ -87,20 +88,33 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
             form.save_m2m() 
         return redirect('MonCal:calendar', pk=subject.pk)
 #スケジュールの詳細ページ
-class EventDetail(LoginRequiredMixin,generic.TemplateView):
+class EventDetail(LoginRequiredMixin,generic.CreateView):
+    model = Cycle
+    fields=('step','unit')
+    unit= forms.ChoiceField(
+        choices = (
+            ('week', 'week')
+        ),
+            required=True,
+            widget=forms.widgets.Select)
     template_name = 'MonCal/Event_detail.html'
     #スケジュールの情報を表示
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = get_object_or_404(Schedule, pk=self.kwargs['pk'])
-        
         host=Person.objects.get(user=event.user)
         context['Boolen']=Cycle.objects.filter(schedule=event).exists()
         context['event']=event
         context['host']=host
         context['user']=self.request.user
         return context
-    
+    #フォームの保存
+    def form_valid(self, form):
+        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        cycle = form.save(commit=False)
+        cycle.schedule=schedule
+        cycle.save()
+
 #スケジュールの編集
 class EventEdit(LoginRequiredMixin,generic.UpdateView):
     model = Schedule
