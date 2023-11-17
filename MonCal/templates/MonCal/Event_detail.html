@@ -22,7 +22,9 @@
     <p><div>{{ event.subject_name }}を使用</div></p>
     <p>参加者</p>
     <ul>
-        <li>{{ event.user }}</li>
+        {% if not Boolen %}
+            <li>{{ event.user }}</li>
+        {% endif %}
         {% for member in event.member.all %}
             {% if host != member %}
                 <li>{{ member}}</li>

@@ -134,11 +134,15 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         subject=schedule.subject_name 
         end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
         schedule.endtime=end.time()
+        cyboolen=False
+        for cysche in cyclejudge(subject,schedule.date):
+            if cysche.starttime <= schedule.endtime or cysche.endtime <= schedule.starttime:
+                cyboolen=True
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
-        elif Schedule.objects.filter(date=schedule.date,subject_name=subject).exclude(Q(starttime__gt= schedule.endtime) | Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists():
-        #elif True:
+        elif Schedule.objects.filter(date=schedule.date,subject_name=subject)\
+                .exclude(Q(starttime__gt= schedule.endtime)| Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists() or cyboolen:
             messages.error(self.request, 'すでに予約がありました。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
         else:

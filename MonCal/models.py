@@ -6,12 +6,11 @@ class Schedule(models.Model):
     date=models.DateField('日付', blank=True,null=True)
     starttime=models.TimeField('開始時刻', blank=True,null=True)
     endtime=models.TimeField('終了時刻', blank=True,null=True)
-    frame=models.PositiveSmallIntegerField('コマ数', default=1)
     subject_name = models.ForeignKey('Suresubject', verbose_name='予約対象', \
                                      on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='ユーザー',\
                              on_delete=models.CASCADE, null=True,blank=True)
-    member = models.ManyToManyField('Person', verbose_name='メンバー', blank=True)
+    member = models.ManyToManyField('Person', verbose_name='メンバー',  blank=True)
     title=models.CharField('タイトル',max_length=31, null=True)
     detail=models.TextField('詳細',null=True,blank=True)
     
