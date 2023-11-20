@@ -1,20 +1,24 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
+
 <article>
   <h1>内容の変更</h1>
-  <h2>対象:{{event.subject_name}}</h2>
-  <p>{{ start_day }} - {{ end_day }}</p>
     <table  width="60%" hight="100%" border="1"  align="left">
+      <caption><p>対象:{{event.subject_name}}</a></p>
+        <p>{{ start_day }} - {{ end_day }}</p></caption>
         <tr>
             <td><a href="{% url 'MonCal:Event_edit' event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
-              {% if day.weekday == 5 %}
-                <th ><div style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
-              {% elif day.weekday == 6 %}
-                <th><div style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
-              {% else %}
-                <th><div onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
-              {% endif %}
+            <th >
+                {% if day.weekday == 5 %}
+                    <button  type="button" style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                {% elif day.weekday == 6 %}
+                    <button  type="button" style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                {% else %}
+                    <button  type="button" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                {% endif %}
+                </button>
+            </th>
             {% endfor %}
             <td><a href="{% url 'MonCal:Event_edit' event.pk next.year next.month next.day %}">次週</a></td>
         </tr>
@@ -26,17 +30,14 @@
                 </td>
                 {% for dt, book in schedules.items %}
                     <td>
-                        {% if dt < today %}
-                            -
-                        {% elif book == 'Nothing' %}
-                        
+                        {% if book == 'Nothing' %}
+                        <button  type="button" onclick="intime('{{ dt }}','{{ time }}')">　　</button>
                         {% elif book == 'same' %}
                             ↓↓
                         {% else %}
                         <a href="{% url 'MonCal:Event_detail' book.pk %}">{{book.title}}</a>
                         {% endif %}
                     </td>
-
                 {% endfor %}
                 <td>
                     {{ time }}
@@ -59,6 +60,7 @@
         {{ field }}
       {% endfor %}
       <button  type="submit">更新</button> 
+      <button  type="reset">取消</button> 
     </form>
   </div>
 </article>

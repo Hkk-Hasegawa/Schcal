@@ -1,42 +1,34 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
     <h1>{{ event.title }}の詳細</h1>
-    {% if host.user == user %}
+    {% if host.user == user or event.subject_name.name == "行事予定" %}
     <table>
         <tr>
         <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' event.pk %}">編集</a></button></td>
         <td>
             <form action="{% url 'MonCal:Event_delete' event.pk %}" method="POST">
                 {% csrf_token %}
-                <button type="submit" style="color: red;" onclick="return confirm('削除しますか?')">削除</button>
+                <button type="submit" style="color: red;" onclick="return confirm('削除しますか?')">スケジュールの削除</button>
             </form>
         </td>
         </tr>
     </table>
-    <div>繰り返しの登録</div>
-    <form action="" method="POST" >
-        {{ form.as_p }}
-        {% csrf_token %}
-        <button type="submit">登録</button>
-    </form>
+        {% if Boolen  %}
+            {% for cycle in Boolen %}
+            <form action="{% url 'MonCal:Cycle_delete' cycle.pk %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" style="color: red;" onclick="return confirm('繰り返し解除しますか?')">繰り返し解除</button>
+            </form>
+            {% endfor %}
+        {% endif %}
     {% endif %}
+    <p><div>{{ event.subject_name }}</div></p>
     {% if Boolen %}
         <p><div>時間：{{ event.starttime }} ~{{ event.endtime }}</div></p>
     {% else %}
         <p><div>時間：{{ event.date }}{{ event.starttime }} ~{{ event.endtime }}</div></p>
     {% endif %}
-    <p><div>{{ event.subject_name }}を使用</div></p>
-    <p>参加者</p>
-    <ul>
-        {% if not Boolen %}
-            <li>{{ event.user }}</li>
-        {% endif %}
-        {% for member in event.member.all %}
-            {% if host != member %}
-                <li>{{ member}}</li>
-            {% endif %}
-        {% endfor %}
-    </ul>
+    
     <p>内容</p>
     <div>{{ event.detail|linebreaksbr  }}</div>
 {% endblock %}

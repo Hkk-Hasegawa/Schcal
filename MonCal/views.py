@@ -1,4 +1,4 @@
-from xmlrpc.client import boolean
+
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -7,8 +7,8 @@ from django.contrib import messages
 from django.views import generic
 from django.urls import reverse_lazy
 from django import forms
-from .models import Suresubject, Schedule,Person,Cycle,Excludeday
-from .forms import Scheduleform
+from .models import Suresubject, Schedule,Person,Cycle
+from .forms import ProductMultiForm
 import datetime
 User = get_user_model()
 
@@ -41,7 +41,7 @@ class MyPageWithPk(OnlyUserMixin, generic.TemplateView):
 #予約カレンダーページ
 class SureCalendar(LoginRequiredMixin,generic.CreateView):
     model = Schedule
-    form_class=Scheduleform
+    form_class=ProductMultiForm
     template_name = 'MonCal/calendar.html'
     #カレンダーの作成
     def get_context_data(self, **kwargs):
@@ -62,7 +62,8 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
     def get_form_kwargs(self, *args, **kwargs):
         kwgs = super().get_form_kwargs(*args, **kwargs)
         subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
-        kwgs["categories"] = choicetime(subject)
+        ls=[('week','週'),('month','月')]
+        kwgs["categories"] = choicetime(subject),ls
         return kwgs
     #フォームの保存
     def form_valid(self, form):
@@ -86,39 +87,12 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
             schedule.user= self.request.user
             schedule.save()                
             form.save_m2m() 
-        return redirect('MonCal:calendar', pk=subject.pk)
-#スケジュールの詳細ページ
-class EventDetail(LoginRequiredMixin,generic.CreateView):
-    model = Cycle
-    fields=('step','unit')
-    unit= forms.ChoiceField(
-        choices = (
-            ('week', 'week')
-        ),
-            required=True,
-            widget=forms.widgets.Select)
-    template_name = 'MonCal/Event_detail.html'
-    #スケジュールの情報を表示
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        event = get_object_or_404(Schedule, pk=self.kwargs['pk'])
-        host=Person.objects.get(user=event.user)
-        context['Boolen']=Cycle.objects.filter(schedule=event).exists()
-        context['event']=event
-        context['host']=host
-        context['user']=self.request.user
-        return context
-    #フォームの保存
-    def form_valid(self, form):
-        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
-        cycle = form.save(commit=False)
-        cycle.schedule=schedule
-        cycle.save()
-
+            
+        return redirect('MonCal:calendar', pk=subject.pk,year=schedule.date.year,month=schedule.date.month,day=schedule.date.day)
 #スケジュールの編集
 class EventEdit(LoginRequiredMixin,generic.UpdateView):
     model = Schedule
-    form_class=Scheduleform
+    form_class=ProductMultiForm
     template_name = 'MonCal/Event_edit.html'
     #カレンダーの作成
     def get_context_data(self, **kwargs):
@@ -140,8 +114,8 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         kwgs = super().get_form_kwargs(*args, **kwargs)
         schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
         subject=schedule.subject_name
-        kwgs["categories"] = choicetime(subject)
-        return kwgs
+        ls=[('week','週'),('month','月')]
+        kwgs["categories"] = choicetime(subject),ls
     #フォームの保存
     def form_valid(self, form):
         schedule = form.save(commit=False)
@@ -164,21 +138,39 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
             schedule.save()                
             form.save_m2m() 
             return redirect('MonCal:Event_detail', pk=schedule.pk)
+#スケジュールの詳細ページ
+class EventDetail(LoginRequiredMixin,generic.TemplateView):
+    template_name = 'MonCal/Event_detail.html'
+    #スケジュールの情報を表示
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        host=Person.objects.get(user=event.user)
+        context['Boolen']=Cycle.objects.filter(schedule=event)
+        context['event']=event
+        context['host']=host
+        context['user']=self.request.user
+        return context
 #スケジュールの削除
 class EventDelete(LoginRequiredMixin, generic.DeleteView):
     model = Schedule
     success_url = reverse_lazy('MonCal:my_page')
+#繰り返しの削除
+class CycleDelete(LoginRequiredMixin, generic.DeleteView):
+    model = Cycle
+    success_url = reverse_lazy('MonCal:my_page')
+
 #予定一覧
 def myschedule(context,usrpk):
     #単発予定リスト
     dt_today =datetime.date.today()
     dt_nextmon=dt_today  + datetime.timedelta(days=30)  
-    schedule= Schedule.objects.filter(Q(user__pk=usrpk)|Q(member__user__pk=usrpk),\
+    schedule= Schedule.objects.filter(user__pk=usrpk,\
                                       date__gte=dt_today,date__lte=dt_nextmon).order_by('date','starttime')
     context['schedule_list'] = schedule.distinct()
     #定期予定リスト
     #cydic={}
-    #for cycle in Cycle.objects.filter(Q(schedule__user__pk=usrpk)|Q(schedule__member__user__pk=usrpk))\
+    #for cycle in Cycle.objects.filter(Q(schedule__user__pk=usrpk))\
                                 #.exclude(schedule__date__gte=dt_today,schedule__date__lte=dt_nextmon):
         #cyshce=cycle.schedule
         #cy_dt=datetime.datetime.combine(cyshce.date, cyshce.starttime)
@@ -205,12 +197,19 @@ def cyclejudge(subject,date):
             if cycle.unit == 'week':
                 step=7 * cycle.step
                 unit='day'
+            elif cycle.unit == 'year':
+                step=12 * cycle.step
+                unit='month'
             else:
                 step=1 * cycle.step
                 unit=cycle.unit
-            daysdiff=(date-cycle.schedule.date).days
-            if unit =='day' and (daysdiff % step) == 0:
-                rt.append(cycle.schedule)
+            cysche_date=cycle.schedule.date
+            
+            if unit =='day' :
+                daysdiff=(date-cysche_date).days
+                if (daysdiff % step) == 0:
+                    rt.append(cycle.schedule)
+
     return(rt)
 #カレンダー作成
 def makecalendar(subject,base_date,context):
