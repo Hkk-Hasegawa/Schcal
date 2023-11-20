@@ -20,23 +20,13 @@
             var Myelement = document.getElementById("id_date");
             Myelement.value = indateV;
         }
-        function intime(dt,time){
-            indate(dt);
-            let starttime = document.getElementById("id_starttime");
-            let newtime=time + ':00';
-            if (newtime.length==8){
-                starttime.value=newtime;
-            }else{
-                starttime.value='0' + newtime;
-            }
+        function cyclenone(){
+            document.getElementById('cycleform').style.visibility = 'none'
+
         }
         function cycleinline(){
-            let cy_display = document.getElementById('cycleform')
-            if (cy_display.style.display == 'inline'){
-                cy_display.style.display = 'none';
-            }else{
-                cy_display.style.display = 'inline';
-            }
+            document.getElementById('cycleform').style.visibility = 'inline'
+
         }
     </script>
     <style>

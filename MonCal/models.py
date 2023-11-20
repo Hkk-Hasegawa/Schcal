@@ -10,7 +10,7 @@ class Schedule(models.Model):
                                      on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='ユーザー',\
                              on_delete=models.CASCADE, null=True,blank=True)
-    #member = models.ManyToManyField('Person', verbose_name='メンバー',  blank=True)
+    member = models.ManyToManyField('Person', verbose_name='メンバー',  blank=True)
     title=models.CharField('タイトル',max_length=31, null=True)
     detail=models.TextField('詳細',null=True,blank=True)
     

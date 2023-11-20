@@ -1,23 +1,21 @@
 {% extends 'MonCal/base.html' %}
 
-{% block content %}   
+{% block content %}
 
+    <h1><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a></h1>
+    
+    <p>{{ start_day }} - {{ end_day }}</p>
     <table  width="60%" hight="100%" border="1"  align="left">
-        <caption><p><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a></p>
-            <p>{{ start_day }} - {{ end_day }}</p></caption>
         <tr>
             <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
-            <th >
                 {% if day.weekday == 5 %}
-                    <button  type="button" style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                    <th ><div style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
                 {% elif day.weekday == 6 %}
-                    <button  type="button" style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                    <th><div style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
                 {% else %}
-                    <button  type="button" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                    <th><div onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
                 {% endif %}
-                </button>
-            </th>
             {% endfor %}
             <td><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></td>
         </tr>
@@ -32,7 +30,7 @@
                         {% if dt < today %}
                             -
                         {% elif book == 'Nothing' %}
-                        <button  type="button" onclick="intime('{{ dt }}','{{ time }}')">　　</button>
+                        
                         {% elif book == 'same' %}
                             ↓↓
                         {% elif book.date in days %}
@@ -49,15 +47,10 @@
             </tr>
         {% endfor %}
     </table>
-    <br>
-    <br>
-    <br>
-    <br>
     <form action="" method="POST">
         {{ form.as_p }}
         {% csrf_token %}
-        <button type="submit">登録</button>
-        <button type="reset">取消</button>
+        <button type="submit">送信</button>
     </form>
     <br clear="left">
 {% endblock %}
