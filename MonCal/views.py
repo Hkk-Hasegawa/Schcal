@@ -88,9 +88,7 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
             form.save_m2m() 
         return redirect('MonCal:calendar', pk=subject.pk)
 #スケジュールの詳細ページ
-class EventDetail(LoginRequiredMixin,generic.CreateView):
-    model = Cycle
-    fields=('step','unit')
+class EventDetail(LoginRequiredMixin,generic.TemplateView):
     template_name = 'MonCal/Event_detail.html'
     #スケジュールの情報を表示
     def get_context_data(self, **kwargs):
@@ -103,11 +101,6 @@ class EventDetail(LoginRequiredMixin,generic.CreateView):
         context['user']=self.request.user
         return context
     #フォームの保存
-    def form_valid(self, form):
-        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
-        cycle = form.save(commit=False)
-        cycle.schedule=schedule
-        cycle.save()
 
 #スケジュールの編集
 class EventEdit(LoginRequiredMixin,generic.UpdateView):
@@ -161,7 +154,7 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
 #スケジュールの削除
 class EventDelete(LoginRequiredMixin, generic.DeleteView):
     model = Schedule
-    success_url = reverse_lazy('MonCal:my_page')
+    success_url = reverse_lazy('MonCal:my_page')    
 #予定一覧
 def myschedule(context,usrpk):
     #単発予定リスト

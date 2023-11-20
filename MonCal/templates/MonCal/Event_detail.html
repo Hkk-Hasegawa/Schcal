@@ -2,7 +2,7 @@
 {% block content %}
     <h1>{{ event.title }}の詳細</h1>
     {% if host.user == user %}
-    <table>
+    <table frame="void">
         <tr>
         <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' event.pk %}">編集</a></button></td>
         <td>
@@ -13,17 +13,8 @@
         </td>
         </tr>
     </table>
-    {% if Boolen %}
-    {% else %}
-    <div>繰り返しの登録</div>
-    <form action="" method="POST" >
-        {{ form.as_p }}
-        {% csrf_token %}
-        <button type="submit">登録</button>
-    </form>
     {% endif %}
-    {% endif %}
-    <p><div>{{ event.subject_name }}</div></p>
+    <p><div>予約区分：{{ event.subject_name }}</div></p>
     {% if Boolen %}
         <p><div>時間：{{ event.starttime }} ~{{ event.endtime }}</div></p>
     {% else %}
