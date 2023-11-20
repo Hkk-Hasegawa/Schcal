@@ -1,3 +1,4 @@
+from itertools import cycle
 from xmlrpc.client import boolean
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
@@ -189,9 +190,14 @@ def makecalendar(subject,base_date,context):
             row[day] = 'Nothing'
         calendar[loop_time.time()] = row
         loop_time = loop_time + datetime.timedelta(minutes=timestep) 
-                
-    # カレンダー表示する最初と最後の日時の間にある予約を取得する
     for schedule in Schedule.objects.filter(subject_name=subject)\
+                        .exclude(Q(date__gt=end_day) | Q(cycle='nocycle')):
+        if schedule.cycle=='week':
+            day=weeklymatch(date=schedule.date,days=days)
+            calendar=scheincal(calendar,schedule,day)
+
+    # カレンダー表示する最初と最後の日時の間にある予約を取得する
+    for schedule in Schedule.objects.filter(subject_name=subject,cycle='nocycle')\
                         .exclude(Q(date__gt=end_day) | Q(date__lt=start_day)):
         if schedule.starttime in calendar and schedule.date in calendar[schedule.starttime]: 
             calendar=scheincal(calendar,schedule,schedule.date)  
@@ -221,3 +227,8 @@ def scheincal(calendar,schedule,date):
         else:
             whileboolen=False
     return(calendar)
+
+def weeklymatch(date,days):
+    for day in days:
+        if day.weekday() ==date.weekday():
+            return(day)
