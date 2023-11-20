@@ -10,13 +10,13 @@
             {% for day in days %}
               <th >
               {% if day.weekday == 5 %}
-                <button  type="button" style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                <div  type="button" style="color: blue;" >
               {% elif day.weekday == 6 %}
-                <button  type="button" style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                <div  type="button" style="color: red;" >
               {% else %}
-                <button  type="button" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
+                <div  type="button" >
               {% endif %}
-              </button></th>
+              {{ day | date:"d(D)" }}　</div></th>
             {% endfor %}
             <td><a href="{% url 'MonCal:Event_edit' event.pk next.year next.month next.day %}">次週</a></td>
         </tr>
