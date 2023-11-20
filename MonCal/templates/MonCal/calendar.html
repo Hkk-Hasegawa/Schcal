@@ -2,10 +2,9 @@
 
 {% block content %}
 
-    <h1><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a></h1>
-    
-    <p>{{ start_day }} - {{ end_day }}</p>
     <table  width="60%" hight="100%" border="1"  align="left">
+        <caption><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
+            <p>{{ start_day }} - {{ end_day }}</p></caption>
         <tr>
             <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
@@ -21,7 +20,6 @@
             {% endfor %}
             <td><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></td>
         </tr>
-
         {% for time, schedules in calendar.items %}
             <tr style="font-size:12px">
                 <td>
@@ -49,6 +47,7 @@
             </tr>
         {% endfor %}
     </table>
+    <br><br><br><br>
     <form action="" method="POST">
         {{ form.as_p }}
         {% csrf_token %}
