@@ -13,7 +13,7 @@ class Schedule(models.Model):
     member = models.ManyToManyField('Person', verbose_name='メンバー',  blank=True)
     title=models.CharField('タイトル',max_length=31, null=True)
     detail=models.TextField('詳細',null=True,blank=True)
-    cycle=models.CharField('繰り返し',max_length=15,default='繰り返さない')
+    cycle=models.CharField('繰り返し',max_length=15,default='nocycle')
     def __str__(self):
         start=self.starttime.strftime('%H:%M')
         end=self.endtime.strftime('%H:%M')
