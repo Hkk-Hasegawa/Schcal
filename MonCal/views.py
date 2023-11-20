@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.views import generic
 from django.urls import reverse_lazy
 from django import forms
-from .models import Suresubject, Schedule,Person,Cycle,Excludeday
+from .models import Suresubject, Schedule,Person
 from .forms import Scheduleform
 import datetime
 User = get_user_model()
@@ -71,9 +71,6 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
         end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
         schedule.endtime=end.time()
         cyboolen=False
-        for cysche in cyclejudge(subject,schedule.date):
-            if cysche.starttime <= schedule.endtime or cysche.endtime <= schedule.starttime:
-                cyboolen=True
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
         elif  Schedule.objects.filter(date=schedule.date,subject_name=subject)\
@@ -95,7 +92,6 @@ class EventDetail(LoginRequiredMixin,generic.TemplateView):
         context = super().get_context_data(**kwargs)
         event = get_object_or_404(Schedule, pk=self.kwargs['pk'])
         host=Person.objects.get(user=event.user)
-        context['Boolen']=Cycle.objects.filter(schedule=event)
         context['event']=event
         context['host']=host
         context['user']=self.request.user
@@ -136,9 +132,7 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
         schedule.endtime=end.time()
         cyboolen=False
-        for cysche in cyclejudge(subject,schedule.date):
-            if cysche.starttime <= schedule.endtime or cysche.endtime <= schedule.starttime:
-                cyboolen=True
+
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
@@ -176,21 +170,6 @@ def choicetime(subject):
         looptime=loopdate.time()
     category_choice = tuple(choicelist)
     return(category_choice)
-#繰り返し予定の判定
-def cyclejudge(subject,date):
-    rt=[]
-    for cycle in Cycle.objects.filter(schedule__subject_name=subject,\
-                                      schedule__date__lte=date):
-            if cycle.unit == 'week':
-                step=7 * cycle.step
-                unit='day'
-            else:
-                step=1 * cycle.step
-                unit=cycle.unit
-            daysdiff=(date-cycle.schedule.date).days
-            if unit =='day' and (daysdiff % step) == 0:
-                rt.append(cycle.schedule)
-    return(rt)
 #カレンダー作成
 def makecalendar(subject,base_date,context):
     head_time=subject.head_time
@@ -210,9 +189,6 @@ def makecalendar(subject,base_date,context):
             row[day] = 'Nothing'
         calendar[loop_time.time()] = row
         loop_time = loop_time + datetime.timedelta(minutes=timestep) 
-    for day in days: 
-        for cycle_sche in cyclejudge(subject,day):
-            calendar=scheincal(calendar,cycle_sche,day)
                 
     # カレンダー表示する最初と最後の日時の間にある予約を取得する
     for schedule in Schedule.objects.filter(subject_name=subject)\

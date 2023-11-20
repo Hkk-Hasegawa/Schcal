@@ -1,20 +1,22 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
-<article>
+
   <h1>内容の変更</h1>
-  <h2>対象:{{event.subject_name}}</h2>
-  <p>{{ start_day }} - {{ end_day }}</p>
     <table  width="60%" hight="100%" border="1"  align="left">
+      <caption><p>対象:{{event.subject_name}}</p>
+        <p>{{ start_day }} - {{ end_day }}</p></caption>
         <tr>
             <td><a href="{% url 'MonCal:Event_edit' event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
+              <th >
               {% if day.weekday == 5 %}
-                <th ><div style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
+                <button  type="button" style="color: blue;" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
               {% elif day.weekday == 6 %}
-                <th><div style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
+                <button  type="button" style="color: red;"  onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
               {% else %}
-                <th><div onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}</div></th>
+                <button  type="button" onclick="indate('{{ day }}')">{{ day | date:"d(D)" }}
               {% endif %}
+              </button></th>
             {% endfor %}
             <td><a href="{% url 'MonCal:Event_edit' event.pk next.year next.month next.day %}">次週</a></td>
         </tr>
@@ -29,14 +31,13 @@
                         {% if dt < today %}
                             -
                         {% elif book == 'Nothing' %}
-                        
+                        <button type="button" onclick="intime('{{dt}}','{{time}}')">空き</button>
                         {% elif book == 'same' %}
                             ↓↓
                         {% else %}
                         <a href="{% url 'MonCal:Event_detail' book.pk %}">{{book.title}}</a>
                         {% endif %}
                     </td>
-
                 {% endfor %}
                 <td>
                     {{ time }}
@@ -44,22 +45,13 @@
             </tr>
         {% endfor %}
     </table>
+  <br><br><br><br>
   <div class="mt-3">
     <form method="POST">
+      {{ form.as_p }}
       {% csrf_token %}
-      {% for field in form.visible_fields %}
-        <div class="form-group">
-          <label>{{ field.label }}</label>
-          {{ field }}
-          {{ field.errors }}
-          {{ field.help_text }}
-        </div>
-      {% endfor %}
-      {% for field in form.hidden_fields %}
-        {{ field }}
-      {% endfor %}
       <button  type="submit">更新</button> 
     </form>
   </div>
-</article>
+
 {% endblock %}

@@ -20,12 +20,22 @@
             var Myelement = document.getElementById("id_date");
             Myelement.value = indateV;
         }
+        function intime(dt,time){
+            indate(dt);
+            let Myid = document.getElementById("id_starttime");
+            let newtime = time +':00'
+            if (newtime.length ==8){
+                Myid.value = newtime;
+            }else{
+                Myid.value ='0'+ newtime;
+            }
+        }
         function cyclenone(){
-            document.getElementById('cycleform').style.visibility = 'none'
+            document.getElementById('cycleform').style.display  = 'none'
 
         }
         function cycleinline(){
-            document.getElementById('cycleform').style.visibility = 'inline'
+            document.getElementById('cycleform').style.display  = 'inline'
 
         }
     </script>
