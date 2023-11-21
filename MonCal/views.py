@@ -1,5 +1,4 @@
-from itertools import cycle
-from xmlrpc.client import boolean
+
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -7,7 +6,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import generic
 from django.urls import reverse_lazy
-from django import forms
 from .models import Suresubject, Schedule,Person
 from .forms import Scheduleform
 import datetime
@@ -70,20 +68,22 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
         subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
         schedule = form.save(commit=False)
         end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
-        schedule.endtime=end.time()
+        #schedule.endtime=end.time()
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
         elif  Schedule.objects.filter(date=schedule.date,subject_name=subject,cycle='nocycle')\
-                        .exclude(Q(starttime__gt= schedule.endtime) | \
-                                 Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists()\
+                        .exclude(Q(starttime__gte= schedule.endtime) | \
+                                 Q(endtime__lte=schedule.starttime)| Q(pk=schedule.pk)).exists()\
                 or cyclebooking(schedule,subject) or newcyclecheck(schedule,subject):
+            
             messages.error(self.request, 'すでに予約がありました。')
         else:
             schedule.subject_name = subject
             schedule.user= self.request.user
             schedule.save()                
             form.save_m2m() 
-        return redirect('MonCal:calendar', pk=subject.pk)
+            date=schedule.date
+        return redirect('MonCal:calendar', pk=subject.pk,year=date.year,month=date.month,day=date.day)
 #スケジュールの詳細ページ
 class EventDetail(LoginRequiredMixin,generic.TemplateView):
     template_name = 'MonCal/Event_detail.html'
@@ -128,13 +128,13 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     def form_valid(self, form):
         schedule = form.save(commit=False)
         subject=schedule.subject_name 
-        end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
-        schedule.endtime=end.time()
+        #end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
+        #schedule.endtime=end.time()
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
         elif Schedule.objects.filter(date=schedule.date,subject_name=subject)\
-                .exclude(Q(starttime__gt= schedule.endtime)| Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists() \
+                .exclude(Q(starttime__gte= schedule.endtime)| Q(endtime__lte=schedule.starttime)| Q(pk=schedule.pk)).exists() \
             or cyclebooking(schedule,subject) or newcyclecheck(schedule,subject):
             messages.error(self.request, 'すでに予約がありました。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
@@ -233,19 +233,21 @@ def weeklymatch(date,days):
 def cyclebooking(schedule,subject):
     cyboolean=False
     for cysche in Schedule.objects.filter(date__lte=schedule.date,subject_name=subject)\
-                    .exclude(Q(starttime__gt= schedule.endtime)|Q(endtime__lt=schedule.starttime)|\
+                    .exclude(Q(starttime__gte= schedule.endtime)|Q(endtime__lte=schedule.starttime)|\
                              Q(cycle='nocycle')| Q(pk=schedule.pk)):
         if cysche.cycle == 'week' and cysche.date.weekday()==schedule.date.weekday():
             cyboolean=True
+    print(cyboolean)
     return(cyboolean)
 
 def newcyclecheck(schedule,subject):
     cyboolean=False
     if schedule.cycle =='nocycle':
-        cyboolean=True
+        cyboolean=False
     else:
         for cysche in Schedule.objects.filter(date__gte=schedule.date,subject_name=subject)\
-            .exclude(Q(starttime__gt= schedule.endtime)|Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)):
+            .exclude(Q(starttime__gte= schedule.endtime)|Q(endtime__lte=schedule.starttime)| Q(pk=schedule.pk)):
             if cysche.cycle == 'week' and cysche.date.weekday()==schedule.date.weekday():
                 cyboolean=True
+    print(cyboolean)
     return(cyboolean)

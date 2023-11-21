@@ -3,8 +3,8 @@
 
   <h1>内容の変更</h1>
     <table  width="60%" hight="100%" border="1"  align="left">
-      <caption><p>対象:{{event.subject_name}}</p>
-        <p>{{ start_day }} - {{ end_day }}</p></caption>
+      <caption><a href="{% url 'MonCal:Event_edit' event.pk %}">{{event.subject_name}}</a>
+              <p>{{ start_day }} - {{ end_day }}</p></caption>
         <tr>
             <td><a href="{% url 'MonCal:Event_edit' event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
@@ -28,9 +28,7 @@
                 </td>
                 {% for dt, book in schedules.items %}
                     <td>
-                        {% if dt < today %}
-                            -
-                        {% elif book == 'Nothing' %}
+                        {% if book == 'Nothing' %}
                         <button type="button" onclick="intime('{{dt}}','{{time}}')">空き</button>
                         {% elif book == 'same' %}
                             ↓↓
@@ -51,6 +49,7 @@
       {{ form.as_p }}
       {% csrf_token %}
       <button  type="submit">更新</button> 
+      <button type="reset">取消</button>
     </form>
   </div>
 
