@@ -1,4 +1,5 @@
 
+from itertools import cycle
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -36,6 +37,23 @@ class MyPageWithPk(OnlyUserMixin, generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context['user'] = get_object_or_404(User, pk=self.kwargs['pk'])
         context=myschedule(context,self.kwargs['pk'])
+        return context
+
+#予約対象ごとの直近の予定
+class ScheduleList(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'MonCal/schedule_list.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        dt_today =datetime.date.today()
+        dt_nextmon=dt_today  + datetime.timedelta(days=30) 
+        subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
+        schedule=Schedule.objects.filter(subject_name=subject,date__gte=dt_today,\
+                     date__lte=dt_nextmon,cycle='nocycle').order_by('date','starttime')
+        cyschedule=Schedule.objects.filter(subject_name=subject,date__lte=dt_nextmon)\
+                    .exclude(cycle='nocycle').order_by('date','starttime')
+        context['single_list'] = schedule.distinct()
+        context['cycle_list'] = cyschedule.distinct()
+        context['subject']=subject
         return context
 #予約カレンダーページ
 class SureCalendar(LoginRequiredMixin,generic.CreateView):
@@ -128,8 +146,6 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     def form_valid(self, form):
         schedule = form.save(commit=False)
         subject=schedule.subject_name 
-        #end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
-        #schedule.endtime=end.time()
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
@@ -239,7 +255,7 @@ def cyclebooking(schedule,subject):
             cyboolean=True
     print(cyboolean)
     return(cyboolean)
-
+#繰り返しを追加するときの衝突確認
 def newcyclecheck(schedule,subject):
     cyboolean=False
     if schedule.cycle =='nocycle':

@@ -1,7 +1,7 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
     <h1>{{ event.title }}の詳細</h1>
-    {% if host.user == user %}
+    
     <table frame="void">
         <tr>
         <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' event.pk %}">編集</a></button></td>
@@ -13,7 +13,7 @@
         </td>
         </tr>
     </table>
-    {% endif %}
+    
     <p><div>予約区分：{{ event.subject_name }}</div></p>
     {% if Boolen %}
         <p><div>時間：{{ event.starttime }} ~{{ event.endtime }}</div></p>
