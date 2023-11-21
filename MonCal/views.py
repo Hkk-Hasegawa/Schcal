@@ -71,13 +71,12 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
         schedule = form.save(commit=False)
         end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
         schedule.endtime=end.time()
-        cyboolen=False
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
-        elif  Schedule.objects.filter(date=schedule.date,subject_name=subject)\
+        elif  Schedule.objects.filter(date=schedule.date,subject_name=subject,cycle='nocycle')\
                         .exclude(Q(starttime__gt= schedule.endtime) | \
                                  Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists()\
-                or cyboolen:
+                or cyclebooking(schedule,subject) or newcyclecheck(schedule,subject):
             messages.error(self.request, 'すでに予約がありました。')
         else:
             schedule.subject_name = subject
@@ -98,7 +97,6 @@ class EventDetail(LoginRequiredMixin,generic.TemplateView):
         context['user']=self.request.user
         return context
     #フォームの保存
-
 #スケジュールの編集
 class EventEdit(LoginRequiredMixin,generic.UpdateView):
     model = Schedule
@@ -132,13 +130,12 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         subject=schedule.subject_name 
         end=datetime.datetime.combine(schedule.date, schedule.endtime) - datetime.timedelta(minutes=1)
         schedule.endtime=end.time()
-        cyboolen=False
-
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
         elif Schedule.objects.filter(date=schedule.date,subject_name=subject)\
-                .exclude(Q(starttime__gt= schedule.endtime)| Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists() or cyboolen:
+                .exclude(Q(starttime__gt= schedule.endtime)| Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)).exists() \
+            or cyclebooking(schedule,subject) or newcyclecheck(schedule,subject):
             messages.error(self.request, 'すでに予約がありました。')
             return redirect('MonCal:Event_edit', pk=schedule.pk)
         else:
@@ -155,8 +152,8 @@ def myschedule(context,usrpk):
     #単発予定リスト
     dt_today =datetime.date.today()
     dt_nextmon=dt_today  + datetime.timedelta(days=30)  
-    schedule= Schedule.objects.filter(user__pk=usrpk,\
-                                      date__gte=dt_today,date__lte=dt_nextmon).order_by('date','starttime')
+    schedule= Schedule.objects.filter(user__pk=usrpk,date__gte=dt_today,\
+                                      date__lte=dt_nextmon).order_by('date','starttime')
     context['schedule_list'] = schedule.distinct()
     return context
 #時刻の選択肢作成
@@ -227,8 +224,28 @@ def scheincal(calendar,schedule,date):
         else:
             whileboolen=False
     return(calendar)
-
+#一致する曜日を探す
 def weeklymatch(date,days):
     for day in days:
         if day.weekday() ==date.weekday():
             return(day)
+#繰り返しスケジュールとの衝突確認
+def cyclebooking(schedule,subject):
+    cyboolean=False
+    for cysche in Schedule.objects.filter(date__lte=schedule.date,subject_name=subject)\
+                    .exclude(Q(starttime__gt= schedule.endtime)|Q(endtime__lt=schedule.starttime)|\
+                             Q(cycle='nocycle')| Q(pk=schedule.pk)):
+        if cysche.cycle == 'week' and cysche.date.weekday()==schedule.date.weekday():
+            cyboolean=True
+    return(cyboolean)
+
+def newcyclecheck(schedule,subject):
+    cyboolean=False
+    if schedule.cycle =='nocycle':
+        cyboolean=True
+    else:
+        for cysche in Schedule.objects.filter(date__gte=schedule.date,subject_name=subject)\
+            .exclude(Q(starttime__gt= schedule.endtime)|Q(endtime__lt=schedule.starttime)| Q(pk=schedule.pk)):
+            if cysche.cycle == 'week' and cysche.date.weekday()==schedule.date.weekday():
+                cyboolean=True
+    return(cyboolean)
