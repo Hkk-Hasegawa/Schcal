@@ -14,3 +14,4 @@ pa_autoconfigure_django.py --python=3.6 https://github.com/Hkk-Hasegawa/Schcal.g
 cd hkkhasegawa.pythonanywhere.com #pythonanywhereの作業ディレクトリに飛ぶ
 PostgreSQL ポート番号:5432
 
+https://hkkhasegawa.pythonanywhere.com/
