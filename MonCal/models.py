@@ -18,11 +18,11 @@ class Schedule(models.Model):
         start=self.starttime.strftime('%H:%M')
         end=self.endtime.strftime('%H:%M')
         if self.cycle=='nocycle':
-            return f'{self.title}：{self.subject_name}：{self.date} {start} ~ {end}'
+            return f'{self.title}：{self.date} {start} ~ {end}'
         elif self.cycle=='week':
             weekday=self.date.weekday()
             weekday=weekdaychinge(weekday)
-            return f'{self.title}：{self.subject_name}：毎週{weekday}曜日{start} ~ {end}'
+            return f'{self.title}：毎週{weekday}曜日{start} ~ {end}'
 
 def weekdaychinge(weekday):
     if weekday == 0:
