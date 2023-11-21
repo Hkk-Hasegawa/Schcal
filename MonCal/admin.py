@@ -1,7 +1,9 @@
 from django.contrib import admin
 
-from .models import Schedule,Suresubject,Person
+from .models import Schedule,Suresubject,EventSchedule,Event,Person
 
 admin.site.register(Schedule)
 admin.site.register(Suresubject)
+admin.site.register(EventSchedule)
+admin.site.register(Event)
 admin.site.register(Person)

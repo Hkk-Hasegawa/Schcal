@@ -1,0 +1,23 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+
+    <h1>ホーム</h1>
+    
+        <h2>行事スケジュール</h2>
+        <ul>
+            {% for event in event_list %}
+                <li><a href="">{{ event.name }}</a></li>
+            {% empty %}
+                <li>まだ行事の登録がありません。</li>
+            {% endfor %}
+        </ul>
+        <h2>設備スケジュール</h2>
+        <ul>
+            {% for subject in subject_list %}
+                <li><a href="{% url 'MonCal:schedule_list' subject.pk %}">{{ subject.name }}</a></li>
+            {% empty %}
+                <li>まだ設備の登録がありません。</li>
+            {% endfor %}
+        </ul>
+    
+{% endblock %}

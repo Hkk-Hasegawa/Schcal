@@ -7,38 +7,18 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import generic
 from django.urls import reverse_lazy
-from .models import Suresubject, Schedule,Person
+from .models import Suresubject, Schedule,Person,Event
 from .forms import Scheduleform
 import datetime
 User = get_user_model()
-
-#管理者か判定
-class OnlyUserMixin(UserPassesTestMixin):
-    raise_exception = True
-    def test_func(self):
-        return self.kwargs['pk'] == self.request.user.pk or self.request.user.is_superuser
-#予約対象一覧ページ
-class Surelist(LoginRequiredMixin,generic.ListView):
-    model = Suresubject
-    ordering = 'name'
-#マイページ
-class MyPage(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'MonCal/my_page.html'
-    #直近の予定を表示
+#ホームページ
+class HomePage(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'MonCal/home_page.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context=myschedule(context,self.request.user.pk)
+        context['subject_list']= Suresubject.objects.all()
+        context['event_list']= Event.objects.all()
         return context
-#管理者用利用者のマイページ
-class MyPageWithPk(OnlyUserMixin, generic.TemplateView):
-    template_name = 'MonCal/my_page.html'
-    #直近の予定を表示
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['user'] = get_object_or_404(User, pk=self.kwargs['pk'])
-        context=myschedule(context,self.kwargs['pk'])
-        return context
-
 #予約対象ごとの直近の予定
 class ScheduleList(LoginRequiredMixin, generic.TemplateView):
     template_name = 'MonCal/schedule_list.html'
@@ -103,8 +83,8 @@ class SureCalendar(LoginRequiredMixin,generic.CreateView):
             date=schedule.date
         return redirect('MonCal:calendar', pk=subject.pk,year=date.year,month=date.month,day=date.day)
 #スケジュールの詳細ページ
-class EventDetail(LoginRequiredMixin,generic.TemplateView):
-    template_name = 'MonCal/Event_detail.html'
+class PropertyDetail(LoginRequiredMixin,generic.TemplateView):
+    template_name = 'MonCal/Property_detail.html'
     #スケジュールの情報を表示
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -116,10 +96,10 @@ class EventDetail(LoginRequiredMixin,generic.TemplateView):
         return context
     #フォームの保存
 #スケジュールの編集
-class EventEdit(LoginRequiredMixin,generic.UpdateView):
+class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
     model = Schedule
     form_class=Scheduleform
-    template_name = 'MonCal/Event_edit.html'
+    template_name = 'MonCal/Property_edit.html'
     #カレンダーの作成
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -148,30 +128,21 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         subject=schedule.subject_name 
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
-            return redirect('MonCal:Event_edit', pk=schedule.pk)
+            return redirect('MonCal:Property_edit', pk=schedule.pk)
         elif Schedule.objects.filter(date=schedule.date,subject_name=subject)\
                 .exclude(Q(starttime__gte= schedule.endtime)| Q(endtime__lte=schedule.starttime)| Q(pk=schedule.pk)).exists() \
             or cyclebooking(schedule,subject) or newcyclecheck(schedule,subject):
             messages.error(self.request, 'すでに予約がありました。')
-            return redirect('MonCal:Event_edit', pk=schedule.pk)
+            return redirect('MonCal:Property_edit', pk=schedule.pk)
         else:
             schedule.user= self.request.user
             schedule.save()                
             form.save_m2m() 
-            return redirect('MonCal:Event_detail', pk=schedule.pk)
+            return redirect('MonCal:Property_edit', pk=schedule.pk)
 #スケジュールの削除
-class EventDelete(LoginRequiredMixin, generic.DeleteView):
+class PropertyDelete(LoginRequiredMixin, generic.DeleteView):
     model = Schedule
-    success_url = reverse_lazy('MonCal:my_page')    
-#予定一覧
-def myschedule(context,usrpk):
-    #単発予定リスト
-    dt_today =datetime.date.today()
-    dt_nextmon=dt_today  + datetime.timedelta(days=30)  
-    schedule= Schedule.objects.filter(user__pk=usrpk,date__gte=dt_today,\
-                                      date__lte=dt_nextmon).order_by('date','starttime')
-    context['schedule_list'] = schedule.distinct()
-    return context
+    success_url = reverse_lazy('MonCal:home_page')    
 #時刻の選択肢作成
 def choicetime(subject):
     looptime=subject.head_time
@@ -180,7 +151,7 @@ def choicetime(subject):
     while looptime <= subject.tail_time:
         choicelist.append((looptime,looptime))
         loopdate=datetime.datetime.combine(today, looptime)
-        loopdate=loopdate + datetime.timedelta(minutes=subject.Step)
+        loopdate=loopdate + datetime.timedelta(minutes=30)
         looptime=loopdate.time()
     category_choice = tuple(choicelist)
     return(category_choice)
@@ -188,8 +159,8 @@ def choicetime(subject):
 def makecalendar(subject,base_date,context):
     head_time=subject.head_time
     tail_time=subject.tail_time
-    display_period=subject.display_period
-    timestep=subject.Step
+    display_period=7
+    timestep=30
     days = [base_date + datetime.timedelta(days=day) for day in range(display_period)]
     start_day = days[0]
     end_day = days[-1]
@@ -219,7 +190,7 @@ def makecalendar(subject,base_date,context):
     context['days'] = days
     context['start_day'] =start_day
     context['end_day'] = end_day
-    context['before'] = context['days'][0] - datetime.timedelta(days=subject.display_period)
+    context['before'] = context['days'][0] - datetime.timedelta(days=display_period)
     context['next'] = context['days'][-1] + datetime.timedelta(days=1)
     context['today'] = datetime.date.today()
     return(context)
@@ -227,8 +198,7 @@ def makecalendar(subject,base_date,context):
 def scheincal(calendar,schedule,date):
     booking_date = date
     booking_time = schedule.starttime
-    subject=schedule.subject_name
-    timestep=subject.Step
+    timestep=30
     calendar[booking_time][booking_date] = schedule
     int_time=datetime.datetime.combine(booking_date, schedule.starttime)
     whileboolen=True
