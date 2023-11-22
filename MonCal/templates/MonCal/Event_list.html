@@ -1,0 +1,22 @@
+{% extends 'MonCal/base.html' %}
+
+{% block content %}
+    <h1>{{ event.name }}の直近の予約</h1>
+    <h2><a href="{% url 'MonCal:eventcalendar' event.pk %}">{{ event.name }}の予約ページへ</a></h2>
+    <h3>単発のスケジュール</h3>
+    <ul>
+        {% for schedule in single_list %}
+            <li><a href="">{{ schedule }}</a></li>
+        {% empty %}
+            <li>予定はありません。</li>
+        {% endfor %}
+    </ul>
+    <h3>繰り返しのスケジュール</h3>
+    <ul>
+        {% for schedule in cycle_list %}
+            <li><a href="">{{ schedule }}</a></li>
+        {% empty %}
+            <li>繰り返しの予定はありません。</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

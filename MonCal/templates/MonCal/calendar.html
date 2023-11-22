@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>新規登録</h1>
-<h2><a href="{% url 'MonCal:schedule_list' subject.pk %}">スケジュール一覧へ</a></h2>
+<h2><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h2>
     <table  width="60%" hight="100%" border="1"  align="left">
         <caption><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
             <p>{{ start_day }} - {{ end_day }}</p></caption>

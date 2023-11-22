@@ -1,0 +1,61 @@
+{% extends 'MonCal/base.html' %}
+
+{% block content %}
+<h1>新規登録</h1>
+<h2><a href="{% url 'MonCal:event_list' event.pk %}">スケジュール一覧へ</a></h2>
+    <table  border="1" style="border-collapse: collapse">
+        <caption><a href="{% url 'MonCal:eventcalendar' event.pk %}">行事登録</a>
+            <p>{{ start_day }} - {{ end_day }}</p></caption>
+        <tr>
+            <th><a href="{% url 'MonCal:eventcalendar' event.pk before.year before.month before.day %}">前週　</a></th>
+            <th><a href="{% url 'MonCal:eventcalendar' event.pk next.year next.month next.day %}">次週　　</a></th>
+            {% for time in times %}
+                <th >
+                    <div>{{ time }}</div>
+                </th>
+            {% endfor %}
+        </tr>
+        {% for day, shcelist in calendar.items %}
+            <tr style="font-size:12px">
+                <td rowspan="{{rowspan}}">
+                    {% if day.weekday == 5 %}
+                        <div style="color: blue;" >
+                    {% elif day.weekday == 6 %}
+                        <div style="color: red;" >
+                    {% else %}
+                        <div>
+                    {% endif %}
+                    {{ day| date:"d(D)" }}</div>
+                </td>
+                <td >入力用</td>
+                {% for time in times %}
+                <td ><button type="button" style="color: blue;"   onclick="intime('{{day}}','{{time}}')">〇</button></td>
+                {% endfor %}   
+            </tr>
+            {% for subject, row in shcelist.items %}
+            <tr>
+                <td >{{subject.name}}</td>
+                {% for time, book in row.items %}
+                <td >
+                    {% if book == 'Nothing' %}
+                       
+                    {% elif book == 'same' %}
+                        ⇒⇒
+                    {% else %}
+                        <a href="{% url 'MonCal:Property_detail' book.pk %}">{{book.title}}
+                    {% endif %}
+                </td>
+                {% endfor %} 
+            </tr>
+            {% endfor %} 
+        {% endfor %}
+    </table>
+    
+    <form action="" method="POST">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <button type="submit">登録</button>
+        <button type="reset">取消</button>
+    </form>
+    
+{% endblock %}
