@@ -3,10 +3,10 @@
 
   <h1>内容の変更</h1>
     <table  width="60%" hight="100%" border="1"  align="left">
-      <caption><a href="{% url 'MonCal:Property_edit' event.pk %}">{{event.subject_name}}</a>
+      <caption><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk %}">{{event.subject_name}}</a>
               <p>{{ start_day }} - {{ end_day }}</p></caption>
         <tr>
-            <td><a href="{% url 'MonCal:Property_edit' event.pk before.year before.month before.day %}">前週</a></td>
+            <td><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
               <th >
               {% if day.weekday == 5 %}
@@ -18,7 +18,7 @@
               {% endif %}
               {{ day | date:"d(D)" }}　</div></th>
             {% endfor %}
-            <td><a href="{% url 'MonCal:Property_edit' event.pk next.year next.month next.day %}">次週</a></td>
+            <td><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk next.year next.month next.day %}">次週</a></td>
         </tr>
 
         {% for time, schedules in calendar.items %}
@@ -33,7 +33,7 @@
                         {% elif book == 'same' %}
                             ↓↓
                         {% else %}
-                        <a href="{% url 'MonCal:Property_detail' book.pk %}">{{book.title}}</a>
+                        <a href="{% url 'MonCal:Property_detail' event.subject_name.pk book.pk %}">{{book.title}}</a>
                         {% endif %}
                     </td>
                 {% endfor %}

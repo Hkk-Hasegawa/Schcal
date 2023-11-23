@@ -1,0 +1,33 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+    <h1>{{ schedule.title }}の詳細</h1>
+    <h2><a href="{% url 'MonCal:eventcalendar' schedule.event.pk %}">{{ schedule.event  }}の予約ページへ</a></h2>
+    <h2><a href="{% url 'MonCal:event_list' schedule.event.pk %}">{{ schedule.event }}のスケジュール一覧へ</a></h2>
+    <table frame="void">
+        <tr>
+        <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' schedule.pk %}">編集</a></button></td>
+        <td>
+            <form action="" method="POST">
+                {% csrf_token %}
+                <button type="submit" style="color: red;" onclick="return confirm('削除しますか?')">削除</button>
+            </form>
+        </td>
+        </tr>
+    </table>
+    
+    <p><div>予約区分：{{ schedule.event }}</div></p>
+    {% if Boolen %}
+        <p><div>時間：{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
+    {% else %}
+        <p><div>時間：{{ schedule.date }}{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
+    {% endif %}
+    <p>設備予約：
+        {% if schedule.subject_pk == 0 %}
+            予約はありません
+        {% else %}
+            {{schedule.subschedule.subject_name}}
+        {% endif %}
+    </p>
+    <p>内容</p>
+        <div>{{ schedule.detail|linebreaksbr  }}</div>
+{% endblock %}

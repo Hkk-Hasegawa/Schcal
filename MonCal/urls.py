@@ -9,17 +9,18 @@ urlpatterns = [
     path('login/', LoginView.as_view(template_name='admin/login.html'), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
 
-    path('Sure/<int:pk>/property/calendar/', views.PropertyCalendar.as_view(), name='calendar'),
-    path('Sure/<int:pk>/property/calendar/<int:year>/<int:month>/<int:day>/', views.PropertyCalendar.as_view(), name='calendar'),
-    path('Sure/<int:pk>/property/', views.PropertyList.as_view(), name='property_list'),
+    path('property/<int:pk>/', views.PropertyList.as_view(), name='property_list'),
+    path('property/<int:pk>/calendar/', views.PropertyCalendar.as_view(), name='calendar'),
+    path('property/<int:pk>/calendar/<int:year>/<int:month>/<int:day>/', views.PropertyCalendar.as_view(), name='calendar'),
+    path('property/<int:subject_pk>/detail/<int:pk>/',views.PropertyDetail.as_view(), name='Property_detail'),
+    path('property/<int:subject_pk>/detail/<int:pk>/edit',views.PropertyEdit.as_view(), name='Property_edit'),
+    path('property/<int:subject_pk>/detail/<int:pk>/edit/<int:year>/<int:month>/<int:day>/',views.PropertyEdit.as_view(), name='Property_edit'),
+    path('property/<int:subject_pk>/detail/<int:pk>/delete/', views.PropertyDelete.as_view(), name='Property_delete'),
     
-    path('Sure/<int:pk>/event/calendar/', views.EventCalendar.as_view(), name='eventcalendar'),
-    path('Sure/<int:pk>/event/calendar/<int:year>/<int:month>/<int:day>/', views.EventCalendar.as_view(), name='eventcalendar'),
-    path('Sure/<int:pk>/event/', views.EventList.as_view(), name='event_list'),
-
-    path('Property/<int:pk>/detail',views.PropertyDetail.as_view(), name='Property_detail'),
-    path('Property/<int:pk>/detail/edit',views.PropertyEdit.as_view(), name='Property_edit'),
-    path('Property/<int:pk>/detail/edit/<int:year>/<int:month>/<int:day>/',views.PropertyEdit.as_view(), name='Property_edit'),
-    path('Property/<int:pk>/delete/', views.PropertyDelete.as_view(), name='Property_delete'),
-    
+    path('event/<int:pk>/', views.EventList.as_view(), name='event_list'),
+    path('event/<int:pk>/calendar/', views.EventCalendar.as_view(), name='eventcalendar'),
+    path('event/<int:pk>/calendar/<int:year>/<int:month>/<int:day>/', views.EventCalendar.as_view(), name='eventcalendar'),
+    path('event/<int:pk>/detail',views.EventDetail.as_view(), name='Event_detail'),
+    path('event/<int:pk>/detail/edit',views.EventEdit.as_view(), name='Event_edit'),
+    path('event/<int:pk>/detail/edit/<int:year>/<int:month>/<int:day>/',views.EventEdit.as_view(), name='Event_edit'),
 ]

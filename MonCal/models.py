@@ -14,6 +14,8 @@ class Schedule(models.Model):
     title=models.CharField('タイトル',max_length=31, null=True)
     cycle=models.CharField('繰り返し',max_length=15,default='nocycle')
     detail=models.TextField('詳細',null=True,blank=True)
+    subschedule= models.ForeignKey('EventSchedule', verbose_name='行事スケジュール',
+                                   on_delete=models.CASCADE, null=True,blank=True)
     def __str__(self):
         start=self.starttime.strftime('%H:%M')
         end=self.endtime.strftime('%H:%M')
@@ -51,7 +53,7 @@ class EventSchedule(models.Model):
     title=models.CharField('タイトル',max_length=31, null=True)
     cycle=models.CharField('繰り返し',max_length=15,default='nocycle')
     detail=models.TextField('詳細',null=True,blank=True)
-    subject=models.CharField('利用設備', max_length=15, null=True,blank=True)
+    subject_pk=models.PositiveBigIntegerField('利用設備',default=0)
     subschedule= models.ForeignKey('Schedule', verbose_name='設備スケジュール',
                                    on_delete=models.CASCADE, null=True,blank=True)
     def __str__(self):

@@ -3,7 +3,7 @@
 {% block content %}
 <h1>新規登録</h1>
 <h2><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h2>
-    <table  width="60%" hight="100%" border="1"  align="left">
+    <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse">
         <caption><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
             <p>{{ start_day }} - {{ end_day }}</p></caption>
         <tr>
@@ -32,10 +32,8 @@
                         <button type="button" onclick="intime('{{dt}}','{{time}}')">空き</button>
                         {% elif book == 'same' %}
                             ↓↓
-                        {% elif book.date in days %}
-                            <a href="{% url 'MonCal:Property_detail' book.pk %}">{{book.title}}</a>
                         {% else %}
-                            <a href="{% url 'MonCal:Property_detail' book.pk %}">{{book.title}}</a>
+                            <a href="{% url 'MonCal:Property_detail' subject.pk book.pk %}">{{book.title}}</a>
                         {% endif %}
                     </td>
 

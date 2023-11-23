@@ -1,16 +1,16 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
-<h2>新規登録</h2>
-<h2><a href="{% url 'MonCal:event_list' event.pk %}">スケジュール一覧へ</a></h2>
+<h2>{{schedule.title}} 内容編集</h2>
+<h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
     <table  border="1" style="border-collapse: collapse" >
-        <caption>
-            <a href="{% url 'MonCal:eventcalendar' event.pk %}">行事登録</a>
+        <caption >
+            <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事登録</a>
             <br>{{ start_day }} - {{ end_day }}
         </caption>
         <tr style="font-size:14px">
-            <th width="7%"><a href="{% url 'MonCal:eventcalendar' event.pk before.year before.month before.day %}">前週</a></th>
-            <th width="7%"><a href="{% url 'MonCal:eventcalendar' event.pk next.year next.month next.day %}">次週</a></th>
+            <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">前週</a></th>
+            <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">次週</a></th>
             {% for time in times %}
                 <th >
                     <div>{{ time }}</div>
