@@ -1,25 +1,55 @@
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import generic
-from django.urls import reverse_lazy,reverse
-from .models import Suresubject, Schedule,Event,EventSchedule
+from django.urls import reverse,reverse_lazy
+from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time
 from .forms import Scheduleform,EventScheduleform
 import datetime
 User = get_user_model()
+
+class SuperuserRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+class TimeListView(SuperuserRequiredMixin,generic.ListView):
+    model = Booking_time
+    ordering ='pk'
+    context_object_name ='times'
+
+class TimeUpdate(SuperuserRequiredMixin,generic.UpdateView):
+    model = Booking_time
+    fields=('time',)
+    template_name = 'MonCal/time_update.html'
+    success_url=reverse_lazy('Booking_time_list')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['bookingtime']= get_object_or_404(Booking_time, pk=self.kwargs['pk'])
+        return context
+
 #ホームページ
 class HomePage(LoginRequiredMixin, generic.TemplateView):
     template_name = 'MonCal/home_page.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['subject_list']= Suresubject.objects.all()
-        context['event_list']= Event.objects.all()
+        subject_list={}
+        for subjecttype in Subject_type.objects.all().order_by('-name'):
+            subject_list[subjecttype.name]=Suresubject.objects.filter(subject_type=subjecttype).order_by('name')
+            print(subjecttype.name)
+            print(subject_list[subjecttype.name])
+        context['subject_list']= subject_list
+        context['event_list']= Event.objects.all().order_by('name')
         return context
 
-#予約対象ごとの直近の予定
+#設備の区分別予約カレンダー
+class SubjectTypeCal(LoginRequiredMixin,generic.CreateView):
+    template_name = 'MonCal/SubjectTypeCal.html'
+    model = Schedule
+
+#設備の直近の予定
 class PropertyList(LoginRequiredMixin, generic.TemplateView):
     template_name = 'MonCal/Property_list.html'
     def get_context_data(self, **kwargs):
@@ -58,8 +88,10 @@ class PropertyCalendar(LoginRequiredMixin,generic.CreateView):
     #時刻の選択肢
     def get_form_kwargs(self, *args, **kwargs):
         kwgs = super().get_form_kwargs(*args, **kwargs)
-        subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
-        kwgs["categories"] = choicetime(subject)
+        #subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
+        categories={}
+        categories
+        kwgs["categories"] = choicetime()
         return kwgs
     #フォームの保存
     def form_valid(self, form):
@@ -107,10 +139,8 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
         return context
     #時刻の選択肢
     def get_form_kwargs(self, *args, **kwargs):
-        kwgs = super().get_form_kwargs(*args, **kwargs)
-        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
-        subject=schedule.subject_name
-        kwgs["categories"] = choicetime(subject)
+        kwgs = super().get_form_kwargs(*args, **kwargs)        
+        kwgs["categories"] = choicetime()
         return kwgs
     #フォームの保存
     def form_valid(self, form):
@@ -130,13 +160,12 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
 #設備予約の削除
 class PropertyDelete(LoginRequiredMixin, generic.DeleteView):
     model = Schedule
-    success_url = reverse_lazy('MonCal:home_page')
     def get_success_url(self):
         return reverse('MonCal:property_list', kwargs={'pk': self.kwargs['subject_pk']})
 
 #行事予約カレンダーページ
 class EventCalendar(LoginRequiredMixin,generic.CreateView):
-    model = Event
+    model = EventSchedule
     form_class=EventScheduleform
     template_name = 'MonCal/Eventcalendar.html'
     #カレンダーの作成
@@ -156,9 +185,9 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
         return context
     #選択肢の生成
     def get_form_kwargs(self, *args, **kwargs):
+        #event= get_object_or_404(Event, pk=self.kwargs['pk'])
         kwgs = super().get_form_kwargs(*args, **kwargs)
-        event = get_object_or_404(Event, pk=self.kwargs['pk'])
-        kwgs["categories"] =eventform_choice(event)
+        kwgs["categories"] =eventform_choice()
         return kwgs
     #フォームの保存
     def form_valid(self, form):
@@ -237,9 +266,9 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     #フォームの選択肢を取得
     def get_form_kwargs(self, *args, **kwargs):
         kwgs = super().get_form_kwargs(*args, **kwargs)
-        schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
-        event=schedule.event
-        kwgs["categories"] = eventform_choice(event)
+        #schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
+        #event=schedule.event
+        kwgs["categories"] = eventform_choice()
         return kwgs
     #フォームの保存
     def form_valid(self, form):
@@ -290,13 +319,19 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
             schedule.subschedule=subschedule
             schedule.save()
         return redirect('MonCal:Event_detail', pk=schedule.pk)
+#行事予定の削除
+class EventDelete(LoginRequiredMixin, generic.DeleteView):
+    model = EventSchedule
+    def get_success_url(self):
+        return reverse('MonCal:event_list', kwargs={'pk': self.kwargs['event_pk']})
 
 #時刻の選択肢作成
-def choicetime(subject):
-    looptime=subject.head_time
+def choicetime():
+    looptime=get_object_or_404(Booking_time, pk=1).time
+    end_time=get_object_or_404(Booking_time,pk=2).time
     today = datetime.date.today()
     choicelist=[]     
-    while looptime <= subject.tail_time:
+    while looptime <= end_time:
         choicelist.append((looptime,looptime))
         loopdate=datetime.datetime.combine(today, looptime)
         loopdate=loopdate + datetime.timedelta(minutes=30)
@@ -304,20 +339,20 @@ def choicetime(subject):
     category_choice = tuple(choicelist)
     return(category_choice)
 #行事予定フォーム選択肢作成
-def eventform_choice(event):
+def eventform_choice():
     subjectlist=[(0,'利用しない')]
-    for subject in Suresubject.objects.filter(subjectclass='room'):
+    for subject in Suresubject.objects.all().exclude(subject_type=3):
         subjectlist.append((subject.pk,subject.name))
     categories={}
-    categories['time']=choicetime(event)
+    categories['time']=choicetime()
     categories['cycle']=[('nocycle','繰り返さない'),('week','毎週')]
     categories['room']=subjectlist
     return(categories)
 
 #カレンダー作成
 def makecalendar(subject,base_date,context):
-    head_time=subject.head_time
-    tail_time=subject.tail_time
+    head_time=get_object_or_404(Booking_time, pk=1).time
+    tail_time=get_object_or_404(Booking_time,pk=2).time
     display_period=7
     timestep=30
     days = [base_date + datetime.timedelta(days=day) for day in range(display_period)]
@@ -373,8 +408,8 @@ def scheincal(calendar,schedule,date):
 
 #行事カレンダーcontext作成
 def makeeventcal(context,event,base_date):
-    head_time=event.head_time
-    tail_time=event.tail_time
+    head_time=get_object_or_404(Booking_time, pk=1).time
+    tail_time=get_object_or_404(Booking_time,pk=2).time
     display_period=7
     timestep=30
     days = [base_date + datetime.timedelta(days=day) for day in range(display_period)]
@@ -387,7 +422,7 @@ def makeeventcal(context,event,base_date):
         times.append(loop_time.time())
         loop_time = loop_time + datetime.timedelta(minutes=timestep)
     #subjects=Suresubject.objects.all()
-    subjects=Suresubject.objects.filter(subjectclass='room')
+    subjects=Suresubject.objects.all().exclude(subject_type=3)
     rowspan=1 +subjects.count()
     calendar=calumndays(subjects,days,times)
         

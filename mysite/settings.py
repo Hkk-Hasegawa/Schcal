@@ -130,7 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'MonCal:login'
 
 # ログイン後にリダイレクトされるURL
-LOGIN_REDIRECT_URL = 'MonCal:suresubject_list'
+LOGIN_REDIRECT_URL = 'MonCal:home_page'
 
 # ログアウト後にリダイレクトされるURL
-LOGOUT_REDIRECT_URL = 'MonCal:suresubject_list'
+LOGOUT_REDIRECT_URL = 'MonCal:home_page'

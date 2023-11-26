@@ -11,13 +11,15 @@
                 <li>まだ行事の登録がありません。</li>
             {% endfor %}
         </ul>
-        <h2>設備スケジュール</h2>
-        <ul>
-            {% for subject in subject_list %}
-                <li><a href="{% url 'MonCal:property_list' subject.pk %}">{{ subject.name }}</a></li>
-            {% empty %}
-                <li>まだ設備の登録がありません。</li>
-            {% endfor %}
-        </ul>
-    
+        <h2>設備スケジュール</h2>    
+        {% for subject_type,subjects in subject_list.items %}
+            {% if subjects %}
+                <h3><a href="">{{subject_type}}</a></h3>  
+            {% endif %}
+            <ul>
+                {% for subject in subjects %}
+                    <li><a href="{% url 'MonCal:property_list' subject.pk %}">{{ subject.name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endfor %}      
 {% endblock %}

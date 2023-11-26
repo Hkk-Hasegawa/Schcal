@@ -1,11 +1,11 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
-<h1>新規登録</h1>
+<h2>{{subject.name}} の新規予約</h2>
 <h2><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h2>
     <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse">
         <caption><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
-            <p>{{ start_day }} - {{ end_day }}</p></caption>
+            <br>{{ start_day }} - {{ end_day }}</caption>
         <tr>
             <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
@@ -29,7 +29,7 @@
                 {% for dt, book in schedules.items %}
                     <td>
                         {% if book == 'Nothing' %}
-                        <button type="button" onclick="intime('{{dt}}','{{time}}')">空き</button>
+                        <button type="button" style="color: blue;"  onclick="intime('{{dt}}','{{time}}')">〇</button>
                         {% elif book == 'same' %}
                             ↓↓
                         {% else %}

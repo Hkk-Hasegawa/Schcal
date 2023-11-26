@@ -6,7 +6,7 @@
     <h3>単発のスケジュール</h3>
     <ul>
         {% for schedule in single_list %}
-            <li><a href="{% url 'MonCal:Event_detail' schedule.pk %}">{{ schedule }}</a></li>
+            <li><a href="{% url 'MonCal:Event_detail' schedule.event.pk schedule.pk %}">{{ schedule }}</a></li>
         {% empty %}
             <li>予定はありません。</li>
         {% endfor %}
@@ -14,7 +14,7 @@
     <h3>繰り返しのスケジュール</h3>
     <ul>
         {% for schedule in cycle_list %}
-            <li><a href="{% url 'MonCal:Event_detail' schedule.pk %}">{{ schedule }}</a></li>
+            <li><a href="{% url 'MonCal:Event_detail' schedule.event.pk schedule.pk %}">{{ schedule }}</a></li>
         {% empty %}
             <li>繰り返しの予定はありません。</li>
         {% endfor %}

@@ -1,0 +1,10 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+{{bookingtime.name}}
+<form action="" method="POST">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <button type="submit">登録</button>
+    <button type="reset">取消</button>
+</form>
+{% endblock %}

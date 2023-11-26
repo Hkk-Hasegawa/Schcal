@@ -2,15 +2,15 @@
 
 {% block content %}
 <h2>{{schedule.title}} 内容編集</h2>
-<h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
+<h3><a href="{% url 'MonCal:Event_detail' schedule.event.pk schedule.pk %}">スケジュール詳細へ戻る</a></h3>
     <table  border="1" style="border-collapse: collapse" >
         <caption >
-            <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事登録</a>
+            <a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk %}">行事登録</a>
             <br>{{ start_day }} - {{ end_day }}
         </caption>
         <tr style="font-size:14px">
-            <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">前週</a></th>
-            <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">次週</a></th>
+            <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk before.year before.month before.day %}">前週</a></th>
+            <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk next.year next.month next.day %}">次週</a></th>
             {% for time in times %}
                 <th >
                     <div>{{ time }}</div>
@@ -31,7 +31,7 @@
                 </td>
                 <td >入力用</td>
                 {% for time in times %}
-                <td ><button type="button" style="color: blue;"   onclick="intime('{{day}}','{{time}}')">〇</button></td>
+                <td ><button type="button" style="color: blue;"  onclick="intime('{{day}}','{{time}}')">〇</button></td>
                 {% endfor %}   
             </tr>
             {% for subject, row in shcelist.items %}
@@ -44,7 +44,7 @@
                     {% elif book == 'same' %}
                         ⇒⇒
                     {% else %}
-                        <a href="{% url 'MonCal:Property_detail' book.pk %}">{{book.title}}
+                        <a href="{% url 'MonCal:Property_detail' subject.pk book.pk %}">{{book.title}}
                     {% endif %}
                 </td>
                 {% endfor %} 

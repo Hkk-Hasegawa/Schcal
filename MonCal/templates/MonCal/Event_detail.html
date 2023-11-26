@@ -5,9 +5,9 @@
     <h2><a href="{% url 'MonCal:event_list' schedule.event.pk %}">{{ schedule.event }}のスケジュール一覧へ</a></h2>
     <table frame="void">
         <tr>
-        <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' schedule.pk %}">編集</a></button></td>
+        <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk %}">編集</a></button></td>
         <td>
-            <form action="" method="POST">
+            <form action="{% url 'MonCal:Event_delete' schedule.event.pk schedule.pk %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" style="color: red;" onclick="return confirm('削除しますか?')">削除</button>
             </form>

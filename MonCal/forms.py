@@ -1,5 +1,5 @@
 
-from .models import Schedule,EventSchedule
+from .models import Schedule,EventSchedule,Suresubject
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
 
@@ -18,6 +18,9 @@ class Scheduleform(forms.ModelForm):
         self.base_fields["cycle"].choices = [('nocycle','繰り返さない'),('week','毎週')]
         super().__init__(*args, **kwargs)
 
+
+
+
 class EventScheduleform(forms.ModelForm):
     starttime = forms.ChoiceField(label='開始時間')
     endtime = forms.ChoiceField(label='終了時間')
@@ -34,3 +37,4 @@ class EventScheduleform(forms.ModelForm):
         self.base_fields["cycle"].choices =categories['cycle']
         self.base_fields["subject_pk"].choices = categories['room']
         super().__init__(*args, **kwargs)
+

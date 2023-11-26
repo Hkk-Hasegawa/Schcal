@@ -1,0 +1,8 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+<ul>
+    {% for time in times %} 
+        <li><a href="{% url 'MonCal:time_update' time.pk %}">{{ time.name }}</a></li>
+    {% endfor %}
+<ul>
+{% endblock %}

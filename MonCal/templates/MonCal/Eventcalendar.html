@@ -1,7 +1,7 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
-<h2>新規登録</h2>
+<h2>{{event.name}} 新規登録</h2>
 <h2><a href="{% url 'MonCal:event_list' event.pk %}">スケジュール一覧へ</a></h2>
     <table  border="1" style="border-collapse: collapse" >
         <caption>
@@ -44,7 +44,7 @@
                     {% elif book == 'same' %}
                         ⇒⇒
                     {% else %}
-                        <a href="{% url 'MonCal:Property_detail' book.pk %}">{{book.title}}
+                        <a href="{% url 'MonCal:Property_detail' subject.pk book.pk %}">{{book.title}}
                     {% endif %}
                 </td>
                 {% endfor %} 

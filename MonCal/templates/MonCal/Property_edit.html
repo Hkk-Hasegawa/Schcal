@@ -2,9 +2,9 @@
 {% block content %}
 
   <h1>内容の変更</h1>
-    <table  width="60%" hight="100%" border="1"  align="left">
+    <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse">
       <caption><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk %}">{{event.subject_name}}</a>
-              <p>{{ start_day }} - {{ end_day }}</p></caption>
+              <br>{{ start_day }} - {{ end_day }}</caption>
         <tr>
             <td><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk before.year before.month before.day %}">前週</a></td>
             {% for day in days %}
@@ -29,7 +29,7 @@
                 {% for dt, book in schedules.items %}
                     <td>
                         {% if book == 'Nothing' %}
-                        <button type="button" onclick="intime('{{dt}}','{{time}}')">空き</button>
+                        <button type="button" style="color: blue;"  onclick="intime('{{dt}}','{{time}}')">〇</button>
                         {% elif book == 'same' %}
                             ↓↓
                         {% else %}
