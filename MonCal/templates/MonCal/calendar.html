@@ -3,53 +3,66 @@
 {% block content %}
 <h2>{{subject.name}} の新規予約</h2>
 <h2><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h2>
-    <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse">
+    <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse" id="calender">
         <caption><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
-            <br>{{ start_day }} - {{ end_day }}</caption>
+            <br>{{ start_day }} - {{ end_day }}
+        </caption>
+        <thead>
         <tr>
-            <td><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></td>
+            <th><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></th>
             {% for day in days %}
-              <th >
+              <th>
               {% if day.weekday == 5 %}
-                <div  type="button" style="color: blue;" >
+                <div style="color: blue;" >
               {% elif day.weekday == 6 %}
-                <div  type="button" style="color: red;" >
+                <div style="color: red;" >
               {% else %}
-                <div  type="button" >
+                <div>
               {% endif %}
-              {{ day | date:"d(D)" }}　</div></th>
+              {{ day | date:"d(D)" }}</div></th>
             {% endfor %}
-            <td><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></td>
+            <th><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></th>
         </tr>
+        </thead>
         {% for time, schedules in calendar.items %}
             <tr style="font-size:12px">
-                <td>
-                    {{ time }}
-                </td>
+                <th>{{ time }}</th>
                 {% for dt, book in schedules.items %}
-                    <td>
-                        {% if book == 'Nothing' %}
-                        <button type="button" style="color: blue;"  onclick="intime('{{dt}}','{{time}}')">〇</button>
-                        {% elif book == 'same' %}
-                            ↓↓
-                        {% else %}
-                            <a href="{% url 'MonCal:Property_detail' subject.pk book.pk %}">{{book.title}}</a>
-                        {% endif %}
-                    </td>
-
+                    {% if book == 'Nothing' %}
+                        <td  bgcolor="#d9e5ff" onclick="intime(this,'{{dt}}','{{tailtime}}')" class="">
+                    {% elif book == 'same' %}
+                        <td bgcolor="#d3d3d3"> ↓↓
+                    {% else %}
+                        <td bgcolor="#d3d3d3"> <a href="{% url 'MonCal:Property_detail' subject.pk book.pk %}">{{book.title}}</a>
+                    {% endif %}
+                        </td>
                 {% endfor %}
-                <td>
-                    {{ time }}
-                </td>
+                <th>{{ time }}</th>
             </tr>
         {% endfor %}
     </table>
-    <br><br><br><br>
+    
     <form action="" method="POST">
-        {{ form.as_p }}
+        {% for field in form %}
+            {% if field.id_for_label == 'id_starttime' %}
+                <p id ="s_timetext">{{field.label}}:</p>
+                <p class ="timeform">
+            {% elif field.id_for_label == 'id_endtime' %}
+                <p id ="e_timetext">{{field.label}}:</p>
+                <p class ="timeform" >
+            {% else %}
+                <p>
+            {% endif %}
+            {{field.label_tag}}
+            {{field}}
+            {% for error in field.errors %}
+                {{error}}
+            {% endfor %}
+        </p>
+        {% endfor %}
         {% csrf_token %}
         <button type="submit">登録</button>
-        <button type="reset">取消</button>
+        <button type="reset" onclick="reset_timeform()">取消</button>
     </form>
     <br clear="left">
 {% endblock %}

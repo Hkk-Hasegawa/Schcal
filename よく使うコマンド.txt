@@ -1,17 +1,30 @@
-cd C:\Users\ttana\Desktop\python\Schcal #ディレクトリの場所へ飛ぶ
-python -m venv myvenv   #仮想環境作成
-python manage.py makemigrations MonCal	#テーブル用ディレクトリ作成
-python manage.py migrate MonCal		#テーブルを適用
-myvenv\Scripts\activate #仮想環境起動
-pip install -r requirements.txt #仮想環境にDjangoインストール
-python manage.py runserver  #ウェブサーバー起動
-git status  #変更ファイルの確認
-git add --all . #変更をGitに保存
-git commit -m "<変更内容>"  #変更履歴を保存する
-git remote add origin Git HubとGitを結びつける
-git push    #GitHubに変更をアップロード
+	#ディレクトリの場所へ飛ぶ
+cd C:\Users\ttana\Desktop\python\Schcal 
+	#仮想環境作成
+python -m venv myvenv   
+	#テーブル用ディレクトリ作成
+python manage.py makemigrations MonCal	
+	#テーブルを適用
+python manage.py migrate MonCal		
+	#仮想環境起動
+myvenv\Scripts\activate 
+	#仮想環境にDjangoインストール
+pip install -r requirements.txt 
+	#ウェブサーバー起動
+python manage.py runserver  
+	#変更ファイルの確認
+git status  
+	#変更をGitに保存
+git add --all . 
+	#変更履歴を保存する
+git commit -m "<変更内容>"  
+	#Git HubとGitを結びつける
+git remote add origin 
+	#GitHubに変更をアップロード
+git push    
 pa_autoconfigure_django.py --python=3.6 https://github.com/Hkk-Hasegawa/Schcal.git
-cd hkkhasegawa.pythonanywhere.com #pythonanywhereの作業ディレクトリに飛ぶ
+	#pythonanywhereの作業ディレクトリに飛ぶ
+cd hkkhasegawa.pythonanywhere.com 
 PostgreSQL ポート番号:5432
 
 https://hkkhasegawa.pythonanywhere.com/

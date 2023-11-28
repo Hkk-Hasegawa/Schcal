@@ -1,56 +1,80 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
+<script>
+  window.onload = function(){
+      const date=document.getElementById("id_date").value;
+      const starttime = document.getElementById("id_starttime").value;
+      const endtime = document.getElementById("id_endtime").value;        
+      pr_set_selecttime(date,starttime,endtime);
+  }
+  function edit_reset_timeform(day,start,end){
+      reset_timeform();
+      pr_set_selecttime(day,start,end);
+  }
+</script>
 
-  <h1>内容の変更</h1>
-    <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse">
-      <caption><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk %}">{{event.subject_name}}</a>
-              <br>{{ start_day }} - {{ end_day }}</caption>
+<h1>{{event.title}}の内容の変更</h1>
+    <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse" id="calender">
+        <caption><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk %}">{{event.subject_name}}</a>
+            <br>{{ start_day }} - {{ end_day }}</caption>
+      <thead>
         <tr>
-            <td><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk before.year before.month before.day %}">前週</a></td>
+            <th><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk before.year before.month before.day %}">前週</a></th>
             {% for day in days %}
-              <th >
-              {% if day.weekday == 5 %}
-                <div  type="button" style="color: blue;" >
-              {% elif day.weekday == 6 %}
-                <div  type="button" style="color: red;" >
-              {% else %}
-                <div  type="button" >
-              {% endif %}
-              {{ day | date:"d(D)" }}　</div></th>
+                <th >
+                {% if day.weekday == 5 %}
+                    <div style="color: blue;" >
+                {% elif day.weekday == 6 %}
+                    <div style="color: red;" >
+                {% else %}
+                    <div>
+                {% endif %}
+                {{ day | date:"d(D)" }}</div></th>
             {% endfor %}
-            <td><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk next.year next.month next.day %}">次週</a></td>
+            <th><a href="{% url 'MonCal:Property_edit' event.subject_name.pk event.pk next.year next.month next.day %}">次週</a></th>
         </tr>
-
+      </thead>
         {% for time, schedules in calendar.items %}
             <tr style="font-size:12px">
-                <td>
-                    {{ time }}
-                </td>
+                <th>{{ time }}</th>
                 {% for dt, book in schedules.items %}
-                    <td>
-                        {% if book == 'Nothing' %}
-                        <button type="button" style="color: blue;"  onclick="intime('{{dt}}','{{time}}')">〇</button>
-                        {% elif book == 'same' %}
-                            ↓↓
-                        {% else %}
-                        <a href="{% url 'MonCal:Property_detail' event.subject_name.pk book.pk %}">{{book.title}}</a>
-                        {% endif %}
-                    </td>
+                    {% if book == 'Nothing' %}
+                        <td  bgcolor="#d9e5ff" onclick="intime(this,'{{dt}}','{{tailtime}}')" class="">
+                    {% elif book == 'same' %}
+                        <td bgcolor="#d3d3d3">↓↓
+                    {% else %}
+                        <td bgcolor="#d3d3d3"><a href="{% url 'MonCal:Property_detail' event.subject_name.pk book.pk %}">{{book.title}}</a>
+                    {% endif %}
+                        </td>
                 {% endfor %}
-                <td>
-                    {{ time }}
-                </td>
+                <th>{{ time }}</th>
             </tr>
         {% endfor %}
     </table>
-  <br><br><br><br>
-  <div class="mt-3">
-    <form method="POST">
-      {{ form.as_p }}
-      {% csrf_token %}
-      <button  type="submit">更新</button> 
-      <button type="reset">取消</button>
-    </form>
-  </div>
+  
+    <div class="mt-3">
+        <form method="POST">
+          {% for field in form %}
+            {% if field.id_for_label == 'id_starttime' %}
+                <p id ="s_timetext">{{field.label}}:</p>
+                <p class ="timeform">
+            {% elif field.id_for_label == 'id_endtime' %}
+                <p id ="e_timetext">{{field.label}}:</p>
+                <p class ="timeform" >
+            {% else %}
+                <p>
+            {% endif %}
+            {{field.label_tag}}
+            {{field}}
+            {% for error in field.errors %}
+                {{error}}
+            {% endfor %}
+        </p>
+        {% endfor %}
+        {% csrf_token %}
+        <button type="submit">登録</button>
+        <button type="reset" onclick="edit_reset_timeform('{{schedule.date}}','{{schedule.starttime}}','{{schedule.endtime}}')">取消</button>
+        </form>
+    </div>
 
 {% endblock %}

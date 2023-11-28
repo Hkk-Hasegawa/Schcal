@@ -38,8 +38,6 @@ class HomePage(LoginRequiredMixin, generic.TemplateView):
         subject_list={}
         for subjecttype in Subject_type.objects.all().order_by('-name'):
             subject_list[subjecttype.name]=Suresubject.objects.filter(subject_type=subjecttype).order_by('name')
-            print(subjecttype.name)
-            print(subject_list[subjecttype.name])
         context['subject_list']= subject_list
         context['event_list']= Event.objects.all().order_by('name')
         return context
@@ -83,7 +81,7 @@ class PropertyCalendar(LoginRequiredMixin,generic.CreateView):
         else:
             base_date =  datetime.date.today()
         # カレンダーは、基準日から表示期間分の日付を作成しておく
-        context=makecalendar(subject,base_date,context)
+        context=makecalendar(subject,base_date,context,0)
         return context
     #時刻の選択肢
     def get_form_kwargs(self, *args, **kwargs):
@@ -134,7 +132,7 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date=event.date
-        context=makecalendar(subject,base_date,context)
+        context=makecalendar(subject,base_date,context,event.pk)
         context['event']=event
         return context
     #時刻の選択肢
@@ -185,9 +183,9 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
         return context
     #選択肢の生成
     def get_form_kwargs(self, *args, **kwargs):
-        #event= get_object_or_404(Event, pk=self.kwargs['pk'])
+        event= get_object_or_404(Event, pk=self.kwargs['pk'])
         kwgs = super().get_form_kwargs(*args, **kwargs)
-        kwgs["categories"] =eventform_choice()
+        kwgs["categories"] =eventform_choice(event)
         return kwgs
     #フォームの保存
     def form_valid(self, form):
@@ -266,9 +264,9 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     #フォームの選択肢を取得
     def get_form_kwargs(self, *args, **kwargs):
         kwgs = super().get_form_kwargs(*args, **kwargs)
-        #schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
-        #event=schedule.event
-        kwgs["categories"] = eventform_choice()
+        schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
+        event=schedule.event
+        kwgs["categories"] = eventform_choice(event)
         return kwgs
     #フォームの保存
     def form_valid(self, form):
@@ -318,7 +316,7 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
             subschedule.save()
             schedule.subschedule=subschedule
             schedule.save()
-        return redirect('MonCal:Event_detail', pk=schedule.pk)
+        return redirect('MonCal:Event_detail',event_pk=schedule.event.pk , pk=schedule.pk)
 #行事予定の削除
 class EventDelete(LoginRequiredMixin, generic.DeleteView):
     model = EventSchedule
@@ -338,11 +336,16 @@ def choicetime():
         looptime=loopdate.time()
     category_choice = tuple(choicelist)
     return(category_choice)
+
 #行事予定フォーム選択肢作成
-def eventform_choice():
+def eventform_choice(event):
     subjectlist=[(0,'利用しない')]
-    for subject in Suresubject.objects.all().exclude(subject_type=3):
-        subjectlist.append((subject.pk,subject.name))
+    if event.subject_type :
+        for subject in Suresubject.objects.filter(subject_type=event.subject_type):
+            subjectlist.append((subject.pk,subject.name))
+    else:
+        for subject in Suresubject.objects.all().exclude(subject_type=3):
+            subjectlist.append((subject.pk,subject.name))
     categories={}
     categories['time']=choicetime()
     categories['cycle']=[('nocycle','繰り返さない'),('week','毎週')]
@@ -350,7 +353,7 @@ def eventform_choice():
     return(categories)
 
 #カレンダー作成
-def makecalendar(subject,base_date,context):
+def makecalendar(subject,base_date,context,pk):
     head_time=get_object_or_404(Booking_time, pk=1).time
     tail_time=get_object_or_404(Booking_time,pk=2).time
     display_period=7
@@ -370,18 +373,19 @@ def makecalendar(subject,base_date,context):
         loop_time = loop_time + datetime.timedelta(minutes=timestep) 
     #繰り返しスケジュールを取得する
     for schedule in Schedule.objects.filter(subject_name=subject)\
-                        .exclude(Q(date__gt=end_day) | Q(cycle='nocycle')):
+                        .exclude(Q(date__gt=end_day) | Q(cycle='nocycle')|Q(pk=pk)):
         if schedule.cycle=='week':
             day=weeklymatch(date=schedule.date,days=days)
             calendar=scheincal(calendar,schedule,day)
 
     # カレンダー表示する最初と最後の日時の間にある予約を取得する
     for schedule in Schedule.objects.filter(subject_name=subject,cycle='nocycle')\
-                        .exclude(Q(date__gt=end_day) | Q(date__lt=start_day)):
+                        .exclude(Q(date__gt=end_day) | Q(date__lt=start_day)|Q(pk=pk)):
         if schedule.starttime in calendar and schedule.date in calendar[schedule.starttime]: 
             calendar=scheincal(calendar,schedule,schedule.date)  
     context['subject'] =subject
     context['calendar'] =calendar
+    context['tailtime'] = tail_time
     context['days'] = days
     context['start_day'] =start_day
     context['end_day'] = end_day
@@ -430,6 +434,7 @@ def makeeventcal(context,event,base_date):
     context['calendar'] =calendar
     context['rowspan'] =rowspan
     context['times'] = times
+    context['tailtime'] = tail_time
     context['days'] = days
     context['start_day'] =start_day
     context['end_day'] = end_day
