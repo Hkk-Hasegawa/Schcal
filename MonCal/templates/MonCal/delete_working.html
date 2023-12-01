@@ -1,0 +1,9 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+<h4><a href="{% url 'MonCal:Working_day_list' %}">戻る</a></h4>
+<form method="post">
+    {% csrf_token %}
+    <p>削除します。よろしいですか？</p>
+    <input class="btn btn-danger" type="submit" value="削除する">
+</form>
+{% endblock %}

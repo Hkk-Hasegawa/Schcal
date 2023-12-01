@@ -5,11 +5,8 @@
     
         <h2>行事スケジュール</h2>
         <ul>
-            {% for event in event_list %}
-                <li><a href="{% url 'MonCal:event_list' event.pk %}">{{ event.name }}</a></li>
-            {% empty %}
-                <li>まだ行事の登録がありません。</li>
-            {% endfor %}
+            <h3><a href="{% url 'MonCal:eventcalendar' %}">予約ページへ</a></h3>  
+            <h3><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h3>  
         </ul>
         <h2>設備スケジュール</h2>    
         {% for subject_type,subjects in subject_list.items %}
@@ -21,5 +18,6 @@
                     <li><a href="{% url 'MonCal:property_list' subject.pk %}">{{ subject.name }}</a></li>
                 {% endfor %}
             </ul>
-        {% endfor %}      
+        {% endfor %}    
+        <h2><a href="{% url 'MonCal:Working_day_list' %}">稼働日・非稼働日設定</a></h2>    
 {% endblock %}

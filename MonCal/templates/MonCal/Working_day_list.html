@@ -1,0 +1,19 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+<h3><a href="{% url 'MonCal:set_workingday' %}">新規登録</a></h3>
+<ul>
+    <p>非稼働日</p>
+    {% for day in notworkdays %}
+        <li><a href="{% url 'MonCal:delete_working' day.pk %}">{{ day.date }}</a></li>
+    {% empty %}
+        <li>まだ登録がありません。</li>
+    {% endfor %}
+
+    <p>稼働日</p>
+    {% for day in workdays %}
+        <li><a href="{% url 'MonCal:delete_working' day.pk %}">{{ day.date }}</a></li>
+    {% empty %}
+        <li>まだ登録がありません。</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -11,15 +11,24 @@
         <tr>
             <th><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></th>
             {% for day in days %}
-              <th>
-              {% if day.weekday == 5 %}
-                <div style="color: blue;" >
-              {% elif day.weekday == 6 %}
-                <div style="color: red;" >
-              {% else %}
-                <div>
-              {% endif %}
-              {{ day | date:"d(D)" }}</div></th>
+                <th>
+                {% if day in workingdays %}
+                    {% if day.weekday < 5 %}
+                    <div style="color: green;">非稼働日
+                    {% else %}
+                    <div>稼働日
+                    {% endif %}
+                    <br>
+                {% else %}
+                    {% if day.weekday == 5 %}
+                    <div style="color: blue;" >
+                    {% elif day.weekday == 6 %}
+                    <div style="color: red;" >
+                    {% else %}
+                    <div>
+                    {% endif %}
+                {% endif %}
+                {{ day | date:"d(D)" }}</div></th>
             {% endfor %}
             <th><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></th>
         </tr>
@@ -29,13 +38,15 @@
                 <th>{{ time }}</th>
                 {% for dt, book in schedules.items %}
                     {% if book == 'Nothing' %}
-                        <td  bgcolor="#d9e5ff" onclick="intime(this,'{{dt}}','{{tailtime}}')" class="">
+                        <td  bgcolor="#d9e5ff" onclick="intime(this,'{{dt}}','{{tailtime}}')" class=""></td>
                     {% elif book == 'same' %}
-                        <td bgcolor="#d3d3d3"> ↓↓
+                    {% elif book == 'notworkday' %}
+                        <td bgcolor="#d3d3d3"> </td>
                     {% else %}
-                        <td bgcolor="#d3d3d3"> <a href="{% url 'MonCal:Property_detail' subject.pk book.pk %}">{{book.title}}</a>
+                        {% for schedule, flame in book.items %}
+                        <td bgcolor="#d3d3d3" rowspan='{{flame}}'> <a href="{% url 'MonCal:Property_detail' subject.pk schedule.pk %}">{{schedule.title}}</a></td>
+                        {% endfor %}
                     {% endif %}
-                        </td>
                 {% endfor %}
                 <th>{{ time }}</th>
             </tr>

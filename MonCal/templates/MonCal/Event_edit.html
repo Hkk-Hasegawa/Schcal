@@ -15,53 +15,81 @@
 </script>
 
 <h2>{{schedule.title}} 内容編集</h2>
-<h3><a href="{% url 'MonCal:Event_detail' schedule.event.pk schedule.pk %}">スケジュール詳細へ戻る</a></h3>
+<h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
     <table  border="1" style="border-collapse: collapse"  id="calender" >
         <caption >
-            <a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk %}">行事登録</a>
+            <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事登録</a>
             <br>{{ start_day }} - {{ end_day }}
         </caption>
         <thead>
             <tr style="font-size:14px">
-                <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk before.year before.month before.day %}">前週</a></th>
-                <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk next.year next.month next.day %}">次週</a></th>
+                <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">前週</a></th>
+                <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">次週</a></th>
                 {% for time in times %}
                 <th >{{ time }}</th>
                 {% endfor %}
+                <th >{{tailtime}}</th>
             </tr>
         </thead>
         <tbody>
         {% for day, shcelist in calendar.items %}
             <tr style="font-size:12px">
-                
-                    {% if day.weekday == 5 %}
-                        <th rowspan="{{rowspan}}" style="color: blue;" >
+                <th rowspan="{{rowspan}}">
+                    {% if day in workingday_list %}
+                        {% if day.weekday < 5 %}
+                        <div style="color: green;" >非稼働日<br>
+                        {% else %}
+                        <div>稼働日<br>
+                        {% endif %}
+                    {% elif day.weekday == 5 %}
+                        <div style="color: blue;" >
                     {% elif day.weekday == 6 %}
-                        <th rowspan="{{rowspan}}" style="color: red;" >
+                        <div style="color: red;" >
                     {% else %}
-                        <th rowspan="{{rowspan}}">
+                        <div>
                     {% endif %}
-                    {{ day| date:"d(D)" }}
+                    {{ day| date:"d(D)" }}</div>
                 </th>
                 <th >入力用</th>
-                {% for time in times %}
-                <td  bgcolor="#d9e5ff" onclick="ev_intime(this,'{{day}}','{{tailtime}}')" class=""></td>
-                {% endfor %}   
+                {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
+                    {% for time in times %}
+                    <td bgcolor="#d3d3d3"></td>
+                    {% endfor %} 
+                {% else %}
+                    {% for time in times %}
+                    <td  bgcolor="#d9e5ff" onclick="ev_intime(this,'{{day}}','{{tailtime}}')" class=""></td>
+                    {% endfor %}   
+                {% endif %}
+                <th rowspan="{{rowspan}}">
+                    {% if day.weekday == 5 %}
+                        <div style="color: blue;" >
+                    {% elif day.weekday == 6 %}
+                        <div style="color: red;" >
+                    {% else %}
+                        <div>
+                    {% endif %}
+                    {{ day| date:"d(D)" }}</div>
+                </th> 
             </tr>
             {% for subject, row in shcelist.items %}
             <tr style="font-size:12px">
                 <th >{{subject.name}}</th>
-                {% for time, book in row.items %}
-                <td >
-                    {% if book == 'Nothing' %}
-                       
-                    {% elif book == 'same' %}
-                        ⇒⇒
-                    {% else %}
-                        <a href="{% url 'MonCal:Property_detail' subject.pk book.pk %}">{{book.title}}</a>
-                    {% endif %}
-                </td>
-                {% endfor %} 
+                {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
+                    {% for time, book in row.items %}
+                    <td bgcolor="#d3d3d3"></td>
+                    {% endfor %} 
+                {% else %}
+                    {% for time, book in row.items %}
+                        {% if book == 'Nothing' %}
+                            <td></td>
+                        {% elif book == 'same' %}
+                        {% else %}
+                            {% for schedule, flame in book.items %}
+                            <td bgcolor="#d3d3d3" colspan='{{flame}}'><a href="{% url 'MonCal:Property_detail' subject.pk schedule.pk %}">{{schedule.title}}</a></td>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %} 
+                {% endif %}
             </tr>
             {% endfor %} 
         {% endfor %}
@@ -70,22 +98,35 @@
     
     <form action="" method="POST">
         {% for field in form %}
-            {% if field.id_for_label == 'id_starttime' %}
-                <p id ="s_timetext">{{field.label}}:</p>
-                <p class ="timeform">
-            {% elif field.id_for_label == 'id_endtime' %}
-                <p id ="e_timetext">{{field.label}}:</p>
-                <p class ="timeform" >
-            {% else %}
-                <p>
-            {% endif %}
-            {{field.label_tag}}
-            {{field}}
-            {% for error in field.errors %}
-                {{error}}
-            {% endfor %}
+            {% if field.label == '設備' or field.label == '場所' %}
+            <p>
+                {{field.label_tag}}
+                {% for choice in field %}
+                    {{ choice.choice_label }}
+                    {{ choice.tag }}
+                {% endfor %}
+                {% for error in field.errors %}
+                    {{error}}
+                {% endfor %}
             </p>
-            
+            {% else %}
+                {% if field.id_for_label == 'id_starttime' %}
+                    <p id ="s_timetext">{{field.label}}:</p>
+                    <p class ="timeform">
+                {% elif field.id_for_label == 'id_endtime' %}
+                    <p id ="e_timetext">{{field.label}}:</p>
+                    <p class ="timeform" >
+                {% else %}
+                    <p>
+                {% endif %}
+                    {{field.label_tag}}
+                    {{field}}
+                {% for error in field.errors %}
+                    {{error}}
+                {% endfor %}
+                </p>
+            {% endif %}
+        
         {% endfor %}
         {% csrf_token %}
         <button type="submit">更新</button>

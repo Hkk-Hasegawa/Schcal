@@ -1,13 +1,13 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
     <h1>{{ schedule.title }}の詳細</h1>
-    <h2><a href="{% url 'MonCal:eventcalendar' schedule.event.pk %}">{{ schedule.event  }}の予約ページへ</a></h2>
-    <h2><a href="{% url 'MonCal:event_list' schedule.event.pk %}">{{ schedule.event }}のスケジュール一覧へ</a></h2>
+    <h2><a href="{% url 'MonCal:eventcalendar' %}">行事予約ページへ</a></h2>
+    <h2><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h2>
     <table frame="void">
         <tr>
-        <td><button  type="button" ><a href="{% url 'MonCal:Event_edit' schedule.event.pk schedule.pk %}">編集</a></button></td>
+        <td><button  type="button" ><a href="{% url 'MonCal:Event_edit'  schedule.pk %}">編集</a></button></td>
         <td>
-            <form action="{% url 'MonCal:Event_delete' schedule.event.pk schedule.pk %}" method="POST">
+            <form action="{% url 'MonCal:Event_delete' schedule.pk %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" style="color: red;" onclick="return confirm('削除しますか?')">削除</button>
             </form>
@@ -15,17 +15,19 @@
         </tr>
     </table>
     
-    <p><div>予約区分：{{ schedule.event }}</div></p>
-    {% if Boolen %}
-        <p><div>時間：{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
-    {% else %}
+    
+    {% if schedule.cycle == 'nocycle' %}
         <p><div>時間：{{ schedule.date }}{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
+    {% else %}
+        <p><div>時間：{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
     {% endif %}
     <p>設備予約：
-        {% if schedule.subject_pk == 0 %}
-            予約はありません
+        {% if schedule.subschedule %}
+            {% for pre_schedule in schedule.subschedule.all %}
+                {{pre_schedule.subject_name}}
+            {% endfor %}
         {% else %}
-            {{schedule.subschedule.subject_name}}
+            予約はありません
         {% endif %}
     </p>
     <p>内容</p>

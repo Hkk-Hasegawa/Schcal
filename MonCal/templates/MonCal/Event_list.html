@@ -1,22 +1,42 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
-    <h1>{{ event.name }}の直近の予約</h1>
-    <h2><a href="{% url 'MonCal:eventcalendar' event.pk %}">{{ event.name }}の予約ページへ</a></h2>
-    <h3>単発のスケジュール</h3>
-    <ul>
-        {% for schedule in single_list %}
-            <li><a href="{% url 'MonCal:Event_detail' schedule.event.pk schedule.pk %}">{{ schedule }}</a></li>
-        {% empty %}
-            <li>予定はありません。</li>
-        {% endfor %}
-    </ul>
-    <h3>繰り返しのスケジュール</h3>
-    <ul>
-        {% for schedule in cycle_list %}
-            <li><a href="{% url 'MonCal:Event_detail' schedule.event.pk schedule.pk %}">{{ schedule }}</a></li>
-        {% empty %}
-            <li>繰り返しの予定はありません。</li>
-        {% endfor %}
-    </ul>
+    <h1>直近の行事予定</h1>
+    <h2><a href="{% url 'MonCal:eventcalendar'%}">行事の予約ページへ</a></h2>
+    <table width="100%"  border="1"style="border-collapse: collapse">
+        <thead>
+            <tr>
+                <th width="30%">日時</th><th>予定</th>
+                {% for place in place_list %}
+                    <th width="5%">{{place}}</th>
+                {% endfor %}
+                <th width="15%">施設</th><th>繰り返し</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for schedule in all_schedule %}
+            <tr>
+                <td>{{ schedule.0 |date:"Y年Md日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}</td>
+                <td><a href="{% url 'MonCal:Event_detail' schedule.1.pk %}">{{ schedule.1.title }}</a></td>
+                {% for place in place_list %}
+                    {% if place in schedule.1.place.all %}
+                    <td>〇</td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
+                {% endfor %}
+                <td>
+                    {% for room_sche in schedule.1.room.all %}
+                        {{room_sche}}　
+                    {% endfor %}
+                </td>
+                <td>
+                    {% if schedule.1.cycle_type.code == 'week' %}
+                        毎週{{schedule.0 | date:"D" }}曜日
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

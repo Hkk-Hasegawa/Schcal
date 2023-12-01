@@ -9,7 +9,7 @@ python manage.py migrate MonCal
 	#仮想環境起動
 myvenv\Scripts\activate 
 	#仮想環境にDjangoインストール
-pip install -r requirements.txt 
+myvenv\Scripts\activate & pip install -r requirements.txt 
 	#ウェブサーバー起動
 python manage.py runserver  
 	#変更ファイルの確認

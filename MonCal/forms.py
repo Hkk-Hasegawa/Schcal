@@ -6,16 +6,14 @@ from django.contrib.admin.widgets import AdminDateWidget
 class Scheduleform(forms.ModelForm):
     starttime = forms.ChoiceField(label='開始時間')
     endtime = forms.ChoiceField(label='終了時間')
-    cycle= forms.ChoiceField(label='繰り返し')
     class Meta:
         model =Schedule
-        fields = ('title','date','starttime','endtime','cycle','detail')
+        fields = ('title','date','starttime','endtime','cycle_type','detail')
         widgets = {'date': AdminDateWidget()}
     
     def __init__(self, categories=None, *args, **kwargs):
         self.base_fields["starttime"].choices = categories
         self.base_fields["endtime"].choices = categories
-        self.base_fields["cycle"].choices = [('nocycle','繰り返さない'),('week','毎週')]
         super().__init__(*args, **kwargs)
 
 
@@ -24,17 +22,18 @@ class Scheduleform(forms.ModelForm):
 class EventScheduleform(forms.ModelForm):
     starttime = forms.ChoiceField(label='開始時間')
     endtime = forms.ChoiceField(label='終了時間')
-    cycle= forms.ChoiceField(label='繰り返し')
-    subject_pk= forms.ChoiceField(label='設備利用')
+    
+    room= forms.MultipleChoiceField(label='設備',widget=forms.CheckboxSelectMultiple,required=False,)
+    place= forms.MultipleChoiceField(label='場所',widget=forms.CheckboxSelectMultiple,required=True)
     class Meta:
         model =EventSchedule
-        fields = ('title','date','starttime','endtime','subject_pk','cycle','detail')
+        fields = ('title','place','room','date','starttime','endtime','cycle_type','detail')
         widgets = {'date': AdminDateWidget()}
     
     def __init__(self, categories=None, *args, **kwargs):
         self.base_fields["starttime"].choices = categories['time']
         self.base_fields["endtime"].choices = categories['time']
-        self.base_fields["cycle"].choices =categories['cycle']
-        self.base_fields["subject_pk"].choices = categories['room']
+        self.base_fields["room"].choices = categories['room']
+        self.base_fields["place"].choices = categories['place']
         super().__init__(*args, **kwargs)
 

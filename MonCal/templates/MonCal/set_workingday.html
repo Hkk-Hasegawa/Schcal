@@ -1,0 +1,51 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+<script>
+    function input_date(td,year,month,day){
+        var dateform = document.getElementById("id_date");
+        var selectcell=document.querySelectorAll(".selecttime");
+        var cellsnum=selectcell.length
+            for(let step=0;step < cellsnum;step++){
+                    selectcell[step].className=""; 
+            }
+        dateform.value=year+"-" +month+"-" +day;
+        td.className="selecttime"
+    }
+</script>
+<h4><a href="{% url 'MonCal:Working_day_list' %}">戻る</a></h4>
+<h3>稼働日・非稼働日：新規登録</a></h3>
+<table  border="1" style="border-collapse: collapse" width="50%">
+    <caption>
+        <a href="{% url 'MonCal:set_workingday' before.year before.month %}">先月</a> 
+        {{year}}年{{month}}月 
+        <a href="{% url 'MonCal:set_workingday' after.year after.month %}">来月</a>
+    </caption>
+    <thead>
+        <tr>
+            <th>月</th> <th>火</th> <th>水</th> <th>木</th> <th>金</th> <th><div style="color: blue;">土</div></th> <th><div style="color: red;" >日</div></th>
+        </tr>
+    </thead>
+    {% for weekdays in day_list %}
+    <tr style="font-size:16px">
+        {% for day in weekdays %}
+        {% if day == 0 %}
+        <td></td>
+        {% elif day in registration_list %}
+        <td bgcolor="#d3d3d3">{{day}}</td>
+        {% else %}
+        <td onclick="input_date(this,'{{year}}','{{month}}','{{day}}')">{{day}}</td>
+        {% endif %}
+        {% endfor %}
+    {% endfor %}
+    </tr>
+</table>
+
+
+
+<form action="" method="POST">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <button type="submit">登録</button>
+    <button type="reset">取消</button>
+</form>
+{% endblock %}

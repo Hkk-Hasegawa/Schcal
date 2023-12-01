@@ -103,7 +103,7 @@
         return moncheck
         }
 
-        <!--設備予約用スクリプト-->
+        
         function indate(dateV){
             let newdateV = date_Normalization(dateV);
             var Myelement = document.getElementById("id_date");
@@ -163,7 +163,14 @@
                 var set_endrow=pr_timematch(calender,endtime)-1;
                 var setcol =0;
                 for(let step=0;step<calender.tHead.rows[0].cells.length;step++){
-                    var th_Value=calender.tHead.rows[0].cells[step].innerText.substr(0,2);
+                    var date_th=calender.tHead.rows[0].cells[step];
+                    var th_Value=date_th.innerText;
+                    if(th_Value.indexOf("稼働",0)){
+                        th_Value=th_Value.substr(0,2);
+                    }else{
+                        th_Value=th_Value.split("\n");
+                        th_Value=th_Value[1].substr(0,2);
+                        }
                     if(form_date_Value==th_Value){setcol=step;}
                 }
                 if (!(setcol==0)){
@@ -173,9 +180,7 @@
                 }
             }
         }
-
-
-        <!--行事予定用スクリプト-->
+        
         function ev_intime(td,date,tailtime){
             const column = td.cellIndex;
 	        const tr = td.parentNode;
@@ -252,7 +257,9 @@
             padding-top: 50px;
             font-size: medium;
         }
-        
+        tr {
+        height: 20px;
+        }
         nav > a {
             margin-right: 10px;
         }
