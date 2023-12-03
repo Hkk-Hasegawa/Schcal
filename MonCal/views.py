@@ -256,14 +256,15 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
                             messages.error(self.request,subject.name + 'にすでに予約がありました。')
                             return redirect('MonCal:eventcalendar')
         elif schedule.cycle_type.code == 'week':
-            for subject_pk in rooms.all():
+            for subject_pk in rooms:
                 subject=Suresubject.objects.get(pk=int(subject_pk))
-                if EventSchedule.objects.filter(date__week_day=schedule.date.weekday(),room__in=subject,cycle_type__code='nocycle')\
+                if EventSchedule.objects.filter(date__week_day=schedule.date.weekday(),room=subject,cycle_type__code='nocycle')\
                                 .exclude(Q(starttime__gte= schedule.endtime) | Q(endtime__lte=schedule.starttime)| Q(date__lt=schedule.date)).exists():
                     messages.error(self.request,subject.name + 'にすでに予約がありました。')
                     return redirect('MonCal:eventcalendar')
         else:
-            for subject in schedule.room.all():
+            for subject_pk in rooms:
+                subject=Suresubject.objects.get(pk=int(subject_pk))
                 if EventSchedule.objects.filter(room__in=subject,cycle_type=schedule.cycle_type)\
                                         .exclude(Q(starttime__gte= schedule.endtime) | Q(endtime__lte=schedule.starttime)).exists():
                     messages.error(self.request,subject.name + 'にすでに予約がありました。')
@@ -305,14 +306,14 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     def get_initial(self):
         initial = super().get_initial()
         schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
-        roome_list=[]
-        for pre_schedule in schedule.subschedule.all():
-            roome_list.append(pre_schedule.subject_name.pk)
+        room_list=[]
+        for room in schedule.room.all():
+            room_list.append(room.pk)
         place_list=[]
         for place in schedule.place.all():
             place_list.append(place.pk)
         initial["place"] =place_list
-        initial["room"] = roome_list
+        initial["room"] = room_list
         return initial
     #カレンダーの作成
     def get_context_data(self, **kwargs):
@@ -489,9 +490,7 @@ def makeeventcal(context,base_date):
     while loop_time < loop_tail:
         times.append(loop_time.time())
         loop_time = loop_time + datetime.timedelta(minutes=timestep)
-    schedule_list=[]
-    for sche in betweenschedule(EventSchedule,start_day,end_day):
-        schedule_list.append(sche[2])
+    schedule_list= betweenschedule(EventSchedule,start_day,end_day)
     calendar=calumndays(days,times,schedule_list)
     workingdays=Working_day.objects.filter(date__gte=start_day,date__lte=end_day)
     workingday_list=[]
@@ -499,7 +498,6 @@ def makeeventcal(context,base_date):
         workingday_list.append(workingday.date)
     context['workingday_list'] =workingday_list
     context['calendar'] =calendar
-    context['rowspan'] =2
     context['times'] = times
     context['tailtime'] = tail_time
     context['days'] = days
@@ -519,8 +517,8 @@ def calumndays(days,times,schedule_list):
             row[time] = 'Nothing'
         day_schedule=[]
         for schedule in schedule_list:
-            if day == schedule.date:
-                day_schedule.append(schedule)
+            if day == schedule[0].date():
+                day_schedule.append(schedule[2])
         shce_list.append(row)
         max_row=0
         
@@ -539,7 +537,6 @@ def calumndays(days,times,schedule_list):
             shce_list[now_row]=input_row(shce_list[now_row],times,schedule)      
         day_dic={'date_span':max_row+2,'shce_span':max_row+1,'shce_list':shce_list}
         calendar[day] =day_dic
-    print( calendar)
     return calendar
 #行事の時間衝突確認
 def confirmation_sche(row,times,schedule):
@@ -563,7 +560,7 @@ def input_row(row,times,schedule):
             else:
                 row[time]='same'
                 col=1+col
-    book={'col_span':col,'schedule':schedule}
+    book={'col_span':col-1,'schedule':schedule}
     row[starttime] =book
     return row
 

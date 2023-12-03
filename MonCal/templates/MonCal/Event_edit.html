@@ -23,8 +23,11 @@
         </caption>
         <thead>
             <tr style="font-size:14px">
-                <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">前週</a></th>
-                <th width="7%"><a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">次週</a></th>
+                <th width="7%">
+                    <a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">前週</a>
+                    <br>
+                    <a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">次週</a>
+                </th>
                 {% for time in times %}
                 <th >{{ time }}</th>
                 {% endfor %}
@@ -33,8 +36,8 @@
         </thead>
         <tbody>
         {% for day, shcelist in calendar.items %}
-            <tr style="font-size:12px">
-                <th rowspan="{{rowspan}}">
+            <tr style="font-size:14px" >
+                <th rowspan="{{shcelist.date_span}}" hight="14">
                     {% if day in workingday_list %}
                         {% if day.weekday < 5 %}
                         <div style="color: green;" >非稼働日<br>
@@ -50,18 +53,23 @@
                     {% endif %}
                     {{ day| date:"d(D)" }}</div>
                 </th>
-                <th >入力用</th>
                 {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
                     {% for time in times %}
-                    <td bgcolor="#d3d3d3"></td>
+                    <td bgcolor="#d3d3d3" ></td>
                     {% endfor %} 
                 {% else %}
                     {% for time in times %}
                     <td  bgcolor="#d9e5ff" onclick="ev_intime(this,'{{day}}','{{tailtime}}')" class=""></td>
                     {% endfor %}   
                 {% endif %}
-                <th rowspan="{{rowspan}}">
-                    {% if day.weekday == 5 %}
+                <th rowspan="{{shcelist.date_span}}">
+                    {% if day in workingday_list %}
+                        {% if day.weekday < 5 %}
+                        <div style="color: green;" >非稼働日<br>
+                        {% else %}
+                        <div>稼働日<br>
+                        {% endif %}
+                    {% elif day.weekday == 5 %}
                         <div style="color: blue;" >
                     {% elif day.weekday == 6 %}
                         <div style="color: red;" >
@@ -69,28 +77,36 @@
                         <div>
                     {% endif %}
                     {{ day| date:"d(D)" }}</div>
-                </th> 
+                </th>
             </tr>
-            {% for subject, row in shcelist.items %}
-            <tr style="font-size:12px">
-                <th >{{subject.name}}</th>
-                {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
-                    {% for time, book in row.items %}
-                    <td bgcolor="#d3d3d3"></td>
-                    {% endfor %} 
-                {% else %}
-                    {% for time, book in row.items %}
-                        {% if book == 'Nothing' %}
-                            <td></td>
-                        {% elif book == 'same' %}
-                        {% else %}
-                            {% for schedule, flame in book.items %}
-                            <td bgcolor="#d3d3d3" colspan='{{flame}}'><a href="{% url 'MonCal:Property_detail' subject.pk schedule.pk %}">{{schedule.title}}</a></td>
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %} 
-                {% endif %}
-            </tr>
+            {% for shce in shcelist.shce_list %}
+                <tr style="font-size:12px">
+                    {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
+                        {% for time, book in shce.items %}
+                        <td bgcolor="#d3d3d3"><br></td>
+                        {% endfor %} 
+                    {% else %}
+                        {% for time, book in shce.items %}
+                            {% if book == 'Nothing' %}
+                                <td></td>
+                            {% elif book == 'same' %}
+                            {% else %}
+                                <td bgcolor="#d3d3d3" colspan='{{book.col_span}}'><a href="">
+                                    {{book.schedule.title}} 
+                                    {% for place in book.schedule.place.all %}
+                                        {{place}}
+                                    {% endfor %}
+                                    <br>使用施設
+                                    {% for room in book.schedule.room.all %}
+                                        {{room}}
+                                    {% empty %}
+                                        なし
+                                    {% endfor %}
+                                </a></td>
+                            {% endif %}
+                        {% endfor %} 
+                    {% endif %}
+                </tr>
             {% endfor %} 
         {% endfor %}
         </tbody>
