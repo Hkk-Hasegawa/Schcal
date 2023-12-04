@@ -6,7 +6,7 @@
 <h2><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h2>
     <table  border="1" style="border-collapse: collapse" id="calender">
         <caption>
-            <a href="{% url 'MonCal:eventcalendar'%}">行事登録</a>
+            <a href="{% url 'MonCal:eventcalendar'%}">行事新規登録</a>
             <br>{{ start_day }} - {{ end_day }}
         </caption>
         <thead>
@@ -24,7 +24,7 @@
         </thead>
         <tbody>
         {% for day, shcelist in calendar.items %}
-            <tr style="font-size:14px" >
+            <tr  class="eventcal-tr">
                 <th rowspan="{{shcelist.date_span}}" hight="14">
                     {% if day in workingday_list %}
                         {% if day.weekday < 5 %}
@@ -68,18 +68,21 @@
                 </th>
             </tr>
             {% for shce in shcelist.shce_list %}
-                <tr style="font-size:12px">
+                <tr style="font-size:12px" >
+                    
                     {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
                         {% for time, book in shce.items %}
-                        <td bgcolor="#d3d3d3"><br></td>
+                        <td bgcolor="#d3d3d3"></td>
                         {% endfor %} 
                     {% else %}
+                    
                         {% for time, book in shce.items %}
                             {% if book == 'Nothing' %}
                                 <td></td>
                             {% elif book == 'same' %}
                             {% else %}
-                                <td bgcolor="#d3d3d3" colspan='{{book.col_span}}'><a href="">
+                                <td bgcolor="#d3d3d3" colspan='{{book.col_span}}'><a href="{% url 'MonCal:Event_detail' book.schedule.pk %}">
+                                    
                                     {{book.schedule.title}} 
                                     {% for place in book.schedule.place.all %}
                                         {{place}}
@@ -93,6 +96,7 @@
                                 </a></td>
                             {% endif %}
                         {% endfor %} 
+                        
                     {% endif %}
                 </tr>
             {% endfor %} 
@@ -101,40 +105,82 @@
     </table>
     
     <form action="" method="POST">
-        {% for field in form %}
-            {% if field.label == '設備' or field.label == '場所' %}
-            <p>
-            {{field.label_tag}}
-                {% for choice in field %}
-                    {{ choice.choice_label }}
-                    {{ choice.tag }}
-                {% endfor %}
-                {% for error in field.errors %}
-                    {{error}}
-                {% endfor %}
-            </p>
-            {% else %}
-                {% if field.id_for_label == 'id_starttime' %}
-                    <p id ="s_timetext">{{field.label}}:</p>
-                    <p class ="timeform">
-                {% elif field.id_for_label == 'id_endtime' %}
-                    <p id ="e_timetext">{{field.label}}:</p>
-                    <p class ="timeform" >
-                {% else %}
-                    <p>
-                {% endif %}
-                    {{field.label_tag}}
-                    {{field}}
-                {% for error in field.errors %}
-                    {{error}}
-                {% endfor %}
-                </p>
-            {% endif %}
-        
-        {% endfor %}
+        <table border="0" width="90%">
+            <tr>
+                <td valign="top">
+                    {% for field in form %}
+                    {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
+                        {% if field.id_for_label == 'id_starttime' %}
+                            <p id ="s_timetext">{{field.label}}:</p>
+                            <p class ="timeform">
+                        {% elif field.id_for_label == 'id_endtime' %}
+                            <p id ="e_timetext">{{field.label}}:</p>
+                            <p class ="timeform" >
+                        {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type'  or field.id_for_label == 'id_cycle_stopday' %}
+                            <p>
+                        {% endif %}
+                            {{field.label_tag}}
+                            {{field}}
+                        {% for error in field.errors %}
+                            {{error}}
+                        {% endfor %}
+                        </p>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+                <td valign="top">
+                    {% for field in form %}
+                        {% if field.label == '場所' %}
+
+                            {{field.label_tag}}
+                            {% for choice in field %}
+                                <br> 
+                                {{ choice.tag }}
+                                {{ choice.choice_label }}
+                            {% endfor %}
+
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %} 
+                           
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td valign="top">
+                    {% for field in form %}
+                        {% if field.label == '設備' %}
+
+                            {{field.label_tag}}
+                            {% for choice in field %}
+                                <br>
+                                {{ choice.tag }}
+                                {{ choice.choice_label }}
+                            {% endfor %}
+
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %} 
+                            
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td valign="top">
+                    {% for field in form %}
+                        {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
+                        <p>
+                            {{field.label_tag}}
+                            {{field}}
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        </table> 
         {% csrf_token %}
         <button type="submit">登録</button>
         <button type="reset" onclick="reset_timeform()">取消</button>
     </form>
-    
 {% endblock %}

@@ -32,4 +32,5 @@ urlpatterns = [
     path('event/detail/edit/<int:pk>/',views.EventEdit.as_view(), name='Event_edit'),
     path('event/detail/edit/<int:pk>/<int:year>/<int:month>/<int:day>/',views.EventEdit.as_view(), name='Event_edit'),
     path('event/detail/<int:pk>/delete/', views.EventDelete.as_view(), name='Event_delete'),
+    path('event/cycle/edit/<int:pk>/<int:year>/<int:month>/<int:day>/',views.EventCycleEdit.as_view(), name='event_cycle_edit'),
 ]

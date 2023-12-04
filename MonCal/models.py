@@ -20,10 +20,8 @@ class Schedule(models.Model):
         end=self.endtime.strftime('%H:%M')
         return f'{self.date} {start} ~ {end}：{self.title}'
 
-
-
 class EventSchedule(models.Model):
-    date=models.DateField('日付', blank=True,null=True)
+    date=models.DateField('日付',null=True)
     starttime=models.TimeField('開始時刻', blank=True,null=True)
     endtime=models.TimeField('終了時刻', blank=True,null=True)
     updateuser = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='ユーザー',
@@ -31,6 +29,7 @@ class EventSchedule(models.Model):
     title=models.CharField('タイトル',max_length=31, null=True)    
     cycle_type=models.ForeignKey('Cycle_type', verbose_name='繰り返し区分',
                                 on_delete=models.SET_DEFAULT, default=1,)
+    cycle_stopday=models.DateField('繰り返し停止日', blank=True,null=True)
     place=models.ManyToManyField('Event', verbose_name='場所')
     room=models.ManyToManyField('Suresubject', verbose_name='設備',blank=True)
     detail=models.TextField('詳細',null=True,blank=True)
@@ -38,6 +37,24 @@ class EventSchedule(models.Model):
         start=self.starttime.strftime('%H:%M')
         end=self.endtime.strftime('%H:%M')
         return f'{self.date} {start} ~ {end}：{self.title}'
+
+class Cycle_pause(models.Model):
+    date=models.DateField('日付', blank=True,null=True)
+    schedule=models.ForeignKey('EventSchedule', verbose_name='行事予定',
+                               on_delete=models.CASCADE)
+    pause_type=models.ForeignKey('Pause_type', verbose_name='定期的な予定の削除'
+                                 ,on_delete=models.SET_DEFAULT, default=1,)
+    updateuser = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='ユーザー',
+                                    on_delete=models.SET_NULL, null=True,blank=True)
+    
+    def __str__(self):
+        return f'{self.date} {self.schedule.title}'
+
+class Pause_type(models.Model):
+    code=models.CharField('コード',max_length=31)
+    name=models.CharField('名前',max_length=31)
+    def __str__(self):
+        return self.name
 
 class Cycle_type(models.Model):
     code=models.CharField('コード',max_length=31)

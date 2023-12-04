@@ -29,3 +29,4 @@ PostgreSQL ポート番号:5432
 
 https://hkkhasegawa.pythonanywhere.com/
 
+        display: none;  

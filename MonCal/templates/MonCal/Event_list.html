@@ -17,7 +17,13 @@
             {% for schedule in all_schedule %}
             <tr>
                 <td>{{ schedule.0 |date:"Y年Md日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}</td>
-                <td><a href="{% url 'MonCal:Event_detail' schedule.1.pk %}">{{ schedule.1.title }}</a></td>
+                <td>
+                    {% if schedule.1.cycle_type.code == "nocycle" %}
+                        <a href="{% url 'MonCal:Event_detail' schedule.1.pk %}">{{ schedule.1.title }}</a>
+                    {% else %}
+                        <a href="{% url 'MonCal:event_cycle_edit' schedule.1.pk schedule.0.year schedule.0.month schedule.0.day %}">{{ schedule.1.title }}</a>
+                    {% endif %}
+                </td>
                 {% for place in place_list %}
                     {% if place in schedule.1.place.all %}
                     <td>〇</td>

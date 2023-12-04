@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import generic
 from django.urls import reverse,reverse_lazy
-from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day
+from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day,Cycle_pause
 from .forms import Scheduleform,EventScheduleform
 import datetime,calendar
 
@@ -242,38 +242,19 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
     def form_valid(self, form):
         schedule=form.save(commit=False)
         rooms = form.cleaned_data.get('room')
-        if schedule.starttime >= schedule.endtime:
-            messages.error(self.request, '時刻が不正です。')
-            return redirect('MonCal:eventcalendar')
-        #設備予約をチェック
-        if schedule.cycle_type.code == 'nocycle':
-            samedaysche=betweenschedule(EventSchedule,schedule.date,schedule.date)
-            for sche_list in samedaysche:
-                sche=sche_list[2]
-                if sche.starttime < schedule.endtime or sche.endtime > schedule.starttime:
-                    for subject in sche.room.all():
-                        if str(subject.pk ) in rooms:
-                            messages.error(self.request,subject.name + 'にすでに予約がありました。')
-                            return redirect('MonCal:eventcalendar')
-        elif schedule.cycle_type.code == 'week':
-            for subject_pk in rooms:
-                subject=Suresubject.objects.get(pk=int(subject_pk))
-                if EventSchedule.objects.filter(date__week_day=schedule.date.weekday(),room=subject,cycle_type__code='nocycle')\
-                                .exclude(Q(starttime__gte= schedule.endtime) | Q(endtime__lte=schedule.starttime)| Q(date__lt=schedule.date)).exists():
-                    messages.error(self.request,subject.name + 'にすでに予約がありました。')
-                    return redirect('MonCal:eventcalendar')
+        if eventform_savecheck(self,schedule,rooms,0):
+            schedule.updateuser=self.request.user
+            schedule.save()
+            form.save_m2m()
+            return redirect('MonCal:event_list')
         else:
-            for subject_pk in rooms:
-                subject=Suresubject.objects.get(pk=int(subject_pk))
-                if EventSchedule.objects.filter(room__in=subject,cycle_type=schedule.cycle_type)\
-                                        .exclude(Q(starttime__gte= schedule.endtime) | Q(endtime__lte=schedule.starttime)).exists():
-                    messages.error(self.request,subject.name + 'にすでに予約がありました。')
-                    return redirect('MonCal:eventcalendar')
-        schedule.updateuser=self.request.user
-        schedule.save()
-        form.save_m2m()
-        return redirect('MonCal:event_list')
-
+            year = self.kwargs.get('year')
+            month = self.kwargs.get('month')
+            day = self.kwargs.get('day')
+            if year and month and day:
+                return redirect('MonCal:eventcalendar', year=year,month=month,day=day)
+            else:
+                return redirect('MonCal:eventcalendar')
 #営業所ごとの直近の行事予定
 class EventList(LoginRequiredMixin, generic.TemplateView):
     template_name = 'MonCal/Event_list.html'
@@ -319,7 +300,6 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
-        
         # どの日を基準にカレンダーを表示するかの処理。年月日の指定がなければ今日からの表示。
         year = self.kwargs.get('year')
         month = self.kwargs.get('month')
@@ -341,42 +321,54 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     def form_valid(self, form):
         schedule = form.save(commit=False)
         rooms=form.cleaned_data.get('room')
-        #時刻が不正の場合
-        if schedule.starttime >= schedule.endtime:
-            messages.error(self.request, '時刻が不正です。')
-            return redirect('MonCal:Event_edit', pk=schedule.pk)
-        schedule.updateuser= self.request.user
-        beforesche=EventSchedule.objects.get(pk=schedule.pk)
-        
-        pre_schedule_list=[]
-        for subject_pk in rooms:
-            subject=Suresubject.objects.get(pk=subject_pk)
-            
-            pre_schedule=Schedule(date=schedule.date,starttime=schedule.starttime,endtime=schedule.endtime,
-                                        subject_name=subject,user= self.request.user,title=schedule.title,
-                                        cycle_type=schedule.cycle_type,detail=schedule.detail)
-            pre_schedule_pk=0
-            for before_sche_room in beforesche.subschedule.all():
-                if subject.pk == before_sche_room.subject_name.pk:
-                    pre_schedule_pk=before_sche_room.pk
-                    pre_schedule.pk=pre_schedule_pk
-            if bookingcheck(pre_schedule,subject,pre_schedule_pk):
-                messages.error(self.request,subject.name + 'にすでに予約がありました。')
+        if eventform_savecheck(self,schedule,rooms,schedule.pk):
+            schedule.updateuser=self.request.user
+            schedule.save()
+            form.save_m2m()
+            return redirect('MonCal:Event_detail', pk=schedule.pk)
+        else:
+            year = self.kwargs.get('year')
+            month = self.kwargs.get('month')
+            day = self.kwargs.get('day')
+            if year and month and day:
+                return redirect('MonCal:Event_edit', pk=schedule.pk,year=year,month=month,day=day)
+            else:
                 return redirect('MonCal:Event_edit', pk=schedule.pk)
-            pre_schedule_list.append(pre_schedule)
-        for before_sche_room in beforesche.subschedule.all():
-            before_sche_room.delete()
-        for pre_schedule in pre_schedule_list:
-            pre_schedule.save()
-            schedule.subschedule.add(pre_schedule)
-        schedule.save()
-        form.save_m2m()
-        return redirect('MonCal:Event_detail', pk=schedule.pk)
 #行事予定の削除
 class EventDelete(LoginRequiredMixin, generic.DeleteView):
     model = EventSchedule
     success_url=reverse_lazy('MonCal:event_list')
 
+class EventCycleEdit(LoginRequiredMixin,generic.CreateView):
+    model=Cycle_pause
+    template_name = 'MonCal/event_cycle_edit.html'
+    fields=('pause_type',)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
+        base_date = datetime.date(year=year, month=month, day=day)
+        context['schedule'] =schedule
+        context['date'] =base_date
+        return context
+    def form_valid(self, form):
+        pause = form.save(commit=False)
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
+        base_date = datetime.date(year=year, month=month, day=day)
+        if pause.pause_type.code == 'Single':
+            pause.date= base_date
+            pause.schedule=schedule
+            pause.updateuser=self.request.user
+            pause.save()
+        if pause.pause_type.code == 'After':
+            schedule.cycle_stopday = base_date
+            schedule.save()
+        return redirect('MonCal:event_list')
 #時刻の選択肢作成
 def choicetime():
     looptime=get_object_or_404(Booking_time, pk=1).time
@@ -535,7 +527,7 @@ def calumndays(days,times,schedule_list):
                 else:
                     now_row=now_row+1
             shce_list[now_row]=input_row(shce_list[now_row],times,schedule)      
-        day_dic={'date_span':max_row+2,'shce_span':max_row+1,'shce_list':shce_list}
+        day_dic={'date_span':max_row+2,'shce_list':shce_list}
         calendar[day] =day_dic
     return calendar
 #行事の時間衝突確認
@@ -552,15 +544,18 @@ def input_row(row,times,schedule):
     inputF=True
     col=1
     for time in times:
-        if time >=schedule.starttime and time <= schedule.endtime:
+        if time >=schedule.starttime and time < schedule.endtime:
             if inputF:
                 inputF=False
                 row[time] =schedule
                 starttime=time
+                print(schedule)
+                print(time)
             else:
+                print(time)
                 row[time]='same'
                 col=1+col
-    book={'col_span':col-1,'schedule':schedule}
+    book={'col_span':col,'schedule':schedule}
     row[starttime] =book
     return row
 
@@ -580,13 +575,50 @@ def bookingcalmun(calendar,booking_date,subject,booking_time,schedule):
             whileboolen=False
     calendar[booking_date][subject][booking_time]={schedule:flame}
     return calendar
+#行事フォーム保存
+def eventform_savecheck(self,schedule,rooms,sche_pk):
+    if schedule.starttime >= schedule.endtime:
+        messages.error(self.request, '時刻が不正です。')
+        return False
+    #設備予約をチェック
+    if schedule.cycle_type.code == 'nocycle':
+        samedaysche=betweenschedule(EventSchedule,schedule.date,schedule.date)
+        for sche_list in samedaysche:
+            sche=sche_list[2]
+            if (sche.starttime < schedule.endtime or sche.endtime > schedule.starttime) and sche.pk !=sche_pk:
+                for subject in sche.room.all():
+                    if str(subject.pk ) in rooms:
+                        messages.error(self.request,subject.name + 'にすでに予約がありました。')
+                        return False
+    #繰り返しありの場合
+    elif schedule.cycle_type.code == 'week':
+        if EventSchedule.objects.filter(date__week_day=weekdaychinge(schedule.date.weekday()),
+                                        room__in=rooms,cycle_type__code='nocycle')\
+                                .exclude(Q(starttime__gte= schedule.endtime) |
+                                         Q(endtime__lte=schedule.starttime) | 
+                                         Q(date__lt=schedule.date)| 
+                                         Q(pk=sche_pk)).exists() \
+        or EventSchedule.objects.filter(date__week_day=weekdaychinge(schedule.date.weekday()),
+                                        room__in=rooms,cycle_type__code='week')\
+                                .exclude(Q(starttime__gte= schedule.endtime) | 
+                                         Q(endtime__lte=schedule.starttime)| 
+                                         Q(pk=sche_pk)).exists():
+            messages.error(self.request,subject.name + 'にすでに予約がありました。')
+            return False
+    else:
+        if EventSchedule.objects.filter(room__in=rooms,cycle_type=schedule.cycle_type)\
+                                .exclude(Q(starttime__gte= schedule.endtime) | Q(endtime__lte=schedule.starttime)| Q(pk=sche_pk)).exists():
+            messages.error(self.request,subject.name + 'にすでに予約がありました。')
+            return False
+    return True
 
 #ある期間の中にあるスケジュールを抽出
 def betweenschedule(Schedule,dt_today,dt_nextmon):
     schedule=Schedule.objects.filter(date__gte=dt_today,date__lte=dt_nextmon,
                                      cycle_type__code='nocycle').order_by('date','starttime')
-    weekschedule=Schedule.objects.filter(date__lte=dt_nextmon,\
-                                       cycle_type__code='week').order_by('date','starttime')
+
+    weekschedule=Schedule.objects.filter(date__lte=dt_nextmon,
+                                         cycle_type__code='week').order_by('date','starttime')
     dt=dt_today
     sche_list=[]
     num=0
@@ -596,12 +628,21 @@ def betweenschedule(Schedule,dt_today,dt_nextmon):
         num=num+1
     while dt <= dt_nextmon:
         for sche in weekschedule:
-           if dt.weekday()  == sche.date.weekday():
+           if dt.weekday()  == sche.date.weekday() and stopdaycheck(sche.cycle_stopday,dt)\
+           and not Cycle_pause.objects.filter(date=dt,schedule=sche).exists():
                 sche_datetime=datetime.datetime.combine(dt, sche.starttime)
                 sche_list.append([sche_datetime,num,sche])
                 num=num+1
         dt=dt+ datetime.timedelta(days=1)
     return sorted(sche_list)
+
+def stopdaycheck(stopday,date):
+    if stopday is None:
+        return True
+    elif stopday >date:
+        return True
+    else :
+        return False
 
 #一致する曜日を探す
 def weeklymatch(date,days):
@@ -613,16 +654,22 @@ def bookingcheck(schedule,subject,schedule_pk):
     return(singlebooking(schedule,subject,schedule_pk) or cyclebooking(schedule,subject,schedule_pk) or newcyclecheck(schedule,subject,schedule_pk))
 #単発スケジュールとの衝突確認
 def singlebooking(schedule,subject,schedule_pk):
-    singleboolean=Schedule.objects.filter(date=schedule.date,subject_name=subject,cycle_type__code='nocycle')\
-                    .exclude(Q(starttime__gte= schedule.endtime) | Q(endtime__lte=schedule.starttime)|Q(pk=schedule_pk)).exists()
+    singleboolean=Schedule.objects.filter(date=schedule.date,
+                                          subject_name=subject,cycle_type__code='nocycle')\
+                                  .exclude(Q(starttime__gte= schedule.endtime) | 
+                                           Q(endtime__lte=schedule.starttime)|
+                                           Q(pk=schedule_pk)).exists()
     return(singleboolean)
 #繰り返しスケジュールとの衝突確認
 def cyclebooking(schedule,subject,schedule_pk):
     cyboolean=False
     for cysche in Schedule.objects.filter(date__lte=schedule.date,subject_name=subject)\
-            .exclude(Q(starttime__gte= schedule.endtime)|Q(endtime__lte=schedule.starttime)|\
-                     Q(cycle_type__code='nocycle')| Q(pk=schedule_pk)):
-        if cysche.cycle_type.code == 'week' and cysche.date.weekday()==schedule.date.weekday():
+                                  .exclude(Q(starttime__gte= schedule.endtime)|
+                                           Q(endtime__lte=schedule.starttime)|
+                                           Q(cycle_type__code='nocycle')| 
+                                           Q(pk=schedule_pk)):
+        if cysche.cycle_type.code == 'week' \
+        and cysche.date.weekday()==schedule.date.weekday():
                 cyboolean=True
     return(cyboolean)
 #繰り返しを追加するときの衝突確認
@@ -631,24 +678,16 @@ def newcyclecheck(schedule,subject,schedule_pk):
     if schedule.cycle_type.code =='nocycle':
         cyboolean=False
     elif schedule.cycle_type.code =='week':
-        for cysche in Schedule.objects.filter(date__gte=schedule.date,subject_name=subject)\
-            .exclude(Q(starttime__gte= schedule.endtime)|Q(endtime__lte=schedule.starttime)| Q(pk=schedule_pk)):
+        for cysche in Schedule.objects.filter(date__gte=schedule.date,
+                                              subject_name=subject)\
+                                      .exclude(Q(starttime__gte= schedule.endtime)|
+                                               Q(endtime__lte=schedule.starttime)| 
+                                               Q(pk=schedule_pk)):
             if cysche.date.weekday()==schedule.date.weekday():
                 cyboolean=True
     return(cyboolean)
 
 def weekdaychinge(weekday):
-    if weekday == 0:
-        return('月')
-    elif weekday==1:
-        return('火')
-    elif weekday==2:
-        return('水')
-    elif weekday==3:
-        return('木')
-    elif weekday==4:
-        return('金')
-    elif weekday==5:
-        return('土')
-    elif weekday==6:
-        return('日')
+    newweekday= (weekday+1) % 7 +1
+    return(newweekday)
+    

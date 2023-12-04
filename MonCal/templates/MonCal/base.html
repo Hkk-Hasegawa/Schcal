@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-
+{% load static %}
 <html lang="ja">
-    {% load static %}
+    
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
+    
     <title>平成共有予約サイト</title>
-
     <script>
         function date_Normalization(date){
             const datearr=date.replace(/(年|月)/g, '-').replace('日', '').split('-');
@@ -257,15 +257,20 @@
             padding-top: 50px;
             font-size: medium;
         }
-        tr {
-        height: 20px;
-        }
+
         nav > a {
             margin-right: 10px;
         }
-        .selecttime{ background-color: #00bfff;}
-        .timeform { display: none;  }
-        
+        .selecttime{
+        background-color: #00bfff;
+        }
+        .timeform{ 
+            display: none;  
+        }
+        .eventcal-tr{
+            height: 20px;
+            font-size:14px
+        }
     </style>
 </head>
 

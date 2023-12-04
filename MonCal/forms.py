@@ -27,7 +27,7 @@ class EventScheduleform(forms.ModelForm):
     place= forms.MultipleChoiceField(label='場所',widget=forms.CheckboxSelectMultiple,required=True)
     class Meta:
         model =EventSchedule
-        fields = ('title','place','room','date','starttime','endtime','cycle_type','detail')
+        fields = ('date','starttime','endtime','cycle_type','cycle_stopday' ,'place','room','title','detail')
         widgets = {'date': AdminDateWidget()}
     
     def __init__(self, categories=None, *args, **kwargs):

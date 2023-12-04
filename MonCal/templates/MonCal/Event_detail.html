@@ -1,8 +1,8 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
-    <h1>{{ schedule.title }}の詳細</h1>
     <h2><a href="{% url 'MonCal:eventcalendar' %}">行事予約ページへ</a></h2>
     <h2><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h2>
+    <h1>{{ schedule.title }}の詳細</h1>
     <table frame="void">
         <tr>
         <td><button  type="button" ><a href="{% url 'MonCal:Event_edit'  schedule.pk %}">編集</a></button></td>
@@ -16,19 +16,18 @@
     </table>
     
     
-    {% if schedule.cycle == 'nocycle' %}
-        <p><div>時間：{{ schedule.date }}{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
-    {% else %}
-        <p><div>時間：{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
-    {% endif %}
+    <p><div>時間：{{ schedule.date }}{{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
+    <p>場所：
+        {% for place in schedule.place.all %}
+                {{place}}
+        {% endfor %}
+    </p>
     <p>設備予約：
-        {% if schedule.subschedule %}
-            {% for pre_schedule in schedule.subschedule.all %}
-                {{pre_schedule.subject_name}}
-            {% endfor %}
-        {% else %}
+        {% for room in schedule.room.all %}
+            {{room}}
+        {% empty %}
             予約はありません
-        {% endif %}
+        {% endfor %}
     </p>
     <p>内容</p>
         <div>{{ schedule.detail|linebreaksbr  }}</div>

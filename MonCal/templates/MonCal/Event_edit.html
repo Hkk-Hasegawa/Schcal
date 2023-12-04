@@ -36,7 +36,7 @@
         </thead>
         <tbody>
         {% for day, shcelist in calendar.items %}
-            <tr style="font-size:14px" >
+            <tr class="eventcal-tr" >
                 <th rowspan="{{shcelist.date_span}}" hight="14">
                     {% if day in workingday_list %}
                         {% if day.weekday < 5 %}
@@ -113,37 +113,60 @@
     </table>
     
     <form action="" method="POST">
-        {% for field in form %}
-            {% if field.label == '設備' or field.label == '場所' %}
-            <p>
-                {{field.label_tag}}
-                {% for choice in field %}
-                    {{ choice.choice_label }}
-                    {{ choice.tag }}
-                {% endfor %}
-                {% for error in field.errors %}
-                    {{error}}
-                {% endfor %}
-            </p>
-            {% else %}
-                {% if field.id_for_label == 'id_starttime' %}
-                    <p id ="s_timetext">{{field.label}}:</p>
-                    <p class ="timeform">
-                {% elif field.id_for_label == 'id_endtime' %}
-                    <p id ="e_timetext">{{field.label}}:</p>
-                    <p class ="timeform" >
-                {% else %}
-                    <p>
-                {% endif %}
-                    {{field.label_tag}}
-                    {{field}}
-                {% for error in field.errors %}
-                    {{error}}
-                {% endfor %}
-                </p>
-            {% endif %}
-        
-        {% endfor %}
+        <table border="0" width="90%">
+            <tr>
+                <td valign="top">
+                    {% for field in form %}
+                    {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
+                        {% if field.id_for_label == 'id_starttime' %}
+                            <p id ="s_timetext">{{field.label}}:</p>
+                            <p class ="timeform">
+                        {% elif field.id_for_label == 'id_endtime' %}
+                            <p id ="e_timetext">{{field.label}}:</p>
+                            <p class ="timeform" >
+                        {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
+                            <p>
+                        {% endif %}
+                            {{field.label_tag}}
+                            {{field}}
+                        {% for error in field.errors %}
+                            {{error}}
+                        {% endfor %}
+                        </p>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+                <td valign="top">
+                    {% for field in form %}
+                        {% if field.label == '設備' or field.label == '場所' %}
+                            <p>
+                            {{field.label_tag}}
+                            {% for choice in field %}
+                                {{ choice.choice_label }}
+                                {{ choice.tag }}
+                            {% endfor %}
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %}
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td valign="top">
+                    {% for field in form %}
+                        {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
+                        <p>
+                            {{field.label_tag}}
+                            {{field}}
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        </table> 
         {% csrf_token %}
         <button type="submit">更新</button>
         <button type="reset" onclick="edit_reset_timeform('{{schedule.date}}','{{schedule.starttime}}','{{schedule.endtime}}')">取消</button>
