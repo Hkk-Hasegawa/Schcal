@@ -386,7 +386,7 @@ def choicetime():
 #行事予定フォーム選択肢作成
 def eventform_choice():
     subjectlist=[]
-    for subject in Suresubject.objects.all().exclude(subject_type=3):
+    for subject in Suresubject.objects.all().exclude(subject_type__name='社用車'):
         subjectlist.append((str(subject.pk),subject.name))
     placelist=[]
     for place in Event.objects.all():
