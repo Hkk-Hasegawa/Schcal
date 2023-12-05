@@ -52,3 +52,6 @@ background-color: #00bfff;
     border-left: 1px solid #000;
     
 }
+#calender{
+    user-select: none;
+}

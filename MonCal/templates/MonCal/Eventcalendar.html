@@ -4,7 +4,7 @@
 
 <h2>行事新規登録</h2>
 <h2><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h2>
-    <table   style="border-collapse: collapse" id="calender">
+    <table   style="border-collapse: collapse " id="calender" draggable="false" >
         <caption>
             <a href="{% url 'MonCal:eventcalendar'%}">行事新規登録</a>
             <br>{{ start_day }} - {{ end_day }}
@@ -52,7 +52,9 @@
                     {% for time in input_times %}
                     <td bgcolor="#d3d3d3" 
                         {% if time in times %}
-                            class="scale_time"
+                            class="choice_cell scale_time"
+                        {% else %}
+                            class="choice_cell"
                         {% endif %}
                         onmouseover="ev_mouse_over(this,'{{tailtime| date:'H:i'}}')"  ></td>
                     {% endfor %} 
@@ -61,7 +63,9 @@
                     <td  bgcolor="#d9e5ff" onmouseover="ev_mouse_over(this,'{{tailtime| date:'H:i'}}')" 
                         onMouseDown="ev_intime(this,'{{day| date:'Y-m-d'}}','{{tailtime| date:'H:i'}}')"  
                         {% if time in times %}
-                            class="scale_time"
+                            class="choice_cell scale_time"
+                        {% else %}
+                            class="choice_cell"
                         {% endif %}
                     ></td>
                     {% endfor %}   
