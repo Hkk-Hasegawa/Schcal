@@ -1,0 +1,54 @@
+li {
+    font-size: large;
+}
+body {
+    width: 80%;
+    height: 100%;
+    margin:  auto;
+    padding-top: 50px;
+    font-size: medium;
+    
+}
+
+nav > a {
+    margin-right: 10;
+}
+.selecttime{
+background-color: #00bfff;
+}
+.timeform{ 
+    display: none;  
+}
+.cellstime{ 
+    display: none;  
+}
+.eventcal-tr{
+    border: 1px solid #000;
+    height: 20px;
+    font-size:14px
+}
+.headers_time{
+    width: 50px;
+    border-left: 1px solid #000;
+    border-right: 1px solid #000;
+}
+
+.cal_head_row{
+    border: 1px solid #000;
+    font-size:14px
+}
+.cal_sche_row{
+    border: 1px solid #000;
+    font-size:12px
+}
+.scale_time{
+    border-left: 1px solid #000;
+    
+}
+.sche_box{
+    border: 1px solid #000;
+}
+.date_col{
+    border-left: 1px solid #000;
+    
+}
