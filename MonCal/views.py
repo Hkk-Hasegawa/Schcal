@@ -338,7 +338,7 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
 class EventDelete(LoginRequiredMixin, generic.DeleteView):
     model = EventSchedule
     success_url=reverse_lazy('MonCal:event_list')
-
+#繰り返し休止日設定
 class EventCycleEdit(LoginRequiredMixin,generic.CreateView):
     model=Cycle_pause
     template_name = 'MonCal/event_cycle_edit.html'
@@ -350,8 +350,10 @@ class EventCycleEdit(LoginRequiredMixin,generic.CreateView):
         day = self.kwargs.get('day')
         schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
         base_date = datetime.date(year=year, month=month, day=day)
+        after_pause=Cycle_pause.objects.filter(date__gte=base_date,schedule=schedule)
         context['schedule'] =schedule
         context['date'] =base_date
+        context['after_pause'] =after_pause
         return context
     def form_valid(self, form):
         pause = form.save(commit=False)
@@ -366,9 +368,18 @@ class EventCycleEdit(LoginRequiredMixin,generic.CreateView):
             pause.updateuser=self.request.user
             pause.save()
         if pause.pause_type.code == 'After':
-            schedule.cycle_stopday = base_date
-            schedule.save()
+            if Cycle_pause.objects.filter(schedule=schedule,pause_type__code='After').exists():
+                pause=Cycle_pause.objects.get(schedule=schedule,pause_type__code='After')
+            pause.updateuser=self.request.user
+            pause.date= base_date
+            pause.save()
         return redirect('MonCal:event_list')
+#繰り返し休止日削除
+class EventCycleDelete(LoginRequiredMixin, generic.DeleteView):
+    model = Cycle_pause
+    success_url=reverse_lazy('MonCal:event_list')
+    template_name = 'MonCal/delete_event_cycle.html'
+
 #時刻の選択肢作成
 def choicetime():
     looptime=get_object_or_404(Booking_time, pk=1).time
@@ -627,22 +638,21 @@ def betweenschedule(Schedule,dt_today,dt_nextmon):
         sche_list.append([sche_datetime,num,sche])
         num=num+1
     while dt <= dt_nextmon:
-        for sche in weekschedule:
-           if dt.weekday()  == sche.date.weekday() and stopdaycheck(sche.cycle_stopday,dt)\
-           and not Cycle_pause.objects.filter(date=dt,schedule=sche).exists():
-                sche_datetime=datetime.datetime.combine(dt, sche.starttime)
-                sche_list.append([sche_datetime,num,sche])
-                num=num+1
+        if not  Working_day.objects.filter(date=dt,weekend_f=False).exists():
+            for sche in weekschedule:
+                if dt.weekday()  == sche.date.weekday() \
+                and stopdaycheck(sche,dt):
+                    sche_datetime=datetime.datetime.combine(dt, sche.starttime)
+                    sche_list.append([sche_datetime,num,sche])
+                    num=num+1
         dt=dt+ datetime.timedelta(days=1)
     return sorted(sche_list)
 
-def stopdaycheck(stopday,date):
-    if stopday is None:
-        return True
-    elif stopday >date:
-        return True
-    else :
+def stopdaycheck(schedule,date):
+    if Cycle_pause.objects.filter(date=date,schedule=schedule).exists()\
+    or Cycle_pause.objects.filter(date__lte=date,schedule=schedule,pause_type__code='After').exists():
         return False
+    return True
 
 #一致する曜日を探す
 def weeklymatch(date,days):

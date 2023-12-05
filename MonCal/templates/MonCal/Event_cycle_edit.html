@@ -16,12 +16,26 @@
         </p>
         {% endfor %}
         {% csrf_token %}
-        <button type="submit" style="color: red;"  onclick="return confirm('削除しますか?')">削除</button>
+        <button type="submit" style="color: red;"  onclick="return confirm('休止しますか?')">休止</button>
     </form>
     <p><a href="{% url 'MonCal:Event_edit'  schedule.pk %}">予定の編集ページへ</a></p>
     <h1>{{ schedule.title }}の詳細</h1>
     
     <p><div>時間：{{date|date:"Y年Md日" }} {{ schedule.starttime }} ~{{ schedule.endtime }}</div></p>
+    <p>行事休止日</p>
+    <ul>
+    {% for pause in after_pause %}
+        {% if pause.pause_type.code == 'Single' %}
+            <li><a href="{% url 'MonCal:event_cycle_delete' pause.pk  %}">
+                {{ pause.date|date:"Y年Md日" }}
+            </a></li>
+        {% elif pause.pause_type.code == 'After' %}
+            <li> 繰り返し終了日：<a href="{% url 'MonCal:event_cycle_delete' pause.pk %}">
+                {{ pause.date|date:"Y年Md日" }}
+            </a></li>
+        {% endif %}
+    {% endfor %}
+    </ul>
     <p>場所：
         {% for place in schedule.place.all %}
             {{place}}

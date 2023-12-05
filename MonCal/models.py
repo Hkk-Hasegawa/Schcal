@@ -29,7 +29,6 @@ class EventSchedule(models.Model):
     title=models.CharField('タイトル',max_length=31, null=True)    
     cycle_type=models.ForeignKey('Cycle_type', verbose_name='繰り返し区分',
                                 on_delete=models.SET_DEFAULT, default=1,)
-    cycle_stopday=models.DateField('繰り返し停止日', blank=True,null=True)
     place=models.ManyToManyField('Event', verbose_name='場所')
     room=models.ManyToManyField('Suresubject', verbose_name='設備',blank=True)
     detail=models.TextField('詳細',null=True,blank=True)

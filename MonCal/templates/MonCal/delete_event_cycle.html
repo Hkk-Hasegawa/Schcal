@@ -1,0 +1,9 @@
+{% extends 'MonCal/base.html' %}
+{% block content %}
+<h4><a href="{% url 'MonCal:event_list' %}">一覧へ戻る</a></h4>
+<form method="post">
+    {% csrf_token %}
+    <p>休止を解除します。よろしいですか？</p>
+    <input class="btn btn-danger" type="submit" value="解除する">
+</form>
+{% endblock %}

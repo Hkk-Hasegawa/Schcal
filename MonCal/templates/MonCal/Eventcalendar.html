@@ -17,9 +17,9 @@
                     <a href="{% url 'MonCal:eventcalendar' next.year next.month next.day %}">次週</a>
                 </th>
                 {% for time in times %}
-                <th >{{ time }}</th>
+                <th class="headers_time">{{ time }}</th>
                 {% endfor %}
-                <th >{{tailtime}}</th>
+                <th class="headers_time">{{tailtime}}</th>
             </tr>
         </thead>
         <tbody>
@@ -47,7 +47,7 @@
                     {% endfor %} 
                 {% else %}
                     {% for time in times %}
-                    <td  bgcolor="#d9e5ff" onclick="ev_intime(this,'{{day}}','{{tailtime}}')" class=""></td>
+                    <td  bgcolor="#d9e5ff" onMouseDown="ev_intime(this,'{{day| date:'Y-m-d'}}','{{tailtime}}')" class="choice_td"></td>
                     {% endfor %}   
                 {% endif %}
                 <th rowspan="{{shcelist.date_span}}">
@@ -81,8 +81,12 @@
                                 <td></td>
                             {% elif book == 'same' %}
                             {% else %}
-                                <td bgcolor="#d3d3d3" colspan='{{book.col_span}}'><a href="{% url 'MonCal:Event_detail' book.schedule.pk %}">
-                                    
+                                <td bgcolor="#d3d3d3" colspan='{{book.col_span}}'>
+                                    {% if book.schedule.cycle_type.code != 'nocycle' %}
+                                        <a href="{% url 'MonCal:event_cycle_edit' book.schedule.pk day.year day.month day.day %}">
+                                    {% else %}
+                                        <a href="{% url 'MonCal:Event_detail' book.schedule.pk %}">
+                                    {% endif %}
                                     {{book.schedule.title}} 
                                     {% for place in book.schedule.place.all %}
                                         {{place}}
@@ -105,7 +109,7 @@
     </table>
     
     <form action="" method="POST">
-        <table border="0" width="90%">
+        <table border="0" width="70%">
             <tr>
                 <td valign="top">
                     {% for field in form %}
@@ -178,9 +182,13 @@
                     {% endfor %}
                 </td>
             </tr>
+            <tr><td></td>
+                <td>
+                    {% csrf_token %}
+                    <button type="submit">登録</button>
+                    <button type="reset" onclick="reset_timeform()">取消</button>
+                </td>
+            </tr>
         </table> 
-        {% csrf_token %}
-        <button type="submit">登録</button>
-        <button type="reset" onclick="reset_timeform()">取消</button>
     </form>
 {% endblock %}
