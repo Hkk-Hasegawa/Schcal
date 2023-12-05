@@ -16,7 +16,7 @@
         <tbody>
             {% for schedule in all_schedule %}
             <tr>
-                <td>{{ schedule.0 |date:"Y年Md日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}</td>
+                <td>{{ schedule.0 |date:"Y年m月d日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}</td>
                 <td>
                     {% if schedule.1.cycle_type.code == "nocycle" %}
                         <a href="{% url 'MonCal:Event_detail' schedule.1.pk %}">

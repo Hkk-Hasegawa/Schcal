@@ -389,7 +389,7 @@ def choicetime():
     while looptime <= end_time:
         choicelist.append((looptime,looptime))
         loopdate=datetime.datetime.combine(today, looptime)
-        loopdate=loopdate + datetime.timedelta(minutes=30)
+        loopdate=loopdate + datetime.timedelta(minutes=5)
         looptime=loopdate.time()
     category_choice = tuple(choicelist)
     return(category_choice)
@@ -484,6 +484,7 @@ def makeeventcal(context,base_date):
     tail_time=get_object_or_404(Booking_time,pk=2).time
     display_period=7
     timestep=30
+    input_timestep=5
     days = [base_date + datetime.timedelta(days=day) for day in range(display_period)]
     start_day = days[0]
     end_day = days[-1]
@@ -493,8 +494,14 @@ def makeeventcal(context,base_date):
     while loop_time < loop_tail:
         times.append(loop_time.time())
         loop_time = loop_time + datetime.timedelta(minutes=timestep)
+    input_times=[]
+    loop_tail= datetime.datetime.combine(start_day,tail_time)
+    loop_time= datetime.datetime.combine(start_day, head_time)
+    while loop_time < loop_tail:
+        input_times.append(loop_time.time())
+        loop_time = loop_time + datetime.timedelta(minutes=input_timestep)
     schedule_list= betweenschedule(EventSchedule,start_day,end_day)
-    calendar=calumndays(days,times,schedule_list)
+    calendar=calumndays(days,input_times,schedule_list)
     workingdays=Working_day.objects.filter(date__gte=start_day,date__lte=end_day)
     workingday_list=[]
     for workingday in workingdays:
@@ -502,6 +509,8 @@ def makeeventcal(context,base_date):
     context['workingday_list'] =workingday_list
     context['calendar'] =calendar
     context['times'] = times
+    context['time_span'] = timestep // input_timestep
+    context['input_times'] =input_times
     context['tailtime'] = tail_time
     context['days'] = days
     context['start_day'] =start_day
@@ -560,10 +569,7 @@ def input_row(row,times,schedule):
                 inputF=False
                 row[time] =schedule
                 starttime=time
-                print(schedule)
-                print(time)
             else:
-                print(time)
                 row[time]='same'
                 col=1+col
     book={'col_span':col,'schedule':schedule}
