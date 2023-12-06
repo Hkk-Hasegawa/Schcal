@@ -189,23 +189,43 @@
                     {% endif %}
                     {% endfor %}
                 </td>
-                <td valign="top" width="70px">
+                <td valign="top"  width="70px">
                     {% for field in form %}
-                        {% if field.label == '設備' or field.label == '場所' %}
-                            <p>
+                        {% if field.label == '場所' %}
+
                             {{field.label_tag}}
                             {% for choice in field %}
-                                {{ choice.choice_label }}
+                                <br> 
                                 {{ choice.tag }}
+                                {{ choice.choice_label }}
                             {% endfor %}
+
                             {% for error in field.errors %}
                                 {{error}}
-                            {% endfor %}
-                            </p>
+                            {% endfor %} 
+                           
                         {% endif %}
                     {% endfor %}
                 </td>
                 <td valign="top" width="80px">
+                    {% for field in form %}
+                        {% if field.label == '設備' %}
+
+                            {{field.label_tag}}
+                            {% for choice in field %}
+                                <br>
+                                {{ choice.tag }}
+                                {{ choice.choice_label }}
+                            {% endfor %}
+
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %} 
+                            
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td valign="top" >
                     {% for field in form %}
                         {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
                         <p>
