@@ -28,11 +28,13 @@ background-color: #00bfff;
     font-size:14px
 }
 .headers_time{
-    width: 50px;
+    
     border-left: 1px solid #000;
     border-right: 1px solid #000;
 }
-
+.choice_cell{
+    width: 0.8%;
+}
 .cal_head_row{
     border: 1px solid #000;
     font-size:14px
@@ -47,11 +49,13 @@ background-color: #00bfff;
 }
 .sche_box{
     border: 1px solid #000;
+    font-size:12px
 }
 .date_col{
-    border-left: 1px solid #000;
+    border: 1px solid #000;
     
 }
 #calender{
+    
     user-select: none;
 }

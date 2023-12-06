@@ -19,22 +19,27 @@
 
 <h2>{{schedule.title}} 内容編集</h2>
 <h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
-    <table style="border-collapse: collapse"  id="calender" >
+    <table width="100%" style="border-collapse: collapse"  id="calender" draggable="false">
         <caption >
+            
             <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事登録</a>
-            <br>{{ start_day }} - {{ end_day }}
+            
+            <br>
+            {{ start_day }} - {{ end_day }}
         </caption>
         <thead>
             <tr class="cal_head_row">
-                <th width="7%">
+                <th class="headers_time">
                     <a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">前週</a>
-                    <br>
-                    <a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">次週</a>
+                    <br>{{ headtime }}
                 </th>
-                {% for time in times %}
-                <th class="headers_time" colspan='{{time_span}}'>{{ time}}</th>
+                {% for hour,span in hour_list.items %}
+                <th class="headers_time" colspan='{{span}}'>{{ hour }}</th>
                 {% endfor %}
-                <th class="headers_time">{{tailtime}}</th>
+                <th class="headers_time">
+                    <a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">次週</a>
+                    <br>{{tailtime}}
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -66,9 +71,11 @@
                 {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
                     {% for time in input_times %}
                     <td bgcolor="#d3d3d3" 
-                        {% if time in times %}
-                            class="scale_time"
-                        {% endif %}
+                    {% if time in times %}
+                        class="choice_cell scale_time"
+                    {% else %}
+                        class="choice_cell"
+                    {% endif %}
                         onmouseover="ev_mouse_over(this,'{{tailtime| date:'H:i'}}')" ></td>
                     {% endfor %} 
                 {% else %}
@@ -130,7 +137,7 @@
                                     {% else %}
                                         <a href="{% url 'MonCal:Event_detail' book.schedule.pk %}">
                                     {% endif %}
-                                    {{book.schedule.title}} 
+                                    {{book.schedule.title}} <br>
                                     {% for place in book.schedule.place.all %}
                                         {{place}}
                                     {% endfor %}
@@ -151,19 +158,27 @@
     </table>
     
     <form action="" method="POST">
-        <table border="0" width="90%">
+        <table border="0" width="100%" table-layout: fixed;>
             <tr>
                 <td valign="top">
                     {% for field in form %}
                     {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
                         {% if field.id_for_label == 'id_starttime' %}
-                            <p id ="s_timetext">{{field.label}}:</p>
-                            <p class ="timeform">
+                        <p>
+                            <button type="button" onclick="ev_time_bottun('start','up')">△</button>
+                            <button type="button" onclick="ev_time_bottun('start','down')">▽</button>
+                            <span id ="s_timetext">{{field.label}}:</span>
+                        </p>
+                        <p class ="timeform">
                         {% elif field.id_for_label == 'id_endtime' %}
-                            <p id ="e_timetext">{{field.label}}:</p>
-                            <p class ="timeform" >
+                        <p>
+                            <button type="button" onclick="ev_time_bottun('end','up')">△</button>
+                            <button type="button" onclick="ev_time_bottun('end','down')">▽</button>
+                            <span id ="e_timetext">{{field.label}}:</span>
+                        </p>
+                        <p class ="timeform" >
                         {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
-                            <p>
+                        <p>
                         {% endif %}
                             {{field.label_tag}}
                             {{field}}
@@ -174,7 +189,7 @@
                     {% endif %}
                     {% endfor %}
                 </td>
-                <td valign="top">
+                <td valign="top" width="70px">
                     {% for field in form %}
                         {% if field.label == '設備' or field.label == '場所' %}
                             <p>
@@ -190,7 +205,7 @@
                         {% endif %}
                     {% endfor %}
                 </td>
-                <td valign="top">
+                <td valign="top" width="80px">
                     {% for field in form %}
                         {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
                         <p>
@@ -204,7 +219,8 @@
                     {% endfor %}
                 </td>
             </tr>
-            <tr><td></td>
+            <tr>
+                <td></td>
                 {% csrf_token %}
                 <td>
                     <button type="submit">更新</button>
