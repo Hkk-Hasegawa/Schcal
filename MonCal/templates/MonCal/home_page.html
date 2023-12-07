@@ -13,11 +13,15 @@
             {% if subjects %}
                 <h3><a href="">{{subject_type}}</a></h3>  
             {% endif %}
-            <ul>
+            
                 {% for subject in subjects %}
-                    <li><a href="{% url 'MonCal:property_list' subject.pk %}">{{ subject.name }}</a></li>
+                    <li>{{ subject.name }}</li>
+                    <ul>
+                        <p><a href="{% url 'MonCal:calendar' subject.pk %}">予約ページへ</a></p>
+                        <p><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧</a></p>
+                    </ul>
                 {% endfor %}
-            </ul>
+            
         {% endfor %}    
         <h2><a href="{% url 'MonCal:Working_day_list' %}">稼働日・非稼働日設定</a></h2>    
 {% endblock %}

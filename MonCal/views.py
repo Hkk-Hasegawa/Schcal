@@ -38,7 +38,7 @@ class HomePage(LoginRequiredMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         subject_list={}
-        for subjecttype in Subject_type.objects.all().order_by('-name'):
+        for subjecttype in Subject_type.objects.filter(name='社用車').order_by('-name'):
             subject_list[subjecttype.name]=Suresubject.objects.filter(subject_type=subjecttype).order_by('name')
         context['subject_list']= subject_list
         context['event_list']= Event.objects.all().order_by('name')
@@ -109,12 +109,12 @@ class PropertyList(LoginRequiredMixin, generic.TemplateView):
         dt_today =datetime.date.today()
         dt_nextmon=dt_today  + datetime.timedelta(days=30) 
         subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
-        schedule=Schedule.objects.filter(subject_name=subject,date__gte=dt_today,\
-                     date__lte=dt_nextmon,cycle_type__code='nocycle').order_by('date','starttime')
-        cyschedule=Schedule.objects.filter(subject_name=subject,date__lte=dt_nextmon)\
-                    .exclude(cycle_type__code='nocycle').order_by('date','starttime')
-        context['single_list'] = schedule.distinct()
-        context['cycle_list'] = cyschedule.distinct()
+        
+        all_schedule=betweenschedule(Schedule,dt_today,dt_nextmon)
+        schedule_list=[]
+        for schedule in all_schedule:
+            schedule_list.append((schedule[0],schedule[2]))
+        context['all_schedule'] = schedule_list
         context['subject']=subject
         return context
 #予約カレンダーページ
@@ -134,12 +134,13 @@ class PropertyCalendar(LoginRequiredMixin,generic.CreateView):
         else:
             base_date =  datetime.date.today()
         # カレンダーは、基準日から表示期間分の日付を作成しておく
-        context=makecalendar(subject,base_date,context,0)
+        context=makecal(context,base_date)
+        context['calender']=subject_calender(context,subject,0)
+        context['subject'] =subject
         return context
     #時刻の選択肢
     def get_form_kwargs(self, *args, **kwargs):
         kwgs = super().get_form_kwargs(*args, **kwargs)
-        #subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
         categories={}
         categories
         kwgs["categories"] = choicetime()
@@ -148,17 +149,30 @@ class PropertyCalendar(LoginRequiredMixin,generic.CreateView):
     def form_valid(self, form):
         subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
         schedule = form.save(commit=False)
-        date=schedule.date
+        schedule_list=Schedule.objects.filter(date=schedule.date,subject_name=subject)\
+                                      .exclude(Q(starttime__gte=schedule.endtime)|
+                                               Q(endtime__lte=schedule.starttime))
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        redirect_check=True
         if schedule.starttime >= schedule.endtime:
             messages.error(self.request, '時刻が不正です。')
-        elif  bookingcheck(schedule,subject,0):
+            redirect_check=False
+        elif  schedule_list.exists():
             messages.error(self.request, 'すでに予約がありました。')
+            redirect_check=False
         else:
             schedule.subject_name = subject
             schedule.user= self.request.user
-            schedule.save()                
-            form.save_m2m() 
-        return redirect('MonCal:calendar', pk=subject.pk,year=date.year,month=date.month,day=date.day)
+            schedule.save() 
+        if redirect_check:
+            return redirect('MonCal:property_list', pk=subject.pk)
+        elif year and month and day:
+            return redirect('MonCal:calendar', pk=subject.pk,year=year,month=month,day=day)
+        else:
+            return redirect('MonCal:calendar', pk=subject.pk)
+            
 #設備予約の詳細ページ
 class PropertyDetail(LoginRequiredMixin,generic.TemplateView):
     template_name = 'MonCal/Property_detail.html'
@@ -177,7 +191,7 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = get_object_or_404(Schedule, pk=self.kwargs['pk'])
-        subject=get_object_or_404(Suresubject, pk=self.kwargs['subject_pk'])
+        subject=event.subject_name
         year = self.kwargs.get('year')
         month = self.kwargs.get('month')
         day = self.kwargs.get('day')
@@ -185,7 +199,9 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date=event.date
-        context=makecalendar(subject,base_date,context,event.pk)
+        context=makecal(context,base_date)
+        context['calender']=subject_calender(context,subject,event.pk)
+        context['subject'] =subject
         context['event']=event
         return context
     #時刻の選択肢
@@ -197,22 +213,37 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
     def form_valid(self, form):
         schedule = form.save(commit=False)
         subject=schedule.subject_name 
+        schedule_list=Schedule.objects.filter(date=schedule.date,subject_name=subject)\
+                                      .exclude(Q(starttime__gte=schedule.endtime)|
+                                               Q(endtime__lte=schedule.starttime)|
+                                               Q(pk=schedule.pk)).exists()
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        redirect_check=True
         if schedule.starttime >= schedule.endtime:
-            messages.error(self.request, '時刻が不正です。')  
-            return redirect('MonCal:Property_edit', pk=schedule.pk)
-        elif bookingcheck(schedule,subject,schedule.pk):
+            messages.error(self.request, '時刻が不正です。')
+            redirect_check=False
+        elif schedule_list:
             messages.error(self.request, 'すでに予約がありました。')
-            return redirect('MonCal:Property_edit', pk=schedule.pk)
+            redirect_check=False
         else:
+            schedule.subject_name = subject
             schedule.user= self.request.user
             schedule.save()                
-            form.save_m2m() 
-        return redirect('MonCal:Property_detail', pk=schedule.pk)
+        if redirect_check:
+            return redirect('MonCal:Property_detail', pk=schedule.pk)
+        elif year and month and day:
+            return redirect('MonCal:Property_edit', pk=schedule.pk,year=year,month=month,day=day)
+        else:
+            return redirect('MonCal:Property_edit', pk=schedule.pk)
 #設備予約の削除
 class PropertyDelete(LoginRequiredMixin, generic.DeleteView):
     model = Schedule
     def get_success_url(self):
-        return reverse('MonCal:property_list', kwargs={'pk': self.kwargs['subject_pk']})
+        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        subject_pk=schedule.subject_name.pk
+        return reverse('MonCal:property_list', kwargs={'pk': subject_pk})
 
 #行事予約カレンダーページ
 class EventCalendar(LoginRequiredMixin,generic.CreateView):
@@ -231,7 +262,9 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
         else:
             base_date =  datetime.date.today()
         # カレンダーは、基準日から表示期間分の日付を作成しておく
-        context=makeeventcal(context,base_date)
+        context=makecal(context,base_date)
+        schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
+        context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
         return context
     #選択肢の生成
     def get_form_kwargs(self, *args, **kwargs):
@@ -311,7 +344,9 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
             base_date =  datetime.date.today()
         context['schedule'] =schedule
         # カレンダーは、基準日から表示期間分の日付を作成しておく
-        context=makeeventcal(context,base_date)
+        context=makecal(context,base_date)
+        schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
+        context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
         return context
     #フォームの選択肢を取得
     def get_form_kwargs(self, *args, **kwargs):
@@ -419,78 +454,8 @@ def eventform_choice():
     categories['room']=subjectlist
     categories['place']=placelist
     return(categories)
-
-#カレンダー作成
-def makecalendar(subject,base_date,context,pk):
-    head_time=get_object_or_404(Booking_time, pk=1).time
-    tail_time=get_object_or_404(Booking_time,pk=2).time
-    display_period=7
-    timestep=30
-    days = [base_date + datetime.timedelta(days=day) for day in range(display_period)]
-    start_day = days[0]
-    end_day = days[-1]
-    # head_timeからtail_timeまでtimestep分刻み、display_period分の、値がNothingなカレンダーを作る
-    calendar = {}
-    loop_time= datetime.datetime.combine(start_day, head_time)
-    loop_tail= datetime.datetime.combine(start_day,tail_time)
-    workingdays=[]
-    for workingday in Working_day.objects.filter(Q(date__gte=start_day) | Q(date__lte=end_day)):
-        workingdays.append(workingday.date)
-    while loop_time < loop_tail:
-        row = {}
-        for day in days:
-            if (day.weekday() < 5 and not day in workingdays)\
-                or (day.weekday() >= 5 and day in workingdays):
-                row[day] = 'Nothing'
-            else:
-                row[day] = 'notworkday'
-        calendar[loop_time.time()] = row
-        loop_time = loop_time + datetime.timedelta(minutes=timestep) 
-    #繰り返しスケジュールを取得する
-    for schedule in Schedule.objects.filter(subject_name=subject)\
-                        .exclude(Q(date__gt=end_day) | Q(cycle_type__code='nocycle')|Q(pk=pk)):
-        if schedule.cycle_type.code=='week':
-            day=weeklymatch(date=schedule.date,days=days)
-            calendar=scheincal(calendar,schedule,day)
-
-    # カレンダー表示する最初と最後の日時の間にある予約を取得する
-    for schedule in Schedule.objects.filter(subject_name=subject,cycle_type__code='nocycle')\
-                        .exclude(Q(date__gt=end_day) | Q(date__lt=start_day)|Q(pk=pk)):
-        if schedule.starttime in calendar and schedule.date in calendar[schedule.starttime]: 
-            calendar=scheincal(calendar,schedule,schedule.date)  
-    context['workingdays'] = workingdays
-    context['subject'] =subject
-    context['calendar'] =calendar
-    context['tailtime'] = tail_time
-    context['days'] = days
-    context['start_day'] =start_day
-    context['end_day'] = end_day
-    context['before'] = context['days'][0] - datetime.timedelta(days=display_period)
-    context['next'] = context['days'][-1] + datetime.timedelta(days=1)
-    context['today'] = datetime.date.today()
-    return(context)
-#カレンダーに予定を入力
-def scheincal(calendar,schedule,date):
-    booking_date = date
-    booking_time = schedule.starttime
-    timestep=30
-    calendar[booking_time][booking_date] = schedule
-    int_time=datetime.datetime.combine(booking_date, schedule.starttime)
-    whileboolen=True
-    frame=1
-    while whileboolen:
-        int_time=int_time + datetime.timedelta(minutes=timestep)
-        if int_time.time() < schedule.endtime:
-            booking_time=int_time.time()
-            calendar[booking_time][booking_date] = 'same'
-            frame=frame+1
-        else:
-            whileboolen=False
-    calendar[schedule.starttime][date]={schedule:frame}
-    return(calendar)
-
-#行事カレンダーcontext作成
-def makeeventcal(context,base_date):
+#カレンダーページに必要な
+def makecal(context,base_date):
     head_time=get_object_or_404(Booking_time, pk=1).time
     tail_time=get_object_or_404(Booking_time,pk=2).time
     display_period=7
@@ -526,15 +491,11 @@ def makeeventcal(context,base_date):
         else:
             time_span=1+time_span
     hour_list[tail_time.hour]=(60-tail_time.minute) //input_timestep
-    
-    schedule_list= betweenschedule(EventSchedule,start_day,end_day)
-    calendar=calumndays(days,input_times,schedule_list)
     workingdays=Working_day.objects.filter(date__gte=start_day,date__lte=end_day)
     workingday_list=[]
     for workingday in workingdays:
         workingday_list.append(workingday.date)
     context['workingday_list'] =workingday_list
-    context['calendar'] =calendar
     context['times'] = times
     context['input_times'] =input_times
     context['headtime'] = times[0]
@@ -546,7 +507,42 @@ def makeeventcal(context,base_date):
     context['before'] = days[0] - datetime.timedelta(days=display_period)
     context['next'] = days[-1] + datetime.timedelta(days=1)
     context['today'] = datetime.date.today()
+    return context
+
+#行事カレンダー作成
+def makecalendar(context,base_date,EventSchedule):
+    context=makecal(context,base_date)
+    schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
+    context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
     return(context)
+
+def subject_calender(context,subject,pk):
+    schedule_list= betweenschedule(Schedule,context['start_day'],context['end_day'])
+    if pk !=0:
+        newschedule_list=[]
+        for scheset in schedule_list:
+            if scheset[2].pk != pk:
+                newschedule_list.append(scheset)
+        schedule_list=newschedule_list
+    calendar=pre_calumndays(context['days'],context['input_times'],schedule_list,subject)
+    
+    return(calendar)
+
+def pre_calumndays(days,input_times,schedule_list,subject):
+    calendar = {}
+    for day in days:
+        row = {}
+        for time in input_times:
+            row[time] = 'Nothing'
+        day_schedule=[]
+        for schedule in schedule_list:
+            if day == schedule[0].date() and schedule[2].subject_name ==subject:
+                day_schedule.append(schedule[2])
+        for schedule in day_schedule:
+            row=input_row(row,input_times,schedule)
+        calendar[day]=row
+    return calendar
+
 #行事カレンダーを作成
 def calumndays(days,times,schedule_list):
     calendar = {}
@@ -587,7 +583,7 @@ def confirmation_sche(row,times,schedule):
         and row[time] !='Nothing':
             inputF=False
     return inputF
-#行事を入力
+#予定をカレンダーに入力
 def input_row(row,times,schedule):
     inputF=True
     col=1
@@ -604,22 +600,6 @@ def input_row(row,times,schedule):
     row[starttime] =book
     return row
 
-#スケジュールを行事カレンダーに入力
-def bookingcalmun(calendar,booking_date,subject,booking_time,schedule):
-    calendar[booking_date][subject][booking_time]=schedule
-    int_time=datetime.datetime.combine(booking_date,booking_time)
-    whileboolen=True
-    flame=1
-    while whileboolen:
-        int_time=int_time + datetime.timedelta(minutes=30)
-        if int_time.time() < schedule.endtime:
-            sametime=int_time.time()
-            calendar[booking_date][subject][sametime] = 'same'
-            flame=flame+1
-        else:
-            whileboolen=False
-    calendar[booking_date][subject][booking_time]={schedule:flame}
-    return calendar
 #行事フォーム保存
 def eventform_savecheck(self,schedule,rooms,sche_pk):
     if schedule.starttime >= schedule.endtime:

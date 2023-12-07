@@ -8,7 +8,7 @@ class Scheduleform(forms.ModelForm):
     endtime = forms.ChoiceField(label='終了時間')
     class Meta:
         model =Schedule
-        fields = ('title','date','starttime','endtime','cycle_type','detail')
+        fields = ('date','starttime','endtime','title','detail')
         widgets = {'date': AdminDateWidget()}
     
     def __init__(self, categories=None, *args, **kwargs):

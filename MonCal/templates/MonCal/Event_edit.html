@@ -19,11 +19,9 @@
 
 <h2>{{schedule.title}} 内容編集</h2>
 <h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
-    <table width="100%" style="border-collapse: collapse"  id="calender" draggable="false">
+    <table width="100%" border="0"  style="border-collapse: collapse"  id="calender" >
         <caption >
-            
             <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事登録</a>
-            
             <br>
             {{ start_day }} - {{ end_day }}
         </caption>
@@ -46,116 +44,79 @@
             <tr  class ="cellstime">
                 <td></td>
                 {% for time in input_times %}
-                <td>{{ time| date:'H:i' }}</td>
+                <td class="{{time| date:'H:i'}}">{{ time| date:'H:i' }}</td>
                 {% endfor %}
                 <td>{{tailtime| date:'H:i'}}</td>
             </tr>
         {% for day, shcelist in calendar.items %}
-            <tr class="eventcal-tr" >
-                <th rowspan="{{shcelist.date_span}}" hight="14" class="date_col">
-                    {% if day in workingday_list %}
-                        {% if day.weekday < 5 %}
-                        <div style="color: green;" >非稼働日<br>
-                        {% else %}
-                        <div>稼働日<br>
-                        {% endif %}
-                    {% elif day.weekday == 5 %}
-                        <div style="color: blue;" >
-                    {% elif day.weekday == 6 %}
-                        <div style="color: red;" >
-                    {% else %}
-                        <div>
-                    {% endif %}
-                    {{ day| date:"d(D)" }}</div>
-                </th>
-                {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
-                    {% for time in input_times %}
-                    <td bgcolor="#d3d3d3" 
-                    {% if time in times %}
-                        class="choice_cell scale_time"
-                    {% else %}
-                        class="choice_cell"
-                    {% endif %}
-                        onmouseover="ev_mouse_over(this,'{{tailtime| date:'H:i'}}')" ></td>
-                    {% endfor %} 
-                {% else %}
-                    {% for time in input_times %}
-                    <td  bgcolor="#d9e5ff" onmouseover="ev_mouse_over(this,'{{tailtime| date:'H:i'}}')"
-                        onMouseDown="ev_intime(this,'{{day| date:'Y-m-d'}}','{{tailtime| date:'H:i'}}')"  
-                        {% if time in times %}
-                            class="scale_time"
-                        {% endif %}
-                    ></td>
-                    {% endfor %}   
+        <tr  class="eventcal-tr">
+            <th rowspan="1"  hight="14" class="date_col">
+                <div
+                {% if day in workingday_list and day.weekday < 5 %}
+                    style="color: green;" 
+                {% elif day.weekday == 5 %}
+                    style="color: blue;" 
+                {% elif day.weekday == 6 %}
+                    style="color: red;"
                 {% endif %}
-                <th rowspan="{{shcelist.date_span}}" class="date_col">
-                    {% if day in workingday_list %}
-                        {% if day.weekday < 5 %}
-                        <div style="color: green;" >非稼働日<br>
-                        {% else %}
-                        <div>稼働日<br>
-                        {% endif %}
-                    {% elif day.weekday == 5 %}
-                        <div style="color: blue;" >
-                    {% elif day.weekday == 6 %}
-                        <div style="color: red;" >
+                >{{ day| date:"d(D)" }}</div>
+            </th>
+            {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
+                {% for time in input_times %}
+                <td bgcolor="#d3d3d3" 
+                    {% if time in times %}
+                        class="{{time| date:'H:i'}} choice_cell scale_time "
                     {% else %}
-                        <div>
+                        class="{{time| date:'H:i'}} choice_cell "
                     {% endif %}
-                    {{ day| date:"d(D)" }}</div>
-                </th>
-            </tr>
-            {% for shce in shcelist.shce_list %}
-                <tr class="cal_sche_row">
-                    {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
-                        {% for time, book in shce.items %}
-                        <td bgcolor="#d3d3d3"
+                    onmouseover="sub_mouseover(this)"
+                    id=""></td>
+                {% endfor %} 
+            {% else %}
+                {% for time, book in sche_row.items %}
+                    {% if book == 'Nothing' %}
+                        <td
                             {% if time in times %}
-                                class="scale_time"
-                            {% endif %}
-                        ></td>
-                        {% endfor %} 
-                    {% else %}
-                        {% for time, book in shce.items %}
-                            {% if book == 'Nothing' %}
-                                <td
-                                    {% if time in times %}
-                                        class="scale_time"
-                                    {% endif %}
-                                ></td>
-                            {% elif book == 'same' %}
+                                class="{{time| date:'H:i'}} choice_cell scale_time"
                             {% else %}
-                                <td bgcolor="#d3d3d3" 
-                                    {% if time in times %}
-                                        class="scale_time sche_box"
-                                    {% else %}
-                                        class="sche_box"
-                                    {% endif %}
-                                colspan='{{book.col_span}}'>
-                                    {% if book.schedule.cycle_type.code != 'nocycle' %}
-                                        <a href="{% url 'MonCal:event_cycle_edit' book.schedule.pk day.year day.month day.day %}">
-                                    {% else %}
-                                        <a href="{% url 'MonCal:Event_detail' book.schedule.pk %}">
-                                    {% endif %}
-                                    {{book.schedule.title}} <br>
-                                    {% for place in book.schedule.place.all %}
-                                        {{place}}
-                                    {% endfor %}
-                                    <br>使用施設
-                                    {% for room in book.schedule.room.all %}
-                                        {{room}}
-                                    {% empty %}
-                                        なし
-                                    {% endfor %}
-                                </a></td>
+                                class="{{time| date:'H:i'}} choice_cell "
                             {% endif %}
-                        {% endfor %} 
+                            onMouseDown="sub_mousedown(this,'{{day| date:'Y-m-d'}}')"
+                            onmouseover="sub_mouseover(this)"
+                            id="">
+                        </td>
+                    {% elif book == 'same' %}
+                    {% else %}
+                        <td bgcolor="#d3d3d3" 
+                            {% if time in times %}
+                                class="{{time| date:'H:i'}} scale_time sche_box "
+                            {% else %}
+                                class="{{time| date:'H:i'}} sche_box"
+                            {% endif %}
+                            colspan='{{book.col_span}}' 
+                            id="">
+                            <a href="{% url 'MonCal:Property_detail' book.schedule.pk %}">
+                                {{book.schedule.title}} 
+                            </a>
+                        </td>
                     {% endif %}
-                </tr>
-            {% endfor %} 
-        {% endfor %}
-        </tbody>
-    </table>
+                {% endfor %} 
+            {% endif %}
+            <th rowspan="1" class="date_col">
+                <div
+                {% if day in workingday_list and day.weekday < 5 %}
+                    style="color: green;" 
+                {% elif day.weekday == 5 %}
+                    style="color: blue;" 
+                {% elif day.weekday == 6 %}
+                    style="color: red;"
+                {% endif %}
+                >{{ day| date:"d(D)" }}</div>
+            </th>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
     
     <form action="" method="POST">
         <table border="0" width="100%" table-layout: fixed;>

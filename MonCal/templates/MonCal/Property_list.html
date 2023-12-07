@@ -3,20 +3,28 @@
 {% block content %}
     <h1>{{ subject.name }}の直近の予約</h1>
     <h2><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}の予約ページへ</a></h2>
-    <h3>単発のスケジュール</h3>
-    <ul>
-        {% for schedule in single_list %}
-            <li><a href="{% url 'MonCal:Property_detail' schedule.subject_name.pk schedule.pk %}">{{ schedule }}</a></li>
-        {% empty %}
-            <li>予定はありません。</li>
-        {% endfor %}
-    </ul>
-    <h3>繰り返しのスケジュール</h3>
-    <ul>
-        {% for schedule in cycle_list %}
-            <li><a href="{% url 'MonCal:Property_detail' schedule.subject_name.pk  schedule.pk %}">{{ schedule }}</a></li>
-        {% empty %}
-            <li>繰り返しの予定はありません。</li>
-        {% endfor %}
-    </ul>
+    <table width="100%"  border="1"style="border-collapse: collapse">
+        <thead>
+            <tr>
+                <th width="30%">日時</th><th>予定</th><th>登録者</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for schedule in all_schedule %}
+            <tr>
+                <td>
+                    {{ schedule.0 |date:"Y年m月d日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}
+                </td>
+                <td>
+                    <a href="{% url 'MonCal:Property_detail' schedule.1.pk %}">
+                    {{ schedule.1.title }}</a>
+                </td>
+                <td>
+                    {{ schedule.1.user }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
 {% endblock %}

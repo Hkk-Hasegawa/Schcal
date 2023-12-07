@@ -3,77 +3,157 @@
 {% block content %}
 <h2>{{subject.name}} の新規予約</h2>
 <h2><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h2>
-    <table  width="60%" hight="100%" border="1"  align="left" style="border-collapse: collapse" id="calender">
-        <caption><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
+    <table  width="100%" border="0"  style="border-collapse: collapse" id="calender">
+        <caption>
+            <a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
             <br>{{ start_day }} - {{ end_day }}
         </caption>
         <thead>
-        <tr>
-            <th><a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a></th>
-            {% for day in days %}
-                <th>
-                {% if day in workingdays %}
-                    {% if day.weekday < 5 %}
-                    <div style="color: green;">非稼働日
-                    {% else %}
-                    <div>稼働日
-                    {% endif %}
-                    <br>
-                {% else %}
-                    {% if day.weekday == 5 %}
-                    <div style="color: blue;" >
-                    {% elif day.weekday == 6 %}
-                    <div style="color: red;" >
-                    {% else %}
-                    <div>
-                    {% endif %}
-                {% endif %}
-                {{ day | date:"d(D)" }}</div></th>
+        <tr class="cal_head_row">
+            <th class="headers_time">
+                <a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">前週</a>
+                <br>{{ headtime }}
+            </th>
+            {% for hour,span in hour_list.items %}
+            <th class="headers_time" colspan='{{span}}'>{{ hour }}</th>
             {% endfor %}
-            <th><a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a></th>
-        </tr>
+            <th class="headers_time" id="tailtime" >
+                <a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a>
+                <br>{{tailtime}}
+            </th>
         </thead>
-        {% for time, schedules in calendar.items %}
-            <tr style="font-size:12px">
-                <th>{{ time }}</th>
-                {% for dt, book in schedules.items %}
-                    {% if book == 'Nothing' %}
-                        <td  bgcolor="#d9e5ff" onclick="intime(this,'{{dt}}','{{tailtime}}')" class=""></td>
-                    {% elif book == 'same' %}
-                    {% elif book == 'notworkday' %}
-                        <td bgcolor="#d3d3d3"> </td>
-                    {% else %}
-                        {% for schedule, flame in book.items %}
-                        <td bgcolor="#d3d3d3" rowspan='{{flame}}'> <a href="{% url 'MonCal:Property_detail' subject.pk schedule.pk %}">{{schedule.title}}</a></td>
-                        {% endfor %}
-                    {% endif %}
+        <tbody>
+            <tr  class ="cellstime">
+                <td></td>
+                {% for time in input_times %}
+                <td class="{{time| date:'H:i'}}">{{ time| date:'H:i' }}</td>
                 {% endfor %}
-                <th>{{ time }}</th>
+                <td>{{tailtime| date:'H:i'}}</td>
+            </tr>
+        {% for day, sche_row in calender.items %}
+            <tr  class="eventcal-tr">
+                <th rowspan="1"  hight="14" class="date_col">
+                    <div
+                    {% if day in workingday_list and day.weekday < 5 %}
+                        style="color: green;" 
+                    {% elif day.weekday == 5 %}
+                        style="color: blue;" 
+                    {% elif day.weekday == 6 %}
+                        style="color: red;"
+                    {% endif %}
+                    >{{ day| date:"d(D)" }}</div>
+                </th>
+                {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
+                    {% for time in input_times %}
+                    <td bgcolor="#d3d3d3" 
+                        {% if time in times %}
+                            class="{{time| date:'H:i'}} choice_cell scale_time "
+                        {% else %}
+                            class="{{time| date:'H:i'}} choice_cell "
+                        {% endif %}
+                        onmouseover="sub_mouseover(this)"
+                        id=""></td>
+                    {% endfor %} 
+                {% else %}
+                    {% for time, book in sche_row.items %}
+                        {% if book == 'Nothing' %}
+                            <td
+                                {% if time in times %}
+                                    class="{{time| date:'H:i'}} choice_cell scale_time"
+                                {% else %}
+                                    class="{{time| date:'H:i'}} choice_cell "
+                                {% endif %}
+                                onMouseDown="sub_mousedown(this,'{{day| date:'Y-m-d'}}')"
+                                onmouseover="sub_mouseover(this)"
+                                id="">
+                            </td>
+                        {% elif book == 'same' %}
+                        {% else %}
+                            <td bgcolor="#d3d3d3" 
+                                {% if time in times %}
+                                    class="{{time| date:'H:i'}} scale_time sche_box "
+                                {% else %}
+                                    class="{{time| date:'H:i'}} sche_box"
+                                {% endif %}
+                                colspan='{{book.col_span}}' 
+                                id="">
+                                <a href="{% url 'MonCal:Property_detail' book.schedule.pk %}">
+                                    {{book.schedule.title}} 
+                                </a>
+                            </td>
+                        {% endif %}
+                    {% endfor %} 
+                {% endif %}
+                <th rowspan="1" class="date_col">
+                    <div
+                    {% if day in workingday_list and day.weekday < 5 %}
+                        style="color: green;" 
+                    {% elif day.weekday == 5 %}
+                        style="color: blue;" 
+                    {% elif day.weekday == 6 %}
+                        style="color: red;"
+                    {% endif %}
+                    >{{ day| date:"d(D)" }}</div>
+                </th>
             </tr>
         {% endfor %}
+        </tbody>
     </table>
-    
+
     <form action="" method="POST">
-        {% for field in form %}
-            {% if field.id_for_label == 'id_starttime' %}
-                <p id ="s_timetext">{{field.label}}:</p>
-                <p class ="timeform">
-            {% elif field.id_for_label == 'id_endtime' %}
-                <p id ="e_timetext">{{field.label}}:</p>
-                <p class ="timeform" >
-            {% else %}
-                <p>
-            {% endif %}
-            {{field.label_tag}}
-            {{field}}
-            {% for error in field.errors %}
-                {{error}}
-            {% endfor %}
-        </p>
-        {% endfor %}
-        {% csrf_token %}
-        <button type="submit">登録</button>
-        <button type="reset" onclick="reset_timeform()">取消</button>
+        <table border="0" width="100%" table-layout: fixed;>
+            <tr>
+                <td valign="top" width="50%" >
+                    {% for field in form %}
+                    {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
+                        {% if field.id_for_label == 'id_starttime' %}
+                            <p>
+                                <button type="button" onclick="ev_time_bottun('start','up')">△</button>
+                                <button type="button" onclick="ev_time_bottun('start','down')">▽</button>
+                                <span id ="s_timetext">{{field.label}}:</span>
+                            </p>
+                            <p class ="timeform">
+                        {% elif field.id_for_label == 'id_endtime' %}
+                            <p>
+                                <button type="button" onclick="ev_time_bottun('end','up')">△</button>
+                                <button type="button" onclick="ev_time_bottun('end','down')">▽</button>
+                                <span id ="e_timetext">{{field.label}}:</span>
+                            </p>
+                            <p class ="timeform" >
+                        {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type'  or field.id_for_label == 'id_cycle_stopday' %}
+                        <p>
+                        {% endif %}
+                            {{field.label_tag}}
+                            {{field}}
+                        {% for error in field.errors %}
+                            {{error}}
+                        {% endfor %}
+                        </p>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+                <td valign="top" width="50%">
+                    {% for field in form %}
+                        {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
+                        <p>
+                            {{field.label_tag}}
+                            {{field}}
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    {% csrf_token %}
+                    <button type="submit">登録</button>
+                    <button type="reset" onclick="reset_timeform()">取消</button>
+                </td>
+            </tr>
+        </table> 
     </form>
-    <br clear="left">
 {% endblock %}
