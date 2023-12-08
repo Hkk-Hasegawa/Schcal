@@ -32,6 +32,10 @@ background-color: #00bfff;
     border-left: 1px solid #000;
     border-right: 1px solid #000;
 }
+.sub_name_cell{
+    font-size:10px;
+    border: 1px solid #000;
+}
 .choice_cell{
     width: 0.8%;
 }
@@ -56,6 +60,7 @@ background-color: #00bfff;
     
 }
 #calender{
-    
+    border:0; 
     user-select: none;
 }
+

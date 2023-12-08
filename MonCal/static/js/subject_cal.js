@@ -1,4 +1,13 @@
 //日時をフォームに入力する開始の関数
+function all_sub_mousedown(td,date,subject){
+    let element = document.getElementById('id_subject');
+    let options = element.options;
+    for(step=0;step<options.length;step++){
+        if(options[step].innerText==subject){options[step].selected = true;}
+    }
+    
+    sub_mousedown(td,date)
+}
 function sub_mousedown(td,date){
     let dateform = document.getElementById("id_date");
     dateform.value = date;
@@ -19,7 +28,7 @@ function get_sub_endtime(td){
     const tr = td.parentNode;
 	const row = tr.sectionRowIndex;
     const Mycalender = document.getElementById("calender");
-    const cal_tail   = Mycalender.rows[1].cells.length;
+    const cal_tail   = Mycalender.rows[row+1].cells.length;
     const tailtime=get_tailtime();
     if(column==cal_tail-2){var endtime=tailtime}
     else{
@@ -35,22 +44,14 @@ function sub_mouseover(td){
 }
 function sub_fill_time(td){
     const down_cell = document.getElementById("down_td");
-    const Mycalender = document.getElementById("calender");
-    const cal_tail   = Mycalender.rows[1].cells.length;
-    
     const down_time=down_cell.className.split(" ")[0];
-    const td_time=td.className.split(" ")[0];
-    const column = td.cellIndex;
-
-    const down_column = down_cell.cellIndex;
-	const down_tr = down_cell.parentNode;
-	const down_row = down_tr.sectionRowIndex;
-    
+    const td_time=td.className.split(" ")[0];    
     td_timecol=get_times_column(td_time);
     down_timecol=get_times_column(down_time);
     
     input_timedelta(td_time,down_cell,down_timecol<td_timecol);
 }
+
 function get_times_column(time){
     const Mycalender = document.getElementById("calender");
     const cal_tail   = Mycalender.rows[1].cells.length;

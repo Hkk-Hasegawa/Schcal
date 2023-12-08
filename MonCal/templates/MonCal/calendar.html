@@ -2,7 +2,8 @@
 
 {% block content %}
 <h2>{{subject.name}} の新規予約</h2>
-<h2><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h2>
+<h3><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h3>
+<h3><a href="{% url 'MonCal:all_pr_calendar' subject.subject_type.pk %}">{{ subject.subject_type }}の予約ページへ</a></h3>
     <table  width="100%" border="0"  style="border-collapse: collapse" id="calender">
         <caption>
             <a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}</a>
@@ -15,7 +16,7 @@
                 <br>{{ headtime }}
             </th>
             {% for hour,span in hour_list.items %}
-            <th class="headers_time" colspan='{{span}}'>{{ hour }}</th>
+            <th class="headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
             {% endfor %}
             <th class="headers_time" id="tailtime" >
                 <a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}">次週</a>
@@ -58,7 +59,7 @@
                     {% for time, book in sche_row.items %}
                         {% if book == 'Nothing' %}
                             <td
-                                {% if time in times %}
+                                {% if time in hour_list %}
                                     class="{{time| date:'H:i'}} choice_cell scale_time"
                                 {% else %}
                                     class="{{time| date:'H:i'}} choice_cell "
@@ -70,7 +71,7 @@
                         {% elif book == 'same' %}
                         {% else %}
                             <td bgcolor="#d3d3d3" 
-                                {% if time in times %}
+                                {% if time in hour_list %}
                                     class="{{time| date:'H:i'}} scale_time sche_box "
                                 {% else %}
                                     class="{{time| date:'H:i'}} sche_box"

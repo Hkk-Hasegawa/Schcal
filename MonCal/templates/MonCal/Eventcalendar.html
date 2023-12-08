@@ -17,7 +17,7 @@
                     <br>{{ headtime }}
                 </th>
                 {% for hour,span in hour_list.items %}
-                <th class="headers_time" colspan='{{span}}'>{{ hour }}</th>
+                <th class="headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
                 {% endfor %}
                 <th class="headers_time" >
                     <a href="{% url 'MonCal:eventcalendar' next.year next.month next.day %}">次週</a>
@@ -49,7 +49,7 @@
                 {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
                     {% for time in input_times %}
                     <td bgcolor="#d3d3d3" 
-                        {% if time in times %}
+                        {% if time in hour_list %}
                             class="choice_cell scale_time"
                         {% else %}
                             class="choice_cell"
@@ -60,7 +60,7 @@
                     {% for time in input_times %}
                     <td  bgcolor="#d9e5ff" onmouseover="ev_mouse_over(this,'{{tailtime| date:'H:i'}}')" 
                         onMouseDown="ev_intime(this,'{{day| date:'Y-m-d'}}','{{tailtime| date:'H:i'}}')"  
-                        {% if time in times %}
+                        {% if time in hour_list %}
                             class="choice_cell scale_time"
                         {% else %}
                             class="choice_cell"
@@ -85,7 +85,7 @@
                     {% if day.weekday >= 5 and day not in workingday_list or day.weekday < 5 and day in workingday_list %}
                         {% for time, book in shce.items %}
                         <td bgcolor="#d3d3d3" 
-                            {% if time in times %}
+                            {% if time in hour_list %}
                                 class="scale_time"
                             {% endif %}
                         ></td>
@@ -95,14 +95,14 @@
                         {% for time, book in shce.items %}
                             {% if book == 'Nothing' %}
                                 <td
-                                    {% if time in times %}
+                                    {% if time in hour_list %}
                                         class="scale_time"
                                     {% endif %}
                                 ></td>
                             {% elif book == 'same' %}
                             {% else %}
                                 <td bgcolor="#d3d3d3" 
-                                    {% if time in times %}
+                                    {% if time in hour_list %}
                                         class="scale_time sche_box"
                                     {% else %}
                                         class="sche_box"

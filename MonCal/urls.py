@@ -25,6 +25,10 @@ urlpatterns = [
     path('property/detail/<int:pk>/edit/<int:year>/<int:month>/<int:day>/',views.PropertyEdit.as_view(), name='Property_edit'),
     path('property/detail/<int:pk>/delete/', views.PropertyDelete.as_view(), name='Property_delete'),
     
+    path('allproperty/<int:pk>/', views.AllPropertyList.as_view(), name='all_property_list'),
+    path('allproperty/<int:pk>/calendar', views.AllPropertyCalender.as_view(), name='all_pr_calendar'),
+    path('allproperty/<int:pk>/calendar/<int:year>/<int:month>/<int:day>/', views.AllPropertyCalender.as_view(), name='all_pr_calendar'),
+
     path('event/', views.EventList.as_view(), name='event_list'),
     path('event/calendar/', views.EventCalendar.as_view(), name='eventcalendar'),
     path('event/calendar/<int:year>/<int:month>/<int:day>/', views.EventCalendar.as_view(), name='eventcalendar'),

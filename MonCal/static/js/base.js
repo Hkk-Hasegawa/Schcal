@@ -32,6 +32,8 @@ function monthcheck(date,calendar){
 return moncheck
 }
 function get_tailtime(){
-    const tailtime= document.getElementById("tailtime").innerText.split('\n')[1];
+    const tailtime_cell= document.getElementById("tailtime").innerText.split('\n')
+    if(tailtime_cell.length ==2){var tailtime= tailtime_cell[1];}
+    else{var tailtime= tailtime_cell[0];}
     return tailtime
 }

@@ -1,4 +1,5 @@
 
+import re
 from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -7,7 +8,7 @@ from django.contrib import messages
 from django.views import generic
 from django.urls import reverse,reverse_lazy
 from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day,Cycle_pause
-from .forms import Scheduleform,EventScheduleform
+from .forms import Scheduleform,EventScheduleform,AllScheduleform
 import datetime,calendar
 
 User = get_user_model()
@@ -26,7 +27,7 @@ class TimeUpdate(SuperuserRequiredMixin,generic.UpdateView):
     model = Booking_time
     fields=('time',)
     template_name = 'MonCal/time_update.html'
-    success_url=reverse_lazy('Booking_time_list')
+    success_url=reverse_lazy('MonCal:Booking_time_list')
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['bookingtime']= get_object_or_404(Booking_time, pk=self.kwargs['pk'])
@@ -38,8 +39,8 @@ class HomePage(LoginRequiredMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         subject_list={}
-        for subjecttype in Subject_type.objects.filter(name='社用車').order_by('-name'):
-            subject_list[subjecttype.name]=Suresubject.objects.filter(subject_type=subjecttype).order_by('name')
+        subjecttype = Subject_type.objects.get(name='社用車')
+        subject_list[subjecttype]=Suresubject.objects.filter(subject_type=subjecttype).order_by('name')
         context['subject_list']= subject_list
         context['event_list']= Event.objects.all().order_by('name')
         return context
@@ -101,6 +102,92 @@ class SubjectTypeCal(LoginRequiredMixin,generic.CreateView):
     template_name = 'MonCal/SubjectTypeCal.html'
     model = Schedule
 
+
+class AllPropertyList(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'MonCal/All_Property_list.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        dt_today =datetime.date.today()
+        dt_nextmon=dt_today  + datetime.timedelta(days=30) 
+        subject_type = get_object_or_404(Subject_type, pk=self.kwargs['pk'])
+        
+        all_schedule=betweenschedule(Schedule,dt_today,dt_nextmon)
+        schedule_list=[]
+        for schedule in all_schedule:
+            if schedule[2].subject_name.subject_type == subject_type:
+                schedule_list.append((schedule[0],schedule[2]))
+        context['all_schedule'] = schedule_list
+        context['subject_type']=subject_type
+        return context
+
+class AllPropertyCalender(LoginRequiredMixin, generic.CreateView):
+    model = Schedule
+    form_class=AllScheduleform
+    template_name = 'MonCal/allprcalendar.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        subject_type = get_object_or_404(Subject_type, pk=self.kwargs['pk'])
+        subjects=Suresubject.objects.filter(subject_type=subject_type)
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        if year and month and day:
+            base_date = datetime.date(year=year, month=month, day=day)
+        else:
+            base_date =  datetime.date.today()
+        context=makecal(context,base_date,3)
+        calender_dic={}
+        for subject in subjects:
+            calender_dic[subject]=subject_calender(context,subject,0)
+        day_list=calendar.monthcalendar(base_date.year, base_date.month)
+        firstday=datetime.date(base_date.year, base_date.month, 1)
+        context['day_list']=day_list
+        context['firstday']=firstday
+        context['calender_dic']=calender_dic
+        context['subject_type']=subject_type
+        context['datespan']=subjects.count()
+        return context
+    #時刻の選択肢
+    def get_form_kwargs(self, *args, **kwargs):
+        kwgs = super().get_form_kwargs(*args, **kwargs)
+        categories={}
+        
+        subject_type = get_object_or_404(Subject_type, pk=self.kwargs['pk'])
+        subjects=Suresubject.objects.filter(subject_type=subject_type)
+        subject_list=[]
+        for subject in subjects:
+            subject_list.append((subject.pk,subject.name))
+        categories['subject']=subject_list
+        categories['time']=choicetime()
+        kwgs["categories"] = categories
+        return kwgs
+    def form_valid(self, form):
+        subject_type = get_object_or_404(Subject_type, pk=self.kwargs['pk'])
+        schedule = form.save(commit=False)
+        subject_pk = form.cleaned_data.get('subject')
+        schedule.subject_name=Suresubject.objects.get(pk=subject_pk)
+        schedule_list=Schedule.objects.filter(date=schedule.date,subject_name=schedule.subject_name)\
+                                      .exclude(Q(starttime__gte=schedule.endtime)|
+                                               Q(endtime__lte=schedule.starttime))
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        redirect_check=True
+        if schedule.starttime >= schedule.endtime:
+            messages.error(self.request, '時刻が不正です。')
+            redirect_check=False
+        elif  schedule_list.exists():
+            messages.error(self.request, 'すでに予約がありました。')
+            redirect_check=False
+        else:
+            schedule.user= self.request.user
+            schedule.save() 
+        if redirect_check:
+            return redirect('MonCal:all_property_list', pk=subject_type.pk)
+        elif year and month and day:
+            return redirect('MonCal:all_pr_calendar', pk=subject_type.pk,year=year,month=month,day=day)
+        else:
+            return redirect('MonCal:all_pr_calendar', pk=subject_type.pk)
 #設備の直近の予定
 class PropertyList(LoginRequiredMixin, generic.TemplateView):
     template_name = 'MonCal/Property_list.html'
@@ -109,11 +196,11 @@ class PropertyList(LoginRequiredMixin, generic.TemplateView):
         dt_today =datetime.date.today()
         dt_nextmon=dt_today  + datetime.timedelta(days=30) 
         subject = get_object_or_404(Suresubject, pk=self.kwargs['pk'])
-        
         all_schedule=betweenschedule(Schedule,dt_today,dt_nextmon)
         schedule_list=[]
         for schedule in all_schedule:
-            schedule_list.append((schedule[0],schedule[2]))
+            if schedule[2].subject_name == subject:
+                schedule_list.append((schedule[0],schedule[2]))
         context['all_schedule'] = schedule_list
         context['subject']=subject
         return context
@@ -134,7 +221,7 @@ class PropertyCalendar(LoginRequiredMixin,generic.CreateView):
         else:
             base_date =  datetime.date.today()
         # カレンダーは、基準日から表示期間分の日付を作成しておく
-        context=makecal(context,base_date)
+        context=makecal(context,base_date,7)
         context['calender']=subject_calender(context,subject,0)
         context['subject'] =subject
         return context
@@ -199,7 +286,7 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date=event.date
-        context=makecal(context,base_date)
+        context=makecal(context,base_date,7)
         context['calender']=subject_calender(context,subject,event.pk)
         context['subject'] =subject
         context['event']=event
@@ -262,7 +349,7 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
         else:
             base_date =  datetime.date.today()
         # カレンダーは、基準日から表示期間分の日付を作成しておく
-        context=makecal(context,base_date)
+        context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
         context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
         return context
@@ -344,7 +431,7 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
             base_date =  datetime.date.today()
         context['schedule'] =schedule
         # カレンダーは、基準日から表示期間分の日付を作成しておく
-        context=makecal(context,base_date)
+        context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
         context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
         return context
@@ -454,14 +541,34 @@ def eventform_choice():
     categories['room']=subjectlist
     categories['place']=placelist
     return(categories)
+def display_period_days(base_date,display_period):
+    days=[]
+    date=base_date
+    
+    while len(days)<display_period :
+        print(len(days))
+        if date.weekday() <5 and not Working_day.objects.filter(date=date).exists()   or (  Working_day.objects.filter(date=date).exists() and date.weekday() >=5):
+            days.append(date)
+        date=date+ datetime.timedelta(days=1)
+    return days
+def before_display_period(base_date,display_period):
+    days=[]
+    date=base_date- datetime.timedelta(days=1)
+    while len(days)<display_period :
+        print(len(days))
+        if date.weekday() <5 and not Working_day.objects.filter(date=date).exists()   or (  Working_day.objects.filter(date=date).exists() and date.weekday() >=5):
+            days.append(date)
+        date=date- datetime.timedelta(days=1)
+    return days[display_period-1]
 #カレンダーページに必要な
-def makecal(context,base_date):
+def makecal(context,base_date,display_period):
     head_time=get_object_or_404(Booking_time, pk=1).time
     tail_time=get_object_or_404(Booking_time,pk=2).time
-    display_period=7
+    
     timestep=30
     input_timestep=5
-    days = [base_date + datetime.timedelta(days=day) for day in range(display_period)]
+    days =display_period_days(base_date,display_period)
+    #days = [base_date + datetime.timedelta(days=day) for day in range(display_period)]
     start_day = days[0]
     end_day = days[-1]
     loop_tail= datetime.datetime.combine(start_day,tail_time)
@@ -477,7 +584,11 @@ def makecal(context,base_date):
         hours.append(loop_time.time())
         loop_time = loop_time + datetime.timedelta(hours=1)
     hour_list={}
-    hour_list[times[0].hour]=(60-times[0].minute) //input_timestep 
+    if times[0].minute == 0:
+        minute=60
+    else:
+        minute=times[0].minute
+    hour_list[datetime.time(hour=times[0].hour)]=minute //input_timestep 
     time_span=1    
     input_times=[]
     loop_tail= datetime.datetime.combine(start_day,tail_time)
@@ -486,11 +597,15 @@ def makecal(context,base_date):
         input_times.append(loop_time.time())
         loop_time = loop_time + datetime.timedelta(minutes=input_timestep)
         if loop_time.time() in hours:
-            hour_list[loop_time.time().hour]=time_span
+            hour_list[datetime.time(hour=loop_time.time().hour)]=time_span
             time_span=1
         else:
             time_span=1+time_span
-    hour_list[tail_time.hour]=(60-tail_time.minute) //input_timestep
+    if tail_time.minute == 0:
+        minute=60
+    else:
+        minute=tail_time.minute
+    hour_list[datetime.time(hour=tail_time.hour)]=minute //input_timestep
     workingdays=Working_day.objects.filter(date__gte=start_day,date__lte=end_day)
     workingday_list=[]
     for workingday in workingdays:
@@ -504,14 +619,14 @@ def makecal(context,base_date):
     context['days'] = days
     context['start_day'] =start_day
     context['end_day'] = end_day
-    context['before'] = days[0] - datetime.timedelta(days=display_period)
+    context['before'] = before_display_period(base_date,display_period)
     context['next'] = days[-1] + datetime.timedelta(days=1)
     context['today'] = datetime.date.today()
     return context
 
 #行事カレンダー作成
 def makecalendar(context,base_date,EventSchedule):
-    context=makecal(context,base_date)
+    context=makecal(context,base_date,7)
     schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
     context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
     return(context)

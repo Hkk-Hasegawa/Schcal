@@ -16,7 +16,20 @@ class Scheduleform(forms.ModelForm):
         self.base_fields["endtime"].choices = categories
         super().__init__(*args, **kwargs)
 
-
+class AllScheduleform(forms.ModelForm):
+    starttime = forms.ChoiceField(label='開始時間')
+    endtime = forms.ChoiceField(label='終了時間')
+    subject = forms.ChoiceField(label='社用車名')
+    class Meta:
+        model =Schedule
+        fields = ('date','starttime','endtime','subject','title','detail')
+        widgets = {'date': AdminDateWidget()}
+    
+    def __init__(self, categories=None, *args, **kwargs):
+        self.base_fields["starttime"].choices =  categories['time']
+        self.base_fields["endtime"].choices =  categories['time']
+        self.base_fields["subject"].choices = categories['subject']
+        super().__init__(*args, **kwargs)
 
 
 class EventScheduleform(forms.ModelForm):
