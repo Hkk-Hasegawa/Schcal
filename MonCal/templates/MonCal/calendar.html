@@ -143,7 +143,7 @@
             <tr>
                 <td valign="top" width="40%" >
                     {% for field in form %}
-                    {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
+                    {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  %}
                         {% if field.id_for_label == 'id_starttime' %}
                             <p>
                                 <button type="button" id="start_up">△</button>
@@ -158,7 +158,7 @@
                                 <span id ="e_timetext">{{field.label}}:</span>
                             </p>
                             <p class ="hide_elem" >
-                        {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type'  or field.id_for_label == 'id_cycle_stopday' %}
+                        {% elif  field.id_for_label == 'id_date' %}
                         <p>
                         {% endif %}
                             {{field.label_tag}}
