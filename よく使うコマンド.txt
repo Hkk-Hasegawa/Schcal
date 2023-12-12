@@ -5,7 +5,9 @@ python -m venv myvenv
 	#テーブル用ディレクトリ作成
 python manage.py makemigrations MonCal	
 	#テーブルを適用
-python manage.py migrate MonCal		
+python manage.py migrate MonCal	
+	#静的ファイルを更新	
+python manage.py collectstatic	
 	#仮想環境起動
 myvenv\Scripts\activate 
 	#仮想環境にDjangoインストール
@@ -29,4 +31,4 @@ PostgreSQL ポート番号:5432
 
 https://hkkhasegawa.pythonanywhere.com/
 
-        display: none;  
+    onMouseDown="ev_intime(this,'{{day| date:'Y-m-d'}}','{{tailtime| date:'H:i'}}')"  

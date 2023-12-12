@@ -120,7 +120,7 @@ class AllPropertyList(LoginRequiredMixin, generic.TemplateView):
         context['subject_type']=subject_type
         return context
 
-class AllPropertyCalender(LoginRequiredMixin, generic.CreateView):
+class AllPropertyCalendar(LoginRequiredMixin, generic.CreateView):
     model = Schedule
     form_class=AllScheduleform
     template_name = 'MonCal/allprcalendar.html'
@@ -139,10 +139,9 @@ class AllPropertyCalender(LoginRequiredMixin, generic.CreateView):
         calender_dic={}
         for subject in subjects:
             calender_dic[subject]=subject_calender(context,subject,0)
-        day_list=calendar.monthcalendar(base_date.year, base_date.month)
-        firstday=datetime.date(base_date.year, base_date.month, 1)
-        context['day_list']=day_list
-        context['firstday']=firstday
+        moncal_base=display_period_days(base_date,1)[0]
+        context=make_monthly_calendar(context,base_date)
+        context['base_date']=moncal_base
         context['calender_dic']=calender_dic
         context['subject_type']=subject_type
         context['datespan']=subjects.count()
@@ -224,6 +223,7 @@ class PropertyCalendar(LoginRequiredMixin,generic.CreateView):
         context=makecal(context,base_date,7)
         context['calender']=subject_calender(context,subject,0)
         context['subject'] =subject
+        context=make_monthly_calendar(context,base_date)
         return context
     #時刻の選択肢
     def get_form_kwargs(self, *args, **kwargs):
@@ -273,23 +273,24 @@ class PropertyDetail(LoginRequiredMixin,generic.TemplateView):
 class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
     model = Schedule
     form_class=Scheduleform
-    template_name = 'MonCal/Property_edit.html'
+    template_name = 'MonCal/calendar.html'
     #カレンダーの作成
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        event = get_object_or_404(Schedule, pk=self.kwargs['pk'])
-        subject=event.subject_name
+        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        subject=schedule.subject_name
         year = self.kwargs.get('year')
         month = self.kwargs.get('month')
         day = self.kwargs.get('day')
         if year and month and day:
             base_date = datetime.date(year=year, month=month, day=day)
         else:
-            base_date=event.date
+            base_date=schedule.date
         context=makecal(context,base_date,7)
-        context['calender']=subject_calender(context,subject,event.pk)
+        context['calender']=subject_calender(context,subject,schedule.pk)
         context['subject'] =subject
-        context['event']=event
+        context['schedule']=schedule
+        context=make_monthly_calendar(context,base_date)
         return context
     #時刻の選択肢
     def get_form_kwargs(self, *args, **kwargs):
@@ -352,6 +353,7 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
         context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
         context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
+        context=make_monthly_calendar(context,base_date)
         return context
     #選択肢の生成
     def get_form_kwargs(self, *args, **kwargs):
@@ -404,7 +406,8 @@ class EventDetail(LoginRequiredMixin,generic.TemplateView):
 class EventEdit(LoginRequiredMixin,generic.UpdateView):
     model = EventSchedule
     form_class=EventScheduleform
-    template_name = 'MonCal/Event_edit.html'
+    #template_name = 'MonCal/Event_edit.html'
+    template_name = 'MonCal/Eventcalendar.html'
     def get_initial(self):
         initial = super().get_initial()
         schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
@@ -434,6 +437,7 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
         context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
+        context=make_monthly_calendar(context,base_date)
         return context
     #フォームの選択肢を取得
     def get_form_kwargs(self, *args, **kwargs):
@@ -546,7 +550,6 @@ def display_period_days(base_date,display_period):
     date=base_date
     
     while len(days)<display_period :
-        print(len(days))
         if date.weekday() <5 and not Working_day.objects.filter(date=date).exists()   or (  Working_day.objects.filter(date=date).exists() and date.weekday() >=5):
             days.append(date)
         date=date+ datetime.timedelta(days=1)
@@ -555,7 +558,6 @@ def before_display_period(base_date,display_period):
     days=[]
     date=base_date- datetime.timedelta(days=1)
     while len(days)<display_period :
-        print(len(days))
         if date.weekday() <5 and not Working_day.objects.filter(date=date).exists()   or (  Working_day.objects.filter(date=date).exists() and date.weekday() >=5):
             days.append(date)
         date=date- datetime.timedelta(days=1)
@@ -834,3 +836,12 @@ def weekdaychinge(weekday):
     newweekday= (weekday+1) % 7 +1
     return(newweekday)
     
+def make_monthly_calendar(context,base_date):
+    moncal_base=display_period_days(base_date,1)[0]
+    day_list=calendar.monthcalendar(moncal_base.year, moncal_base.month)
+    if len(day_list)<6:
+        day_list.append([0,0,0,0,0,0,0])
+    firstday=datetime.date(moncal_base.year, moncal_base.month, 1)
+    context['day_list']=day_list
+    context['firstday']=firstday
+    return context    

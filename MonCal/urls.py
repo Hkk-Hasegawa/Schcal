@@ -26,8 +26,8 @@ urlpatterns = [
     path('property/detail/<int:pk>/delete/', views.PropertyDelete.as_view(), name='Property_delete'),
     
     path('allproperty/<int:pk>/', views.AllPropertyList.as_view(), name='all_property_list'),
-    path('allproperty/<int:pk>/calendar', views.AllPropertyCalender.as_view(), name='all_pr_calendar'),
-    path('allproperty/<int:pk>/calendar/<int:year>/<int:month>/<int:day>/', views.AllPropertyCalender.as_view(), name='all_pr_calendar'),
+    path('allproperty/<int:pk>/calendar', views.AllPropertyCalendar.as_view(), name='all_pr_calendar'),
+    path('allproperty/<int:pk>/calendar/<int:year>/<int:month>/<int:day>/', views.AllPropertyCalendar.as_view(), name='all_pr_calendar'),
 
     path('event/', views.EventList.as_view(), name='event_list'),
     path('event/calendar/', views.EventCalendar.as_view(), name='eventcalendar'),
@@ -36,6 +36,6 @@ urlpatterns = [
     path('event/detail/edit/<int:pk>/',views.EventEdit.as_view(), name='Event_edit'),
     path('event/detail/edit/<int:pk>/<int:year>/<int:month>/<int:day>/',views.EventEdit.as_view(), name='Event_edit'),
     path('event/detail/<int:pk>/delete/', views.EventDelete.as_view(), name='Event_delete'),
-    path('event/cycle/edit/<int:pk>/<int:year>/<int:month>/<int:day>/',views.EventCycleEdit.as_view(), name='event_cycle_edit'),
+    path('event/cycle/detail/<int:pk>/<int:year>/<int:month>/<int:day>/',views.EventCycleEdit.as_view(), name='event_cycle_edit'),
     path('event/cycle/delete/<int:pk>/',views.EventCycleDelete.as_view(), name='event_cycle_delete'),
 ]

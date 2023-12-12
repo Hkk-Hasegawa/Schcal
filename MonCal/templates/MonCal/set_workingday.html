@@ -22,7 +22,13 @@
     </caption>
     <thead>
         <tr>
-            <th>月</th> <th>火</th> <th>水</th> <th>木</th> <th>金</th> <th><div style="color: blue;">土</div></th> <th><div style="color: red;" >日</div></th>
+            <th>月</th>
+            <th>火</th> 
+            <th>水</th> 
+            <th>木</th> 
+            <th>金</th> 
+            <th><div style="color: blue;">土</div></th> 
+            <th><div style="color: red;" >日</div></th>
         </tr>
     </thead>
     {% for weekdays in day_list %}
@@ -31,9 +37,9 @@
         {% if day == 0 %}
         <td></td>
         {% elif day in registration_list %}
-        <td bgcolor="#d3d3d3">{{day}}</td>
+        <td class="registered">{{day}}</td>
         {% else %}
-        <td onclick="input_date(this,'{{year}}','{{month}}','{{day}}')">{{day}}</td>
+        <td onMouseDown="input_date(this,'{{year}}','{{month}}','{{day}}')">{{day}}</td>
         {% endif %}
         {% endfor %}
     {% endfor %}
@@ -46,6 +52,6 @@
     {{ form.as_p }}
     {% csrf_token %}
     <button type="submit">登録</button>
-    <button type="reset">取消</button>
+    <button type="reset" onclick="reset_timeform()">取消</button>
 </form>
 {% endblock %}

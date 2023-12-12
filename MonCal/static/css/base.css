@@ -13,35 +13,59 @@ body {
 nav > a {
     margin-right: 10;
 }
-.selecttime{
-background-color: #00bfff;
-}
-.timeform{ 
+
+.hide_elem{
     display: none;  
 }
-.cellstime{ 
-    display: none;  
+/*月間カレンダー用*/
+#monthcalednar{
+    border: 1px solid #000;
+    float:right;
+    width:300px;
 }
-.eventcal-tr{
+#MCbeforemonth{
+    background-color:#d3d3d3;
+    border: 1px solid #000;
+}
+#MCnextmonth{
+    background-color:#d3d3d3;
+    border: 1px solid #000;
+}
+.MCheader{
+    width:28px;
+}
+.base_date{
+    border: 2px solid #ff0000;
+}
+.registered{
+    background-color:#d3d3d3;
+}
+/* 予定登録用クラス */
+
+.input_caltr{
     border: 1px solid #000;
     height: 20px;
-    font-size:14px
+    font-size:14px;
 }
 .headers_time{
-    
-    border-left: 1px solid #000;
-    border-right: 1px solid #000;
+    border: 1px solid #000;
+    font-size:14px;
 }
 .sub_name_cell{
     font-size:10px;
     border: 1px solid #000;
 }
+
 .choice_cell{
     width: 0.8%;
+    background:#d9e5ff;
 }
-.cal_head_row{
-    border: 1px solid #000;
-    font-size:14px
+.not_choice{
+    width: 0.8%;
+    background:#d3d3d3
+}
+.selecttime{
+    background-color: #00bfff;
 }
 .cal_sche_row{
     border: 1px solid #000;
@@ -53,14 +77,18 @@ background-color: #00bfff;
 }
 .sche_box{
     border: 1px solid #000;
-    font-size:12px
+    font-size:12px;
+    background-color: #d3d3d3;
 }
 .date_col{
     border: 1px solid #000;
+    background-color: #fff;
     
 }
-#calender{
-    border:0; 
+#calendar{
+    border:0px; 
+    width:100%;
+    border-collapse: collapse;
     user-select: none;
 }
 
