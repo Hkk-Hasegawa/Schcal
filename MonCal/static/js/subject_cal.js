@@ -7,31 +7,21 @@ function all_sub_mousedown(td,subject){
     }
     mousedown(td)
 }
-
-function get_subject(tr){
-    subject= tr.cells[1].innerText;
-    return subject
-}
-
-function sub_mouseover(td){
-    if(document.getElementById("down_td") != null)
-    {sub_fill_time(td)}
-}
 function sub_fill_time(td){
     const down_cell = document.getElementById("down_td");
     const down_time=down_cell.className.split(" ")[0];
     const td_time=td.className.split(" ")[0];    
     const td_timecol=get_times_column(td_time);
     const down_timecol=get_times_column(down_time);
-    
     input_timedelta(td_time,down_cell,down_timecol<td_timecol);
 }
 
 function get_times_column(time){
+    let result_col=-1;
     const hide_times_tr = document.getElementById("hide_times_tr");
     for(let step =0;step<hide_times_tr.cells.length;step++){
         if(hide_times_tr.cells[step].classList.contains(time)){
-            var result_col=step;
+            result_col=step;
             break;
         }
     }
@@ -39,16 +29,15 @@ function get_times_column(time){
 }
 
 function input_timedelta(td_time,down_cell,direction){
-    const Mycalendar = document.getElementById("calendar");
     const down_column = down_cell.cellIndex;
 	const down_tr = down_cell.parentNode;
-	const down_row = down_tr.sectionRowIndex;
     const cal_tail   = down_tr.cells.length;
-    remove_swich=false;
+    let remove_swich=false;
+    let starttime="00:00";
+    let endtime="00:00";
     if(direction){
         for(let step =0;step<cal_tail;step++){
-            var step_cell=down_tr.cells[step];
-            
+            let step_cell=down_tr.cells[step];
             if(step<down_column || remove_swich){step_cell.classList.remove("selecttime")}
             else if(step_cell.classList.contains( "sche_box" )){
                 endtime=get_starttime(step_cell);//endtime=get_starttimeであってる
@@ -66,10 +55,10 @@ function input_timedelta(td_time,down_cell,direction){
         input_time(starttime,endtime);
     }else{
         for(let step =cal_tail-1;step>0;step--){
-            var step_cell=Mycalendar.rows[down_row+1].cells[step];
+            let step_cell=down_tr.cells[step];
             if(step>down_column || remove_swich){step_cell.classList.remove("selecttime")}
             else if(step_cell.classList.contains( "sche_box" )){
-                var step_cell=Mycalendar.rows[down_row+1].cells[step+1];
+                step_cell=down_tr.cells[step+1];
                 starttime=get_starttime(step_cell);
                 remove_swich=true;
             }else{

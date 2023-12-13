@@ -1,8 +1,3 @@
-//日時入力中か判定
-function ev_mouse_over(td){
-    if(document.getElementById("down_td") != null)
-    {ev_fill_time(td)}
-}
 //日時をフォームに入力する途中の関数
 function ev_fill_time(td){
     const down_cell = document.getElementById("down_td");

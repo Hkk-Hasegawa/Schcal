@@ -42,7 +42,7 @@
         <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
     </span>
     <h1>{{schedule.title}}の内容の変更</h1>
-    <h2><a href="{% url 'MonCal:Property_edit' schedule.pk %}">予約対象を変更しない場合</a></h2>
+    <h2><a href="{% url 'MonCal:Property_edit' schedule.pk %}">個別編集ページ</a></h2>
     <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
 {% else %}
     <h2>{{subject_type}} の新規予約</h2>

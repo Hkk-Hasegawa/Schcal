@@ -48,7 +48,7 @@
     </span>
     <h1>{{schedule.title}}の内容の変更</h1>
     <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
-    <h3><a href="{% url 'MonCal:all_pr_edit' schedule.pk %}">{{ subject.subject_type }}全体から予約する</a></h3>
+    <h3><a href="{% url 'MonCal:all_pr_edit' schedule.pk %}">{{ subject.subject_type }}全体編集ページ</a></h3>
 {% else %}
     <h2>{{subject.name}} の新規予約</h2>
     <h3><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h3>

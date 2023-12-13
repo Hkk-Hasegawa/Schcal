@@ -40,7 +40,7 @@ window.addEventListener("load", () => {
                     if((td.classList.contains("choice_cell"))){
                         td.addEventListener('mousedown', () => {mousedown(td)});
                     }
-                    td.addEventListener('mouseover', () => {ev_mouse_over(td)});
+                    td.addEventListener('mouseover', () => {mouseover(td,"event")});
                 }
             }
             
@@ -51,7 +51,7 @@ window.addEventListener("load", () => {
                     if(input_caltr[i].cells[j].classList.contains("choice_cell")){
                         let td = input_caltr[i].cells[j];
                         td.addEventListener('mousedown', () => {mousedown(td)});
-                        td.addEventListener('mouseover', () => {sub_mouseover(td)});
+                        td.addEventListener('mouseover', () => {mouseover(td,"subject")});
                     }
                 }
             }
@@ -61,9 +61,9 @@ window.addEventListener("load", () => {
                 for(let j = 1; j < input_caltr[i].cells.length -1; j++){
                     if(input_caltr[i].cells[j].classList.contains("choice_cell")){
                         let td = input_caltr[i].cells[j];
-                        let subject = get_subject(input_caltr[i]);
+                        let subject = input_caltr[i].cells[1].innerText;
                         td.addEventListener('mousedown', () => {all_sub_mousedown(td,subject)});
-                        td.addEventListener('mouseover', () => {sub_mouseover(td)});
+                        td.addEventListener('mouseover', () => {mouseover(td,"subject")});
                     }
                 }
             }
@@ -75,7 +75,7 @@ window.addEventListener("load", () => {
 function mousedown(td){
     const input_caltr = td.parentNode;
     const date = input_caltr.className.split(" ")[0];
-    inputdate(date)
+    inputdate(date);
     //ここまでが日付に関するもの
     reset_timeform();
     const start= get_starttime(td);
@@ -84,7 +84,11 @@ function mousedown(td){
     td.classList.add("selecttime");
     td.setAttribute("id","down_td");
 }
-
+function mouseover(td,sche_type){
+    if(document.getElementById("down_td") == null){}
+    else if(sche_type=="subject"){sub_fill_time(td)}
+    else if(sche_type=="event"){ev_fill_time(td)}
+}
 //時刻調整ボタン用のaddEventListener
 function timebutton(id){
     let btn_elem=document.getElementById(id);
