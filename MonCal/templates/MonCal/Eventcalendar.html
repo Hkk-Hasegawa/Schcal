@@ -40,14 +40,13 @@
     {% endfor %}
     </tr>
 </table>
+
 {% if schedule %}
 <span class="hide_elem">
     <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
     <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
     <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
 </span>
-{% endif %}
-{% if schedule %}
     <h2>{{schedule.title}} 内容編集</h2>
     <h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
 {% else %}
@@ -102,7 +101,7 @@
                 <td id="tailtime" class="{{tailtime| date:'H:i'}}">{{tailtime| date:'H:i'}}</td>
             </tr>
         {% for day, shcelist in calendar.items %}
-            <tr id="{{day| date:'Y-m-d'}}" class="input_caltr">
+            <tr class="{{day| date:'Y-m-d'}} input_caltr">
                 <th rowspan="{{shcelist.date_span}}"  hight="14" class="date_col">
                     {{ day| date:"d(D)" }}
                 </th>

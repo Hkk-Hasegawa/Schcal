@@ -34,9 +34,21 @@
     {% endfor %}
     </tr>
 </table>
+{% if schedule %}
+    <span class="hide_elem">
+        <p id="sche_subject">{{schedule.subject_name}}</p>
+        <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
+        <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
+        <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
+    </span>
+    <h1>{{schedule.title}}の内容の変更</h1>
+    <h2><a href="{% url 'MonCal:Property_edit' schedule.pk %}">予約対象を変更しない場合</a></h2>
+    <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
+{% else %}
+    <h2>{{subject_type}} の新規予約</h2>
+    <h2><a href="{% url 'MonCal:all_property_list' subject_type.pk %}">スケジュール一覧へ</a></h2>
+{% endif %}
 
-<h2>{{subject_type}} の新規予約</h2>
-<h2><a href="{% url 'MonCal:all_property_list' subject_type.pk %}">スケジュール一覧へ</a></h2>
     <table   id="calendar">
         <caption>
             <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk %}">{{ subject.name }}</a>
@@ -45,7 +57,13 @@
         <thead>
             <tr class="headers_time">
                 <td>
-                    <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk before.year before.month before.day %}">前</a>
+                    <a href="{% if schedule %}
+                                {% url 'MonCal:all_pr_edit' schedule.pk before.year before.month before.day %}
+                            {% else %}
+                                {% url 'MonCal:all_pr_calendar' subject_type.pk before.year before.month before.day %}
+                            {% endif %}">
+                        前
+                    </a>
                 </td>
                 <th class="date_col">{{ headtime }}</th>
                 {% for hour,span in hour_list.items %}
@@ -53,7 +71,13 @@
                 {% endfor %}
                 <th class="date_col" id="tailtime">{{tailtime| date:'H:i'}}</th>
                 <td>
-                    <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk next.year next.month next.day %}">次</a>
+                    <a href="{% if schedule %}
+                                {% url 'MonCal:all_pr_edit' schedule.pk next.year next.month next.day %}
+                            {% else %}
+                                {% url 'MonCal:all_pr_calendar' subject_type.pk next.year next.month next.day %}
+                            {% endif %}">
+                        次
+                    </a>
                 </td>
             </tr>
         </thead>
@@ -77,8 +101,17 @@
                         <th rowspan="{{datespan}}" class="date_col">
                             {{ day| date:"d(D)" }}
                         </th>
+                        {% else %}
+                        <td class =" hide_elem"></td>
                         {% endif %}
-                        <th class="sub_name_cell">{{subject}}</th>
+                        
+                        <th class="sub_name_cell">
+                            {% if schedule %}
+                                {{subject}}
+                            {% else %}
+                                <a href="{% url 'MonCal:calendar' subject.pk %}">{{subject}}</a>
+                            {% endif %}
+                        </th>
                         {% for  date, sche_row in calendar.items %}
                         {% if day == date %}
                             {% for time,book in sche_row.items %}
@@ -86,8 +119,7 @@
                             <td class="{{time| date:'H:i'}} choice_cell
                                 {% if time in hour_list %}
                                     scale_time
-                                {% endif %}
-                                " >
+                                {% endif %} " >
                             </td>
                             {% elif book == 'same' %}
                             <td class ="{{time| date:'H:i'}} hide_elem"></td>
@@ -95,8 +127,7 @@
                             <td class="{{time| date:'H:i'}} sche_box
                                 {% if time in hour_list %}
                                     scale_time 
-                                {% endif %}
-                                " colspan='{{book.col_span}}'>
+                                {% endif %}" colspan='{{book.col_span}}'>
                                 <a href="{% url 'MonCal:Property_detail' book.schedule.pk %}">
                                     {{book.schedule.title}} 
                                 </a>
@@ -105,11 +136,19 @@
                             {% endfor %}
                         {% endif %}
                         {% endfor %}
-                        <th class="sub_name_cell">{{subject}}</th>
+                        <th class="sub_name_cell">
+                            {% if schedule %}
+                                {{subject}}
+                            {% else %}
+                                <a href="{% url 'MonCal:calendar' subject.pk %}">{{subject}}</a>
+                            {% endif %}
+                        </th>
                         {% if forloop.first  %}
-                        <th rowspan="{{datespan}}"  hight="14" class="date_col">
+                        <th rowspan="{{datespan}}" class="date_col">
                             {{ day| date:"d(D)" }}
                         </th>
+                        {% else %}
+                        <td class =" hide_elem"></td>
                         {% endif %}
                     </tr>
                 {% endfor %}

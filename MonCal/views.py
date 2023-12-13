@@ -187,6 +187,76 @@ class AllPropertyCalendar(LoginRequiredMixin, generic.CreateView):
             return redirect('MonCal:all_pr_calendar', pk=subject_type.pk,year=year,month=month,day=day)
         else:
             return redirect('MonCal:all_pr_calendar', pk=subject_type.pk)
+
+class AllPropertyEdit(LoginRequiredMixin,generic.UpdateView):
+    model = Schedule
+    form_class=AllScheduleform
+    template_name = 'MonCal/allprcalendar.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        subject_type = schedule.subject_name.subject_type
+        subjects=Suresubject.objects.filter(subject_type=subject_type)
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        if year and month and day:
+            base_date = datetime.date(year=year, month=month, day=day)
+        else:
+            base_date =  datetime.date.today()
+        context=makecal(context,base_date,3)
+        calender_dic={}
+        for subject in subjects:
+            calender_dic[subject]=subject_calender(context,subject,schedule.pk)
+        moncal_base=display_period_days(base_date,1)[0]
+        context=make_monthly_calendar(context,base_date)
+        context['base_date']=moncal_base
+        context['calender_dic']=calender_dic
+        context['subject_type']=subject_type
+        context['datespan']=subjects.count()
+        context['schedule']=schedule
+        return context
+    def get_form_kwargs(self, *args, **kwargs):
+        kwgs = super().get_form_kwargs(*args, **kwargs)
+        categories={}
+        schedule = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        subject_type = schedule.subject_name.subject_type
+        subjects=Suresubject.objects.filter(subject_type=subject_type)
+        subject_list=[]
+        for subject in subjects:
+            subject_list.append((subject.pk,subject.name))
+        categories['subject']=subject_list
+        categories['time']=choicetime()
+        kwgs["categories"] = categories
+        return kwgs
+    def form_valid(self, form):
+        sche = get_object_or_404(Schedule, pk=self.kwargs['pk'])
+        subject_type = sche.subject_name.subject_type
+        schedule = form.save(commit=False)
+        subject_pk = form.cleaned_data.get('subject')
+        schedule.subject_name=Suresubject.objects.get(pk=subject_pk)
+        schedule_list=Schedule.objects.filter(date=schedule.date,subject_name=schedule.subject_name)\
+                                      .exclude(Q(starttime__gte=schedule.endtime)|
+                                               Q(endtime__lte=schedule.starttime))
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        redirect_check=True
+        if schedule.starttime >= schedule.endtime:
+            messages.error(self.request, '時刻が不正です。')
+            redirect_check=False
+        elif  schedule_list.exists():
+            messages.error(self.request, 'すでに予約がありました。')
+            redirect_check=False
+        else:
+            schedule.user= self.request.user
+            schedule.save() 
+        if redirect_check:
+            return redirect('MonCal:all_property_list', pk=subject_type.pk)
+        elif year and month and day:
+            return redirect('MonCal:all_pr_calendar', pk=subject_type.pk,year=year,month=month,day=day)
+        else:
+            return redirect('MonCal:all_pr_calendar', pk=subject_type.pk)
 #設備の直近の予定
 class PropertyList(LoginRequiredMixin, generic.TemplateView):
     template_name = 'MonCal/Property_list.html'
@@ -406,7 +476,6 @@ class EventDetail(LoginRequiredMixin,generic.TemplateView):
 class EventEdit(LoginRequiredMixin,generic.UpdateView):
     model = EventSchedule
     form_class=EventScheduleform
-    #template_name = 'MonCal/Event_edit.html'
     template_name = 'MonCal/Eventcalendar.html'
     def get_initial(self):
         initial = super().get_initial()
@@ -436,7 +505,11 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         # カレンダーは、基準日から表示期間分の日付を作成しておく
         context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
-        context['calendar']=calumndays(context['days'],context['input_times'],schedule_list)
+        new_schedule_list=[]
+        for sche_box in schedule_list:
+            if sche_box[2]!=schedule:
+                new_schedule_list.append(sche_box)
+        context['calendar']=calumndays(context['days'],context['input_times'],new_schedule_list)
         context=make_monthly_calendar(context,base_date)
         return context
     #フォームの選択肢を取得

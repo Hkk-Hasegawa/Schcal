@@ -47,6 +47,8 @@
         <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
     </span>
     <h1>{{schedule.title}}の内容の変更</h1>
+    <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
+    <h3><a href="{% url 'MonCal:all_pr_edit' schedule.pk %}">{{ subject.subject_type }}全体から予約する</a></h3>
 {% else %}
     <h2>{{subject.name}} の新規予約</h2>
     <h3><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h3>
@@ -54,13 +56,11 @@
 {% endif %}
     <table  id="calendar">
         <caption>
-            <a href="
-                {% if schedule %}
-                    {% url 'MonCal:Property_edit' subject.pk %}
-                {% else %}
-                    {% url 'MonCal:calendar' subject.pk %}
-                {% endif %}
-                ">
+            <a href="{% if schedule %}
+                        {% url 'MonCal:Property_edit' subject.pk %}
+                    {% else %}
+                        {% url 'MonCal:calendar' subject.pk %}
+                    {% endif %}">
                 {{ subject.name }}
             </a>
             <br>{{ start_day }} - {{ end_day }}
@@ -68,13 +68,11 @@
         <thead>
         <tr class="cal_head_row">
             <th class="headers_time">
-                <a href="
-                        {% if schedule %}
+                <a href="{% if schedule %}
                             {% url 'MonCal:Property_edit' schedule.pk before.year before.month before.day %}
                         {% else %}
                             {% url 'MonCal:calendar' subject.pk before.year before.month before.day %}
-                        {% endif %}
-                        ">
+                        {% endif %}">
                     前週
                 </a>
                 <br>{{ headtime }}
@@ -83,13 +81,11 @@
             <th class="headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
             {% endfor %}
             <th class="headers_time" >
-                <a href="
-                        {% if schedule %}
+                <a href="{% if schedule %}
                             {% url 'MonCal:Property_edit' schedule.pk next.year next.month next.day %}
                         {% else %}
                             {% url 'MonCal:calendar' subject.pk next.year next.month next.day %}
-                        {% endif %}
-                        ">次週</a>
+                        {% endif %}">次週</a>
                 <br>{{tailtime}}
             </th>
         </tr>
@@ -103,7 +99,7 @@
                 <td id="tailtime" class="{{tailtime| date:'H:i'}}">{{tailtime| date:'H:i'}}</td>
             </tr>
         {% for day, sche_row in calender.items %}
-            <tr id="{{day| date:'Y-m-d'}}"  class="input_caltr">
+            <tr  class="{{day| date:'Y-m-d'}} input_caltr">
                 <th class="date_col">
                     {{ day| date:"d(D)" }}
                 </th>

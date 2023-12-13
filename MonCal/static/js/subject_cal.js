@@ -1,46 +1,18 @@
 //日時をフォームに入力する開始の関数
-function all_sub_mousedown(td,date,subject){
-    let element = document.getElementById('id_subject');
-    let options = element.options;
-    for(step=0;step<options.length;step++){
+function all_sub_mousedown(td,subject){
+    const id_subject = document.getElementById('id_subject');
+    let options = id_subject.options;
+    for(let step=0;step<options.length;step++){
         if(options[step].innerText==subject){options[step].selected = true;}
     }
-    sub_mousedown(td,date)
+    mousedown(td)
 }
 
 function get_subject(tr){
-    if(tr.cells[0].classList.contains("sub_name_cell")){
-        var subject= tr.cells[0].innerText;
-    }else{var subject= tr.cells[1].innerText;}
+    subject= tr.cells[1].innerText;
     return subject
 }
 
-function sub_mousedown(td,date){
-    let dateform = document.getElementById("id_date");
-    dateform.value = date;
-    reset_timeform();
-    start= get_starttime(td);
-    end= get_endtime(td)
-    input_subject_time(start,end);
-    td.classList.add("selecttime");
-    td.setAttribute("id","down_td");
-}
-
-function get_sub_endtime(td){
-    const column = td.cellIndex;
-    const tr = td.parentNode;
-	const row = tr.sectionRowIndex;
-    const Mycalendar = document.getElementById("calendar");
-    const cal_tail   = Mycalendar.rows[row+1].cells.length;
-    const tailtime=get_tailtime();
-    if(column==cal_tail-2){var endtime=tailtime}
-    else{
-        next_td=Mycalendar.rows[row+1].cells[column+1];
-        const td_class=next_td.className.split(" ");
-        var endtime=td_class[0];
-    }
-    return endtime
-}
 function sub_mouseover(td){
     if(document.getElementById("down_td") != null)
     {sub_fill_time(td)}
@@ -49,8 +21,8 @@ function sub_fill_time(td){
     const down_cell = document.getElementById("down_td");
     const down_time=down_cell.className.split(" ")[0];
     const td_time=td.className.split(" ")[0];    
-    td_timecol=get_times_column(td_time);
-    down_timecol=get_times_column(down_time);
+    const td_timecol=get_times_column(td_time);
+    const down_timecol=get_times_column(down_time);
     
     input_timedelta(td_time,down_cell,down_timecol<td_timecol);
 }
@@ -91,7 +63,7 @@ function input_timedelta(td_time,down_cell,direction){
             }
         }
         starttime= get_starttime(down_cell);
-        input_subject_time(starttime,endtime);
+        input_time(starttime,endtime);
     }else{
         for(let step =cal_tail-1;step>0;step--){
             var step_cell=Mycalendar.rows[down_row+1].cells[step];
@@ -110,17 +82,10 @@ function input_timedelta(td_time,down_cell,direction){
             }
         }
         endtime=get_endtime(down_cell);
-        input_subject_time(starttime,endtime);
+        input_time(starttime,endtime);
     }
     
 }
 
-function input_subject_time(start,end){
-    const starttime  = document.getElementById("id_starttime");
-    const endtime    = document.getElementById("id_endtime");
-    starttime.value = start+":00";
-    endtime.value = end+":00";
-    outputtext("s_timetext",start);
-    outputtext("e_timetext",end);
-}
+
 

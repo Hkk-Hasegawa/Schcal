@@ -4,26 +4,33 @@ window.addEventListener("load", () => {
     console.log(url)
     if( (url.includes("edit") ||  url.includes("calendar"))){
         //どこでマウスを離してもいいように
-        let html = document.getElementsByTagName('html')[0];
+        const html = document.getElementsByTagName('html')[0];
         html.addEventListener('mouseup', select_finish ,false );
         //予定があるページの共通要素
-        let sche_date=document.getElementById("sche_date");
-        let sche_start=document.getElementById("sche_start");
-        let sche_end=document.getElementById("sche_end");
-        let input_reset=document.getElementById("input_reset");
+        const sche_subject=document.getElementById("sche_subject");
+        const sche_date=document.getElementById("sche_date");
+        const sche_start=document.getElementById("sche_start");
+        const sche_end=document.getElementById("sche_end");
+        const input_reset=document.getElementById("input_reset");
         const input_caltr=document.querySelectorAll(".input_caltr");
         if(sche_date != null && sche_start != null && sche_end != null){
-            ev_set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
-            input_reset.addEventListener("click",
-            ()=> {ev_set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);});
+            if(sche_subject !=null){
+                allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText)
+                input_reset.addEventListener("click",
+                ()=> {allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText);});
+            }else{
+                set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
+                input_reset.addEventListener("click",
+                ()=> {set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);});
+            }
         }else{input_reset.addEventListener("click",()=> {reset_timeform();});}
         timebutton("start_up");
         timebutton("start_down");
         timebutton("end_up");
         timebutton("end_down");
-        let MCnextmonth=document.getElementById("MCnextmonth");
+        const MCnextmonth=document.getElementById("MCnextmonth");
             MCnextmonth.addEventListener('click', get_nextmonth);
-        let MCbeforemonth=document.getElementById("MCbeforemonth");
+        const MCbeforemonth=document.getElementById("MCbeforemonth");
             MCbeforemonth.addEventListener('click', get_beforemonth);
         //行事予定の時
         if(url.includes("event")){
@@ -31,19 +38,19 @@ window.addEventListener("load", () => {
                 for(let j = 1; j < input_caltr[i].cells.length -1; j++){
                     let td = input_caltr[i].cells[j];
                     if((td.classList.contains("choice_cell"))){
-                        td.addEventListener('mousedown', () => {ev_mouse_down(td)});
+                        td.addEventListener('mousedown', () => {mousedown(td)});
                     }
                     td.addEventListener('mouseover', () => {ev_mouse_over(td)});
                 }
             }
+            
         }//社用車予約の時
         else if(url.includes("property")){
             for (let i = 0; i < input_caltr.length; i++) {
                 for(let j = 1; j < input_caltr[i].cells.length -1; j++){
                     if(input_caltr[i].cells[j].classList.contains("choice_cell")){
-                        let date = input_caltr[i].id;
                         let td = input_caltr[i].cells[j];
-                        td.addEventListener('mousedown', () => {sub_mousedown(td,date)});
+                        td.addEventListener('mousedown', () => {mousedown(td)});
                         td.addEventListener('mouseover', () => {sub_mouseover(td)});
                     }
                 }
@@ -53,10 +60,9 @@ window.addEventListener("load", () => {
             for (let i = 0; i < input_caltr.length; i++) {
                 for(let j = 1; j < input_caltr[i].cells.length -1; j++){
                     if(input_caltr[i].cells[j].classList.contains("choice_cell")){
-                        let date = input_caltr[i].className.split(" ")[0];
                         let td = input_caltr[i].cells[j];
-                        let subject = get_subject(input_caltr[i])
-                        td.addEventListener('mousedown', () => {all_sub_mousedown(td,date,subject)});
+                        let subject = get_subject(input_caltr[i]);
+                        td.addEventListener('mousedown', () => {all_sub_mousedown(td,subject)});
                         td.addEventListener('mouseover', () => {sub_mouseover(td)});
                     }
                 }
@@ -65,13 +71,115 @@ window.addEventListener("load", () => {
         }
     }
 }); 
+//セルををした時の関数
+function mousedown(td){
+    const input_caltr = td.parentNode;
+    const date = input_caltr.className.split(" ")[0];
+    inputdate(date)
+    //ここまでが日付に関するもの
+    reset_timeform();
+    const start= get_starttime(td);
+    const end= get_endtime(td)
+    input_time(start,end);
+    td.classList.add("selecttime");
+    td.setAttribute("id","down_td");
+}
+
 //時刻調整ボタン用のaddEventListener
 function timebutton(id){
     let btn_elem=document.getElementById(id);
     let id_list=id.split("_")
-    btn_elem.addEventListener("click",()=> {ev_time_bottun(id_list[0],id_list[1]);});
+    btn_elem.addEventListener("click",()=> {time_btn(id_list[0],id_list[1]);});
 }
-
+//ボタンで時刻を修正
+function time_btn(form_kind,up_down){
+    var selectcells=document.querySelectorAll(".selecttime");
+    if(selectcells.length>0){
+        const select_tr = selectcells[0].parentNode;
+        const hide_times_tr = document.getElementById("hide_times_tr");
+        const starttime  = document.getElementById("id_starttime");
+        const endtime    = document.getElementById("id_endtime");
+        const start_col=starttime_td(selectcells);
+        const end_col=endtime_td(selectcells);
+        if(form_kind=='start' && up_down=='up' 
+            && select_tr.cells[start_col-1].classList.contains( "choice_cell" )){
+            let newstart=hide_times_tr.cells[start_col-1].className.split(" ")[0];
+            starttime.value = newstart+":00";
+            outputtext("s_timetext",newstart);
+            select_tr.cells[start_col-1].classList.add("selecttime");
+        }else if(form_kind=='start' && up_down=='down' && start_col!=end_col){
+            let newstart=hide_times_tr.cells[start_col+1].className.split(" ")[0];
+            starttime.value = newstart+":00";
+            outputtext("s_timetext",newstart);
+            select_tr.cells[start_col].classList.remove("selecttime")
+        }else if(form_kind=='end' && up_down=='up' && end_col!=start_col){
+            var newend=hide_times_tr.cells[end_col].className.split(" ")[0];
+            endtime.value = newend+":00";
+            outputtext("e_timetext",newend);
+            select_tr.cells[end_col].classList.remove("selecttime")
+        }else if(form_kind=='end' && up_down=='down'  
+        && select_tr.cells[end_col+1].classList.contains( "choice_cell" )){
+            var newend=hide_times_tr.cells[end_col+2].className.split(" ")[0];
+            endtime.value = newend+":00";
+            outputtext("e_timetext",newend);
+            select_tr.cells[end_col+1].classList.add("selecttime")
+        }
+    }
+}
+//スケジュール編集ページの初期状態に戻す関数
+function set_selecttime(date,starttime,endtime){
+    reset_timeform()
+    inputdate(date);
+    input_time(starttime,endtime);
+    const input_tr=date_check(date);
+    if(input_tr!=null){
+        const cal_tail = input_tr.cells.length;
+        let selectF = false;
+        for(let step =1;step<cal_tail;step++){
+            let checktd=input_tr.cells[step];
+            selectF=select_cells(checktd,selectF,starttime,endtime);
+        }
+    }
+}
+function allpre_set_selecttime(subject,date,starttime,endtime){
+    reset_timeform()
+    inputdate(date);
+    input_time(starttime,endtime);
+    const input_tr_list=document.querySelectorAll(".input_caltr");
+    let input_tr=null;
+    for(let step=0;step<input_tr_list.length;step++){
+        let tr_date=input_tr_list[step].className.split(" ")[0];
+        let tr_subject=input_tr_list[step].cells[1].innerText;
+        if(tr_date==date && tr_subject==subject){input_tr=input_tr_list[step]}
+    }
+    if(input_tr!=null){
+        const cal_tail = input_tr.cells.length;
+        let selectF = false;
+        for(let step =1;step<cal_tail;step++){
+            let checktd=input_tr.cells[step];
+            selectF=select_cells(checktd,selectF,starttime,endtime);
+        }
+    }
+}
+//選択セルの右端を取得
+function starttime_td(selectcells){
+    let start=-1;
+    for(let step=0;step<selectcells.length;step++){
+        if(selectcells[step].cellIndex < start || start < 0){
+            start=selectcells[step].cellIndex;
+        }
+    }
+    return start
+}
+function endtime_td(selectcells){
+    let end=-1;
+    for(let step=0;step<selectcells.length;step++){
+        if(selectcells[step].cellIndex > end || end < 0){
+            end=selectcells[step].cellIndex;
+        }
+    }
+    return end
+}
 //日時の入力を終了する関数<html>に入れる
 function select_finish(){
     var down_cell=document.getElementById("down_td");
@@ -95,17 +203,29 @@ function outputtext(id,time){
         time_p.innerHTML=text[0] +":"+ time;
     }
 }
+
+//フォームに日付を入力
+function inputdate(date){
+    const dateform = document.getElementById("id_date");
+    dateform.value = date;
+}
+//フォームに時刻を入力
+function input_time(start,end){
+    const starttime  = document.getElementById("id_starttime");
+    const endtime    = document.getElementById("id_endtime");
+    starttime.value = start+":00";
+    endtime.value = end+":00";
+    outputtext("s_timetext",start);
+    outputtext("e_timetext",end);
+}
+
 //表示されている日付の中にdateが含まれているか判定
-function monthcheck(date,calendar){
-    const date_month=date.substr(0,7);
-    const caption=calendar.caption.innerText.split('\n');
-    const days=caption[1].split(' - ');
-    var moncheck=false;
-    for(let step=0;step<days.length;step++){
-        var month=days[step].replace('年', '-').replace('月', ' ').split(' ');
-        if(month[0]==date_month || month[0].replace('-', '-0')==date_month){moncheck=true;}
+function date_check(date){
+    const input_tr_list=document.querySelectorAll(".input_caltr");
+    for(let step=0;step<input_tr_list.length;step++){
+        let tr_date=input_tr_list[step].className.split(" ")[0];
+        if(tr_date==date){return input_tr_list[step]}
     }
-return moncheck
 }
 //最終時刻を取得
 function get_tailtime(){
@@ -133,8 +253,7 @@ function get_endtime(td){
     return endtime;
 }
 //月カレンダー操作
-//次の月のカレンダー生成
-
+//来月のカレンダー生成
 function get_nextmonth(){
     const monthcalednar= document.getElementById("monthcalednar");
     const caption= monthcalednar.tHead.rows[0].cells[1].innerText;
@@ -145,6 +264,7 @@ function get_nextmonth(){
     else{  next_firstday = new Date(year,Number(month) % 12);}
     makeMonthcalendar(next_firstday);
 }
+//先月のカレンダーを生成
 function get_beforemonth(){
     const monthcalednar= document.getElementById("monthcalednar");
     const caption= monthcalednar.tHead.rows[0].cells[1].innerText;
@@ -155,6 +275,7 @@ function get_beforemonth(){
     else{  before_firstday = new Date(year,Number(month) -2);}
     makeMonthcalendar(before_firstday);
 }
+//月初めからその月のカレンダーを作成
 function makeMonthcalendar(firstday){
     const checkmonth=firstday.getMonth();
     const capyear=firstday.getFullYear();
