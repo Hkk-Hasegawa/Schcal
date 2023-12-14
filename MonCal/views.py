@@ -542,7 +542,7 @@ class EventDelete(LoginRequiredMixin, generic.DeleteView):
 #繰り返し休止日設定
 class EventCycleEdit(LoginRequiredMixin,generic.CreateView):
     model=Cycle_pause
-    template_name = 'MonCal/event_cycle_edit.html'
+    template_name = 'MonCal/Event_cycle_edit.html'
     fields=('pause_type',)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
