@@ -237,7 +237,8 @@ class AllPropertyEdit(LoginRequiredMixin,generic.UpdateView):
         schedule.subject_name=Suresubject.objects.get(pk=subject_pk)
         schedule_list=Schedule.objects.filter(date=schedule.date,subject_name=schedule.subject_name)\
                                       .exclude(Q(starttime__gte=schedule.endtime)|
-                                               Q(endtime__lte=schedule.starttime))
+                                               Q(endtime__lte=schedule.starttime)|
+                                               Q(pk=schedule.pk))
         year = self.kwargs.get('year')
         month = self.kwargs.get('month')
         day = self.kwargs.get('day')
@@ -838,12 +839,26 @@ def betweenschedule(Schedule,dt_today,dt_nextmon):
 
     weekschedule=Schedule.objects.filter(date__lte=dt_nextmon,
                                          cycle_type__code='week').order_by('date','starttime')
+    firstday_sche=Schedule.objects.filter(date__lte=dt_nextmon,
+                                         cycle_type__code='first_working').order_by('date','starttime')
+    f_Monday_sche=Schedule.objects.filter(date__lte=dt_nextmon,
+                                         cycle_type__code='first_monday').order_by('date','starttime')
+    loop_dt=dt_today
+    firstday_list=[]
+    firstMonday_list=[]
+    while loop_dt<=dt_nextmon:
+        firstday_list.append(find_firstday(loop_dt.year,loop_dt.month))
+        firstMonday_list.append(find_firstMonday(loop_dt.year,loop_dt.month))
+        loop_dt=datetime.date(year=loop_dt.year+ (loop_dt.month // 12),month=(loop_dt.month % 12) +1,day=1)
+
+
     dt=dt_today
     sche_list=[]
     num=0
     for sche in schedule:
         sche_datetime=datetime.datetime.combine(sche.date, sche.starttime)
         sche_list.append([sche_datetime,num,sche])
+        sche_datetime.month
         num=num+1
     while dt <= dt_nextmon:
         if not  Working_day.objects.filter(date=dt,weekend_f=False).exists():
@@ -853,8 +868,42 @@ def betweenschedule(Schedule,dt_today,dt_nextmon):
                     sche_datetime=datetime.datetime.combine(dt, sche.starttime)
                     sche_list.append([sche_datetime,num,sche])
                     num=num+1
+        if dt in firstday_list:
+            for sche in firstday_sche:
+                sche_datetime=datetime.datetime.combine(dt, sche.starttime)
+                sche_list.append([sche_datetime,num,sche])
+                num=num+1
+        if dt in firstMonday_list:
+            for sche in f_Monday_sche:
+                sche_datetime=datetime.datetime.combine(dt, sche.starttime)
+                sche_list.append([sche_datetime,num,sche])
+                num=num+1
         dt=dt+ datetime.timedelta(days=1)
+
+
+
     return sorted(sche_list)
+
+def find_firstday(year,month):
+    start_day=datetime.date(year=year,month=month,day=1)
+    loopF=True
+    while loopF:
+        if start_day.weekday() <5 and not Working_day.objects.filter(date=start_day).exists() \
+            or start_day.weekday() >=5 and Working_day.objects.filter(date=start_day).exists() :
+            loopF=False
+        else:
+            start_day=datetime.date(year=year,month=month,day=start_day.day+1)
+    return start_day
+
+def find_firstMonday(year,month):
+    start_day=datetime.date(year=year,month=month,day=1)
+    loopF=True
+    while loopF:
+        if start_day.weekday() ==0 and not Working_day.objects.filter(date=start_day).exists():
+            loopF=False
+        else:
+            start_day=datetime.date(year=year,month=month,day=start_day.day+1)
+    return start_day
 
 def stopdaycheck(schedule,date):
     if Cycle_pause.objects.filter(date=date,schedule=schedule).exists()\

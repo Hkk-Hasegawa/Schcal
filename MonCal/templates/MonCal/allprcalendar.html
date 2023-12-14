@@ -57,11 +57,11 @@
         <thead>
             <tr class="headers_time">
                 <td>
-                    <a href="{% if schedule %}
-                                {% url 'MonCal:all_pr_edit' schedule.pk before.year before.month before.day %}
-                            {% else %}
-                                {% url 'MonCal:all_pr_calendar' subject_type.pk before.year before.month before.day %}
-                            {% endif %}">
+                    {% if schedule %}
+                    <a href="{% url 'MonCal:all_pr_edit' schedule.pk before.year before.month before.day %}"> 
+                    {% else %}
+                    <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk before.year before.month before.day %}"> 
+                    {% endif %}
                         前
                     </a>
                 </td>

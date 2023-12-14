@@ -3,7 +3,7 @@
 {% block content %}
     <h1>直近の行事予定</h1>
     <h2><a href="{% url 'MonCal:eventcalendar'%}">行事の予約ページへ</a></h2>
-    <table width="100%"  border="1"style="border-collapse: collapse">
+    <table border="1" id="schedule_list">
         <thead>
             <tr>
                 <th width="30%">日時</th><th>予定</th>
@@ -15,7 +15,8 @@
         </thead>
         <tbody>
             {% for schedule in all_schedule %}
-            <tr>
+
+            <tr class="schedule">
                 <td>{{ schedule.0 |date:"Y年m月d日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}</td>
                 <td>
                     {% if schedule.1.cycle_type.code == "nocycle" %}
@@ -41,6 +42,13 @@
                     {% if schedule.1.cycle_type.code == 'week' %}
                         毎週{{schedule.0 | date:"D" }}曜日
                     {% endif %}
+                </td>
+                
+            </tr>
+            <tr class="detail">
+                <td>
+                    内容<br>
+                    {{ schedule.1.detail|linebreaksbr }}
                 </td>
             </tr>
             {% endfor %}

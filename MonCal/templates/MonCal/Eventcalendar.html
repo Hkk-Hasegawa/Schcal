@@ -27,11 +27,11 @@
         <td {% if day == base_date.day and firstday.month == base_date.month and firstday.year == base_date.year  %}
                 class="base_date"
             {% endif %}>
-            <a href="{% if schedule %}
-                    {% url 'MonCal:Event_edit' schedule.pk firstday.year firstday.month day %}
-                {% else %}
-                    {% url 'MonCal:eventcalendar'  firstday.year firstday.month day %}
-                {% endif %}">
+            {% if schedule %}
+                <a href="{% url 'MonCal:Event_edit' schedule.pk firstday.year firstday.month day %}"> 
+            {% else %}
+                <a href="{% url 'MonCal:eventcalendar'  firstday.year firstday.month day %}"> 
+            {% endif %}
                 {{day}}
             </a>
         </td>
@@ -129,12 +129,12 @@
                     {% elif book == 'same' %}
                     <td class ="{{time| date:'H:i'}} hide_elem"></td>
                     {% else %}
-                        <td class="{{time| date:'H:i'}} sche_box" colspan='{{book.col_span}}'>
-                            <a href="{% if book.schedule.cycle_type.code != 'nocycle' %}
-                                        {% url 'MonCal:event_cycle_edit' book.schedule.pk day.year day.month day.day %}
-                                    {% else %}
-                                        {% url 'MonCal:Event_detail' book.schedule.pk %}
-                                    {% endif %}">
+                        <td class="{{time| date:'H:i'}} sche_box" colspan='{{book.col_span}}'>  
+                        {% if book.schedule.cycle_type.code != 'nocycle' %}
+                            <a href="{% url 'MonCal:event_cycle_edit' book.schedule.pk day.year day.month day.day %}">
+                        {% else %}
+                            <a href="{% url 'MonCal:Event_detail' book.schedule.pk %}">
+                        {% endif %}
                             {{book.schedule.title}} <br>
                             {% for place in book.schedule.place.all %}
                                 {{place}}

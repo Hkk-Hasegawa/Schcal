@@ -27,11 +27,11 @@
         <td {% if day == base_date.day and firstday.month == base_date.month and firstday.year == base_date.year  %}
             class="base_date"
             {% endif %}>
-            <a href="{% if schedule %}
-                {% url 'MonCal:Property_edit' schedule.pk firstday.year firstday.month day %}
-                {% else %}
-                {% url 'MonCal:calendar' subject.pk firstday.year firstday.month day %}
-                {% endif %}">
+            {% if schedule %}
+                <a href="{% url 'MonCal:Property_edit' schedule.pk firstday.year firstday.month day %}">
+            {% else %}
+                <a href="{% url 'MonCal:calendar' subject.pk firstday.year firstday.month day %}">
+            {% endif %}
                 {{day}}
             </a>
         </td>
@@ -56,11 +56,11 @@
 {% endif %}
     <table  id="calendar">
         <caption>
-            <a href="{% if schedule %}
-                        {% url 'MonCal:Property_edit' subject.pk %}
-                    {% else %}
-                        {% url 'MonCal:calendar' subject.pk %}
-                    {% endif %}">
+            {% if schedule %}
+            <a href="{% url 'MonCal:Property_edit' subject.pk %}">
+            {% else %}
+            <a href="{% url 'MonCal:calendar' subject.pk %}">
+            {% endif %}
                 {{ subject.name }}
             </a>
             <br>{{ start_day }} - {{ end_day }}
@@ -68,24 +68,26 @@
         <thead>
         <tr class="cal_head_row">
             <th class="headers_time">
-                <a href="{% if schedule %}
-                            {% url 'MonCal:Property_edit' schedule.pk before.year before.month before.day %}
-                        {% else %}
-                            {% url 'MonCal:calendar' subject.pk before.year before.month before.day %}
-                        {% endif %}">
-                    前週
-                </a>
+                {% if schedule %}
+                    <a href="{% url 'MonCal:Property_edit' schedule.pk before.year before.month before.day %}">
+                {% else %}
+                    <a href="{% url 'MonCal:calendar' subject.pk before.year before.month before.day %}">
+                {% endif %}
+                        前週
+                    </a>
                 <br>{{ headtime }}
             </th>
             {% for hour,span in hour_list.items %}
             <th class="headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
             {% endfor %}
             <th class="headers_time" >
-                <a href="{% if schedule %}
-                            {% url 'MonCal:Property_edit' schedule.pk next.year next.month next.day %}
-                        {% else %}
-                            {% url 'MonCal:calendar' subject.pk next.year next.month next.day %}
-                        {% endif %}">次週</a>
+                {% if schedule %}
+                    <a href="{% url 'MonCal:Property_edit' schedule.pk next.year next.month next.day %}">
+                {% else %}
+                    <a href="{% url 'MonCal:calendar' subject.pk next.year next.month next.day %}"> 
+                {% endif %}
+                        次週
+                    </a>
                 <br>{{tailtime}}
             </th>
         </tr>

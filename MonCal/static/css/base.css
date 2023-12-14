@@ -17,6 +17,8 @@ nav > a {
 .hide_elem{
     display: none;  
 }
+
+
 /*月間カレンダー用*/
 #monthcalednar{
     border: 1px solid #000;
@@ -92,3 +94,8 @@ nav > a {
     user-select: none;
 }
 
+#schedule_list{
+    width:100%;
+    border-collapse: collapse;
+    
+}

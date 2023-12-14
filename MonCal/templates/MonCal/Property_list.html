@@ -4,15 +4,15 @@
     <h1>{{ subject.name }}の直近の予約</h1>
     <h2><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}の予約ページへ</a></h2>
     
-    <table width="100%"  border="1"style="border-collapse: collapse">
+    <table border="1"id="schedule_list">
         <thead>
             <tr>
                 <th width="30%">日時</th><th>予定</th><th>登録者</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody >
             {% for schedule in all_schedule %}
-            <tr>
+            <tr class="schedule">
                 <td>
                     {{ schedule.0 |date:"Y年m月d日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}
                 </td>
@@ -22,6 +22,12 @@
                 </td>
                 <td>
                     {{ schedule.1.user }}
+                </td>
+            </tr>
+            <tr class="detail">
+                <td>
+                    内容<br>
+                    {{ schedule.1.detail|linebreaksbr }}
                 </td>
             </tr>
             {% endfor %}

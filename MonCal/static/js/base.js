@@ -69,8 +69,17 @@ window.addEventListener("load", () => {
             }
             
         }
+    }else if(url.includes("list")){
+        detail_hide();
+        const sche_box=document.querySelectorAll(".schedule");
+        for(let step=0;step<sche_box.length;step++){
+            for(let i=0;i<sche_box[step].cells.length;i++){
+                sche_box[step].cells[i].addEventListener('mouseover',() => {detail_show(sche_box[step])});
+            }            
+        }
     }
 }); 
+
 //セルををした時の関数
 function mousedown(td){
     const input_caltr = td.parentNode;
@@ -312,14 +321,19 @@ function makeMonthcalendar(firstday){
     const basedate=calednar.caption.innerText.split(/\n| - /)[1].split(/年|月|日/);
     console.log(basedate)
     const url= location.pathname.split("/")
+
     console.log(checkmonth)
     monthcalednar.tHead.rows[0].cells[1].innerText=String(capyear) + "年"+String(checkmonth+1)+"月";
     for(step=2;step<8;step++){
         input_list=MW_list[step-2];
         for(let column=0;column<7;column++){
             if(input_list[column]!=0){
-                href=["",url[1],url[2],url[3],String(input_list[column].getFullYear()),String(input_list[column].getMonth()+1),String(input_list[column].getDate())];
-                monthcalednar.rows[step].cells[column].innerHTML="<a href=\""+href.join('/')+"/\">"+String(input_list[column].getDate())+"</a>";
+                if(url[1]="event"){
+                    href=[url[1],url[2],String(input_list[column].getFullYear()),String(input_list[column].getMonth()+1),String(input_list[column].getDate())];
+                }else{
+                    href=[url[1],url[2],url[3],String(input_list[column].getFullYear()),String(input_list[column].getMonth()+1),String(input_list[column].getDate())];
+                }
+                monthcalednar.rows[step].cells[column].innerHTML="<a href=\"/"+href.join('/')+"/\">"+String(input_list[column].getDate())+"</a>";
                 if(input_list[column].getFullYear()==basedate[0] && input_list[column].getMonth()+1==basedate[1] && input_list[column].getDate()==basedate[2]){monthcalednar.rows[step].cells[column].classList.add("base_date")}
             }else{monthcalednar.rows[step].cells[column].innerText=""}   
         }
