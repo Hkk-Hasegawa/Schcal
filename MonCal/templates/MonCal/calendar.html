@@ -1,6 +1,26 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
+{% for message in messages %}
+alert( {{ message }} )
+
+{% endfor %}
+<div style="float:left;" >
+    {% if schedule %}
+        <span class="hide_elem">
+            <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
+            <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
+            <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
+        </span>
+        <h1>{{schedule.title}}の内容の変更</h1>
+        <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
+        <h3><a href="{% url 'MonCal:all_pr_edit' schedule.pk %}">{{ subject.subject_type }}全体編集ページ</a></h3>
+    {% else %}
+        <h2>{{subject.name}} の新規予約</h2>
+        <h3><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h3>
+        <h3><a href="{% url 'MonCal:all_pr_calendar' subject.subject_type.pk %}">{{ subject.subject_type }}の予約ページへ</a></h3>
+    {% endif %}
+    </div>
 <table  id="monthcalednar" >
     <thead>
         <tr>
@@ -40,20 +60,7 @@
     {% endfor %}
     </tr>
 </table>
-{% if schedule %}
-    <span class="hide_elem">
-        <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
-        <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
-        <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
-    </span>
-    <h1>{{schedule.title}}の内容の変更</h1>
-    <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
-    <h3><a href="{% url 'MonCal:all_pr_edit' schedule.pk %}">{{ subject.subject_type }}全体編集ページ</a></h3>
-{% else %}
-    <h2>{{subject.name}} の新規予約</h2>
-    <h3><a href="{% url 'MonCal:property_list' subject.pk %}">スケジュール一覧へ</a></h3>
-    <h3><a href="{% url 'MonCal:all_pr_calendar' subject.subject_type.pk %}">{{ subject.subject_type }}の予約ページへ</a></h3>
-{% endif %}
+
     <table  id="calendar">
         <caption>
             {% if schedule %}

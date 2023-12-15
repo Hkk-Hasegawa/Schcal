@@ -8,10 +8,10 @@
             <h3><a href="{% url 'MonCal:eventcalendar' %}">予約ページへ</a></h3>  
             <h3><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h3>  
         </ul>
-        <h2>設備スケジュール</h2>    
+           
         {% for subject_type,subjects in subject_list.items %}
             {% if subjects %}
-                <h3>{{subject_type}}</h3>  
+                <h2>{{subject_type}}</h2>  
             {% endif %}
             
                 <li><a href="{% url 'MonCal:all_pr_calendar' subject_type.pk %}">全体予約ページ</a></li>

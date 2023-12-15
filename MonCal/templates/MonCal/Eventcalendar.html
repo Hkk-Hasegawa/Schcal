@@ -1,6 +1,21 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
+<div style="float:left;" >
+{% if schedule %}
+<span class="hide_elem">
+    <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
+    <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
+    <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
+</span>
+    <h2>{{schedule.title}} 内容編集</h2>
+    <h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
+{% else %}
+
+    <h2>行事新規登録</h2>
+    <h3><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h3>
+{% endif %}
+</div>
 <table  id="monthcalednar" >
     <thead>
         <tr>
@@ -41,18 +56,7 @@
     </tr>
 </table>
 
-{% if schedule %}
-<span class="hide_elem">
-    <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
-    <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
-    <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
-</span>
-    <h2>{{schedule.title}} 内容編集</h2>
-    <h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
-{% else %}
-    <h2>行事新規登録</h2>
-    <h3><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h3>
-{% endif %}
+
     <table id="calendar" >
         <caption>
             <a href="
@@ -156,9 +160,9 @@
     </table>
     
     <form action="" method="POST">
-        <table border="0" width="100%" table-layout: fixed;>
+        <table id="form_table">
             <tr valign="top">
-                <td  >
+                <td width="300px" >
                     {% for field in form %}
                     {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
 
@@ -176,7 +180,7 @@
                                 <span id ="e_timetext">{{field.label}}:</span>
                             </p>
                             <p class ="hide_elem" >
-                        {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type'  or field.id_for_label == 'id_cycle_stopday' %}
+                        {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' %}
                         <p>
                         {% endif %}
                             {{field.label_tag}}
@@ -188,38 +192,26 @@
                     {% endif %}
                     {% endfor %}
                 </td>
-                <td width="100px">
+                <td width="120px">
                     {% for field in form %}
                         {% if field.label == '場所' %}
-                            {{field.label_tag}}
-                            {% for choice in field %}
-                                <br> 
-                                {{ choice.tag }}
-                                {{ choice.choice_label }}
-                            {% endfor %}
+                            {{field.label_tag}} 
+                            {% for choice in field %} 
+                            <br>{{choice}} 
+                                {% for place,rooms in room_dic.items %}
+                                    {% if choice.choice_label == place %}
+                                        <ul id="place_room_{{rooms.1}}" style="display: none;">
+                                        {% for room in rooms.0 %}
+                                        <li><input type="checkbox" name="room" value="{{room.pk}}" class="place_room_{{rooms.1}}" id="{{room.id}}">{{room.room.name}}</li> 
+                                        {% endfor %} 
+                                        </ul>
+                                    {% endif %}
+                                {% endfor %} 
 
+                            {% endfor %}
                             {% for error in field.errors %}
                                 {{error}}
                             {% endfor %} 
-                           
-                        {% endif %}
-                    {% endfor %}
-                </td>
-                <td width="80px">
-                    {% for field in form %}
-                        {% if field.label == '設備' %}
-
-                            {{field.label_tag}}
-                            {% for choice in field %}
-                                <br>
-                                {{ choice.tag }}
-                                {{ choice.choice_label }}
-                            {% endfor %}
-
-                            {% for error in field.errors %}
-                                {{error}}
-                            {% endfor %} 
-                            
                         {% endif %}
                     {% endfor %}
                 </td>

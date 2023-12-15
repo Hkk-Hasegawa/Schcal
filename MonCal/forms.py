@@ -1,5 +1,5 @@
 
-from .models import Schedule,EventSchedule,Suresubject
+from .models import Schedule,EventSchedule,Room
 from django import forms
 from django.contrib.admin.widgets import AdminDateWidget
 

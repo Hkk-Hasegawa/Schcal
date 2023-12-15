@@ -7,7 +7,7 @@ body {
     margin:  auto;
     padding-top: 50px;
     font-size: medium;
-    
+    white-space: nowrap;
 }
 
 nav > a {
@@ -92,6 +92,13 @@ nav > a {
     width:100%;
     border-collapse: collapse;
     user-select: none;
+    clear: both;
+}
+
+#form_table{
+    border:0px; 
+    width:100%;
+    
 }
 
 #schedule_list{

@@ -1,5 +1,5 @@
 
-import re
+
 from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import generic
 from django.urls import reverse,reverse_lazy
-from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day,Cycle_pause
+from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day,Cycle_pause,Room
 from .forms import Scheduleform,EventScheduleform,AllScheduleform
 import datetime,calendar
 
@@ -420,6 +420,16 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date =  datetime.date.today()
+        placelist={}
+        num=-1
+        for place in Event.objects.all():
+            roomlist=[]
+            for room in Room.objects.filter(place=place).order_by('place'):
+                num=1+num
+                roomlist.append({'room':room,'pk':str(room.pk),"id":'id_room_'+str(num)})
+            placelist[place.name]=(roomlist,place.pk)
+        context['room_dic']=placelist
+        print(context['room_dic'])
         # カレンダーは、基準日から表示期間分の日付を作成しておく
         context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
@@ -503,6 +513,15 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         else:
             base_date =  datetime.date.today()
         context['schedule'] =schedule
+        placelist={}
+        num=-1
+        for place in Event.objects.all():
+            roomlist=[]
+            for room in Room.objects.filter(place=place).order_by('place'):
+                num=1+num
+                roomlist.append({'room':room,'pk':str(room.pk),"id":'room_'+str(num)})
+            placelist[place.name]=roomlist
+        context['room_dic']=placelist
         # カレンダーは、基準日から表示期間分の日付を作成しておく
         context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
@@ -607,16 +626,15 @@ def choicetime():
 
 #行事予定フォーム選択肢作成
 def eventform_choice():
-    subjectlist=[]
-    for subject in Suresubject.objects.all().exclude(subject_type__name='社用車'):
-        subjectlist.append((str(subject.pk),subject.name))
+    roomlist=[]
+    for room in Room.objects.all().order_by('place'):
+        roomlist.append((str(room.pk),room))
     placelist=[]
     for place in Event.objects.all():
         placelist.append((str(place.pk),place.name))
     categories={}
     categories['time']=choicetime()
-    #categories['cycle_type']=[('nocycle','繰り返さない'),('week','毎週')]
-    categories['room']=subjectlist
+    categories['room']=roomlist
     categories['place']=placelist
     return(categories)
 def display_period_days(base_date,display_period):
@@ -672,7 +690,7 @@ def makecal(context,base_date,display_period):
     while loop_time < loop_tail:
         input_times.append(loop_time.time())
         loop_time = loop_time + datetime.timedelta(minutes=input_timestep)
-        if loop_time.time() in hours:
+        if loop_time.time() in hours :
             hour_list[datetime.time(hour=loop_time.time().hour)]=time_span
             time_span=1
         else:
@@ -681,7 +699,8 @@ def makecal(context,base_date,display_period):
         minute=60
     else:
         minute=tail_time.minute
-    hour_list[datetime.time(hour=tail_time.hour)]=minute //input_timestep
+    if tail_time.minute !=0:
+        hour_list[datetime.time(hour=tail_time.hour)]=minute //input_timestep
     workingdays=Working_day.objects.filter(date__gte=start_day,date__lte=end_day)
     workingday_list=[]
     for workingday in workingdays:
@@ -802,32 +821,32 @@ def eventform_savecheck(self,schedule,rooms,sche_pk):
         for sche_list in samedaysche:
             sche=sche_list[2]
             if (sche.starttime < schedule.endtime or sche.endtime > schedule.starttime) and sche.pk !=sche_pk:
-                for subject in sche.room.all():
-                    if str(subject.pk ) in rooms:
+                for room in sche.room.all():
+                    if str(room.pk ) in rooms:
                         messages.error(self.request,subject.name + 'にすでに予約がありました。')
                         return False
     #繰り返しありの場合
     elif schedule.cycle_type.code == 'week':
-        for subject_pk in rooms:
+        for room_pk in rooms:
             if EventSchedule.objects.filter(date__week_day=weekdaychinge(schedule.date.weekday()),
-                                        room=subject_pk,cycle_type__code='nocycle')\
+                                        room=room_pk,cycle_type__code='nocycle')\
                                 .exclude(Q(starttime__gte= schedule.endtime) |
                                          Q(endtime__lte=schedule.starttime) | 
                                          Q(date__lt=schedule.date)| 
                                          Q(pk=sche_pk)).exists() \
             or EventSchedule.objects.filter(date__week_day=weekdaychinge(schedule.date.weekday()),
-                                        room=subject_pk,cycle_type__code='week')\
+                                        room=room_pk,cycle_type__code='week')\
                                 .exclude(Q(starttime__gte= schedule.endtime) | 
                                          Q(endtime__lte=schedule.starttime)| 
                                          Q(pk=sche_pk)).exists():
-                subject = get_object_or_404(Suresubject, pk=subject_pk)
+                subject = get_object_or_404(Room, pk=room_pk)
                 messages.error(self.request,subject.name + 'にすでに予約がありました。')
                 return False
     else:
-        for subject_pk in rooms:
-            if EventSchedule.objects.filter(room=subject_pk,cycle_type=schedule.cycle_type)\
+        for room_pk in rooms:
+            if EventSchedule.objects.filter(room=room_pk,cycle_type=schedule.cycle_type)\
                                 .exclude(Q(starttime__gte= schedule.endtime) | Q(endtime__lte=schedule.starttime)| Q(pk=sche_pk)).exists():
-                subject = get_object_or_404(Suresubject, pk=subject_pk)
+                subject = get_object_or_404(Room, pk=room_pk)
                 messages.error(self.request,subject.name + 'にすでに予約がありました。')
                 return False
     return True

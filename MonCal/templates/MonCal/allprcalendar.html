@@ -1,6 +1,22 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
+<div style="float:left;" >
+    {% if schedule %}
+        <span class="hide_elem">
+            <p id="sche_subject">{{schedule.subject_name}}</p>
+            <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
+            <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
+            <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
+        </span>
+        <h1>{{schedule.title}}の内容の変更</h1>
+        <h2><a href="{% url 'MonCal:Property_edit' schedule.pk %}">個別編集ページ</a></h2>
+        <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
+    {% else %}
+        <h2>{{subject_type}} の新規予約</h2>
+        <h2><a href="{% url 'MonCal:all_property_list' subject_type.pk %}">スケジュール一覧へ</a></h2>
+    {% endif %}
+</div>
 <table  id="monthcalednar" >
     <thead>
         <tr>
@@ -34,20 +50,6 @@
     {% endfor %}
     </tr>
 </table>
-{% if schedule %}
-    <span class="hide_elem">
-        <p id="sche_subject">{{schedule.subject_name}}</p>
-        <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
-        <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
-        <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
-    </span>
-    <h1>{{schedule.title}}の内容の変更</h1>
-    <h2><a href="{% url 'MonCal:Property_edit' schedule.pk %}">個別編集ページ</a></h2>
-    <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
-{% else %}
-    <h2>{{subject_type}} の新規予約</h2>
-    <h2><a href="{% url 'MonCal:all_property_list' subject_type.pk %}">スケジュール一覧へ</a></h2>
-{% endif %}
 
     <table   id="calendar">
         <caption>

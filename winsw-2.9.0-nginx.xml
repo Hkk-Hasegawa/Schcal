@@ -1,0 +1,13 @@
+<service>
+  <id>nginx</id>
+  <name>nginx</name>
+  <description>nginx</description>
+  <logpath>C:\Users\ttana\Desktop\python\Schcal\nginx\logs</logpath>
+  <logmode>roll</logmode>
+  <depend></depend>
+  <executable>C:\Users\ttana\Desktop\python\Schcal\nginx\nginx.exe</executable>
+  <startargument></startargument>
+  <stopexecutable>C:\Users\ttana\Desktop\python\Schcal\nginx\nginx.exe</stopexecutable>
+  <stopargument>-s</stopargument>
+  <stopargument>stop</stopargument>
+</service>

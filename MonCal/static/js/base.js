@@ -2,6 +2,14 @@
 window.addEventListener("load", () => {
     const url= location.pathname.split("/")
     console.log(url)
+    const message=document.querySelectorAll(".message");
+    if(message.length>0){
+        let messages=""
+        for(step=0;step<message.length;step++){
+            messages=message[step].innerText+"\n"
+        }
+        alert(messages);
+    }
     if( (url.includes("edit") ||  url.includes("calendar"))){
         //どこでマウスを離してもいいように
         const html = document.getElementsByTagName('html')[0];
@@ -13,6 +21,23 @@ window.addEventListener("load", () => {
         const sche_end=document.getElementById("sche_end");
         const input_reset=document.getElementById("input_reset");
         const input_caltr=document.querySelectorAll(".input_caltr");
+        const palces = document.getElementsByName('place');
+        for(let step=0;step<palces.length;step++){
+            let place_pk='place_room_'+palces[step].value
+            let room_ul=document.getElementById(place_pk);
+            palces[step].addEventListener("click",()=> {
+                if (palces[step].checked == true) {
+                    room_ul.style.display = '';
+                  } else {
+                    room_ul.style.display = 'none';
+                    let roomlist=document.querySelectorAll("."+place_pk);
+                    for(let i=0;i<roomlist.length;i++){
+                        roomlist[i].checked=false;
+                    }
+                  }
+                
+            });
+        }
         if(sche_date != null && sche_start != null && sche_end != null){
             if(sche_subject !=null){
                 allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText)

@@ -8,7 +8,7 @@ class Schedule(models.Model):
     starttime=models.TimeField('開始時刻', blank=True,null=True)
     endtime=models.TimeField('終了時刻', blank=True,null=True)
     subject_name = models.ForeignKey('Suresubject',  verbose_name='予約対象', 
-                                    on_delete=models.CASCADE)
+                                    on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='ユーザー',
                              on_delete=models.SET_NULL, null=True,blank=True)
     title=models.CharField('タイトル',max_length=31, null=True)
@@ -30,7 +30,8 @@ class EventSchedule(models.Model):
     cycle_type=models.ForeignKey('Cycle_type', verbose_name='繰り返し区分',
                                 on_delete=models.SET_DEFAULT, default=1,)
     place=models.ManyToManyField('Event', verbose_name='場所')
-    room=models.ManyToManyField('Suresubject', verbose_name='設備',blank=True)
+    room=models.ManyToManyField('Room', verbose_name='設備',blank=True)
+
     detail=models.TextField('詳細',null=True,blank=True)
     def __str__(self):
         start=self.starttime.strftime('%H:%M')
@@ -63,13 +64,20 @@ class Cycle_type(models.Model):
     
 class Event(models.Model):
     name=models.CharField('行事区分',max_length=31)
+
     #pk=2:本社
     #pk=3:岡崎
     def __str__(self):
         return self.name
+class Room(models.Model):
+    name=models.CharField('部屋名',max_length=31)
+    place=models.ForeignKey('Event', verbose_name='場所'
+                                 ,on_delete=models.SET_NULL, null=True,blank=True)
+    def __str__(self):
+        return f'{self.place.name}_{self.name}'
 
 class Suresubject(models.Model):
-    name=models.CharField('対象名',max_length=31)
+    name=models.CharField('社用車',max_length=31)
     subject_type= models.ForeignKey('Subject_type', verbose_name='設備区分',
                                    on_delete=models.SET_NULL, null=True,blank=True)
     def __str__(self):

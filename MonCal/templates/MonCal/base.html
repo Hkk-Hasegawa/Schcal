@@ -27,9 +27,10 @@
         {% endif %}
     </nav>
     {% for message in messages %}
-        <p> {{ message }}</p>
+    <span class="message hide_elem">{{ message }}</span>    
     {% endfor %}
-    
+
+
     {% block content %}{% endblock %}
     
 </body>
