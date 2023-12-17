@@ -11,6 +11,7 @@ class Scheduleform(forms.ModelForm):
         fields = ('date','starttime','endtime','title','detail')
         widgets = {'date': AdminDateWidget()}
     
+    
     def __init__(self, categories=None, *args, **kwargs):
         self.base_fields["starttime"].choices = categories
         self.base_fields["endtime"].choices = categories
