@@ -55,15 +55,25 @@
     {% endfor %}
     </tr>
 </table>
-
-
-    <table id="calendar" >
+    <table id="swapcalendar">
         <caption>
-            <a href="
             {% if schedule %}
-                {% url 'MonCal:Event_edit' schedule.pk %}">行事予定編集
+            <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事予定編集
             {% else %}
-                {% url 'MonCal:eventcalendar'%}">行事新規登録
+            <a href="{% url 'MonCal:eventcalendar'%}">行事新規登録
+            {% endif %}
+            </a>
+            <br>
+            {{ start_day }} - {{ end_day }}
+        </caption>
+    </table>
+
+    <table id="calendar">
+        <caption>
+            {% if schedule %}
+            <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事予定編集
+            {% else %}
+            <a href="{% url 'MonCal:eventcalendar'%}">行事新規登録
             {% endif %}
             </a>
             <br>
@@ -72,13 +82,11 @@
         <thead>
             <tr>
                 <th class="headers_time">
-                    <a href="
-                        {% if schedule %}
-                            {% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}
-                        {% else %}
-                            {% url 'MonCal:eventcalendar' before.year before.month before.day %}
-                        {% endif %}
-                        ">
+                    {% if schedule %}
+                    <a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">
+                    {% else %}
+                    <a href="{% url 'MonCal:eventcalendar' before.year before.month before.day %}">
+                    {% endif %}
                         前週
                     </a>
                     <br>{{ headtime }}
@@ -141,14 +149,21 @@
                         {% endif %}
                             {{book.schedule.title}} <br>
                             {% for place in book.schedule.place.all %}
+                                {% if forloop.first %}
+                                {% else %}
+                                    <br>
+                                {% endif %}
                                 {{place}}
+                                {% for room in book.schedule.room.all %}
+                                    {% if room.place == place %}
+                                        {{room.name}}
+                                    {% endif %}
+                                {% empty %}
+                                    なし
+                                {% endfor %}
+                                
                             {% endfor %}
-                            <br>使用施設
-                            {% for room in book.schedule.room.all %}
-                                {{room}}
-                            {% empty %}
-                                なし
-                            {% endfor %}
+                            
                             </a></td>
                     {% endif %}
                 {% endfor %} 
@@ -202,7 +217,11 @@
                                     {% if choice.choice_label == place %}
                                         <ul id="place_room_{{rooms.1}}" style="display: none;">
                                         {% for room in rooms.0 %}
-                                        <li><input type="checkbox" name="room" value="{{room.pk}}" class="place_room_{{rooms.1}}" id="{{room.id}}">{{room.room.name}}</li> 
+                                        <li><input type="checkbox" name="room" value="{{room.pk}}" class="place_room_{{rooms.1}}" id="{{room.id}}"
+                                            {% if schedule and room.room in schedule.room.all %}
+                                            checked
+                                            {% endif %}>{{room.room.name}}
+                                        </li> 
                                         {% endfor %} 
                                         </ul>
                                     {% endif %}

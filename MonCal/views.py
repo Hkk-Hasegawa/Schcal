@@ -429,7 +429,6 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
                 roomlist.append({'room':room,'pk':str(room.pk),"id":'id_room_'+str(num)})
             placelist[place.name]=(roomlist,place.pk)
         context['room_dic']=placelist
-        print(context['room_dic'])
         # カレンダーは、基準日から表示期間分の日付を作成しておく
         context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
@@ -458,6 +457,29 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
                 return redirect('MonCal:eventcalendar', year=year,month=month,day=day)
             else:
                 return redirect('MonCal:eventcalendar')
+
+
+class EventyearList(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'MonCal/Event_year_list.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = self.kwargs.get('year')
+        if not year:
+            year=datetime.date.today().year
+        fst_day=datetime.date(year=year,month=1,day=1)
+        lst_day=datetime.date(year=fst_day.year+1,month=1,day=1) - datetime.timedelta(days=1) 
+        place_list=Event.objects.all()
+        all_schedule=betweenschedule(EventSchedule,fst_day,lst_day)
+        year_schedule={1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[],9:[],10:[],11:[],12:[]}
+        for schedule in all_schedule:
+            year_schedule[schedule[0].month].append((schedule[0],schedule[2]))
+        context['year_schedule'] = year_schedule
+        context['place_list'] = place_list 
+        context['year'] = year 
+        context['next'] = year +1
+        context['before'] = year -1
+        return context
+        
 #営業所ごとの直近の行事予定
 class EventList(LoginRequiredMixin, generic.TemplateView):
     template_name = 'MonCal/Event_list.html'
@@ -470,8 +492,21 @@ class EventList(LoginRequiredMixin, generic.TemplateView):
         schedule_list=[]
         for schedule in all_schedule:
             schedule_list.append((schedule[0],schedule[2]))
+        year = self.kwargs.get('year')
+        if not year:
+            year=datetime.date.today().year
+        fst_day=datetime.date(year=year,month=1,day=1)
+        lst_day=datetime.date(year=fst_day.year+1,month=1,day=1) - datetime.timedelta(days=1) 
+        ayear_schedule=betweenschedule(EventSchedule,fst_day,lst_day)
+        year_schedule={1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[],9:[],10:[],11:[],12:[]}
+        for schedule in ayear_schedule:
+            year_schedule[schedule[0].month].append((schedule[0],schedule[2]))
         context['all_schedule'] = schedule_list
-        context['place_list'] = place_list
+        context['place_list'] = place_list 
+        context['year_schedule'] = year_schedule
+        context['year'] = year 
+        context['next'] = year +1
+        context['before'] = year -1
         return context
 #行事予定の詳細ページ
 class EventDetail(LoginRequiredMixin,generic.TemplateView):
@@ -491,27 +526,17 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     def get_initial(self):
         initial = super().get_initial()
         schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
-        room_list=[]
-        for room in schedule.room.all():
-            room_list.append(room.pk)
         place_list=[]
         for place in schedule.place.all():
             place_list.append(place.pk)
         initial["place"] =place_list
-        initial["room"] = room_list
         return initial
     #カレンダーの作成
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
         # どの日を基準にカレンダーを表示するかの処理。年月日の指定がなければ今日からの表示。
-        year = self.kwargs.get('year')
-        month = self.kwargs.get('month')
-        day = self.kwargs.get('day')
-        if year and month and day:
-            base_date = datetime.date(year=year, month=month, day=day)
-        else:
-            base_date =  datetime.date.today()
+        base_date = datetime.date(year=schedule.date.year, month=schedule.date.month, day=schedule.date.day)
         context['schedule'] =schedule
         placelist={}
         num=-1
@@ -519,16 +544,15 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
             roomlist=[]
             for room in Room.objects.filter(place=place).order_by('place'):
                 num=1+num
-                roomlist.append({'room':room,'pk':str(room.pk),"id":'room_'+str(num)})
-            placelist[place.name]=roomlist
+                roomlist.append({'room':room,'pk':str(room.pk),"id":'id_room_'+str(num)})
+            placelist[place.name]=(roomlist,place.pk)
         context['room_dic']=placelist
         # カレンダーは、基準日から表示期間分の日付を作成しておく
         context=makecal(context,base_date,7)
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
         new_schedule_list=[]
         for sche_box in schedule_list:
-            if sche_box[2]!=schedule:
-                new_schedule_list.append(sche_box)
+            new_schedule_list.append(sche_box)
         context['calendar']=calumndays(context['days'],context['input_times'],new_schedule_list)
         context=make_monthly_calendar(context,base_date)
         return context
@@ -880,23 +904,26 @@ def betweenschedule(Schedule,dt_today,dt_nextmon):
         sche_datetime.month
         num=num+1
     while dt <= dt_nextmon:
-        if not  Working_day.objects.filter(date=dt,weekend_f=False).exists():
+        if not  Working_day.objects.filter(date=dt,weekend_f=False).exists() \
+            or Working_day.objects.filter(date=dt,weekend_f=True).exists():
             for sche in weekschedule:
-                if dt.weekday()  == sche.date.weekday() \
-                and stopdaycheck(sche,dt):
+                if dt.weekday()  == sche.date.weekday() and dt >= sche.date \
+                    and stopdaycheck(sche,dt):
+                        sche_datetime=datetime.datetime.combine(dt, sche.starttime)
+                        sche_list.append([sche_datetime,num,sche])
+                        num=num+1
+        if dt in firstday_list:
+            for sche in firstday_sche:
+                if dt >= sche.date and stopdaycheck(sche,dt):
                     sche_datetime=datetime.datetime.combine(dt, sche.starttime)
                     sche_list.append([sche_datetime,num,sche])
                     num=num+1
-        if dt in firstday_list:
-            for sche in firstday_sche:
-                sche_datetime=datetime.datetime.combine(dt, sche.starttime)
-                sche_list.append([sche_datetime,num,sche])
-                num=num+1
         if dt in firstMonday_list:
             for sche in f_Monday_sche:
-                sche_datetime=datetime.datetime.combine(dt, sche.starttime)
-                sche_list.append([sche_datetime,num,sche])
-                num=num+1
+                if dt >= sche.date and stopdaycheck(sche,dt):
+                    sche_datetime=datetime.datetime.combine(dt, sche.starttime)
+                    sche_list.append([sche_datetime,num,sche])
+                    num=num+1
         dt=dt+ datetime.timedelta(days=1)
 
 

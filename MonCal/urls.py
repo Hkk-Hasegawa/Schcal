@@ -33,6 +33,9 @@ urlpatterns = [
     path('allproperty/<int:pk>/edit/', views.AllPropertyEdit.as_view(), name='all_pr_edit'),
     path('allproperty/<int:pk>/edit/<int:year>/<int:month>/<int:day>/', views.AllPropertyEdit.as_view(), name='all_pr_edit'),
 
+    #path('event/yearlist/', views.EventyearList.as_view(), name='event_year_list'),
+    #path('event/yearlist/<int:year>/', views.EventyearList.as_view(), name='event_year_list'),
+    path('event/list/<int:year>/', views.EventList.as_view(), name='event_list'),
     path('event/list/', views.EventList.as_view(), name='event_list'),
     path('event/calendar/', views.EventCalendar.as_view(), name='eventcalendar'),
     path('event/calendar/<int:year>/<int:month>/<int:day>/', views.EventCalendar.as_view(), name='eventcalendar'),

@@ -1,0 +1,40 @@
+{% extends 'MonCal/base.html' %}
+
+{% block content %}
+    <h1>{{year}}年の行事予定</h1>
+    <h2><a href="{% url 'MonCal:eventcalendar'%}">行事の予約ページへ</a></h2>
+    <h3><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h3> 
+    <h3 style="float:left;"><a href="{% url 'MonCal:event_year_list' before %}">{{before}}年の行事予定へ</a></h3>
+    <h3 style="float:right;"><a href="{% url 'MonCal:event_year_list' next %}">{{next}}年の行事予定へ</a></h3>
+    <table  id="schedule_data">
+        <tbody>
+            {% for month,month_list in year_schedule.items  %}
+            <tr>
+                <th rowspan="2">{{month}} </th>
+                {% for schedule in month_list  %}
+                <td>{{schedule.0 | date:"m月d日"}} {{schedule.1.starttime}}~{{schedule.1.endtime}}</td> 
+                {% endfor %}
+            </tr>
+            <tr>
+                <th class="hide_elem"></th>
+                {% for schedule in month_list  %}
+                <td>
+                    {% if schedule.1.cycle_type.code == "nocycle" %}
+                        <a href="{% url 'MonCal:Event_detail' schedule.1.pk %}">
+                    {% else %}
+                        <a href="{% url 'MonCal:event_cycle_edit' schedule.1.pk schedule.0.year schedule.0.month schedule.0.day %}">
+                    {% endif %}
+                    {{schedule.1.title}}</a>
+                </td> 
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br style="clear: both;">
+    <table  class="year_schedule first" ></table>
+    <br>
+    <table  class="year_schedule second" ></table>
+    <br>
+    <table  class="year_schedule third" ></table>
+{% endblock %}

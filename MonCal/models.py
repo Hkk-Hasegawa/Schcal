@@ -2,7 +2,6 @@
 from django.conf import settings
 from django.db import models
 
-
 class Schedule(models.Model):
     date=models.DateField('日付', blank=True,null=True)
     starttime=models.TimeField('開始時刻', blank=True,null=True)
@@ -64,11 +63,9 @@ class Cycle_type(models.Model):
     
 class Event(models.Model):
     name=models.CharField('行事区分',max_length=31)
-
-    #pk=2:本社
-    #pk=3:岡崎
     def __str__(self):
         return self.name
+
 class Room(models.Model):
     name=models.CharField('部屋名',max_length=31)
     place=models.ForeignKey('Event', verbose_name='場所'

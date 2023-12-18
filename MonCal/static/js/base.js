@@ -23,20 +23,10 @@ window.addEventListener("load", () => {
         const input_caltr=document.querySelectorAll(".input_caltr");
         const palces = document.getElementsByName('place');
         for(let step=0;step<palces.length;step++){
-            let place_pk='place_room_'+palces[step].value
-            let room_ul=document.getElementById(place_pk);
             palces[step].addEventListener("click",()=> {
-                if (palces[step].checked == true) {
-                    room_ul.style.display = '';
-                  } else {
-                    room_ul.style.display = 'none';
-                    let roomlist=document.querySelectorAll("."+place_pk);
-                    for(let i=0;i<roomlist.length;i++){
-                        roomlist[i].checked=false;
-                    }
-                  }
-                
+                room_view(palces[step])
             });
+            room_view(palces[step])
         }
         if(sche_date != null && sche_start != null && sche_end != null){
             if(sche_subject !=null){
@@ -102,8 +92,34 @@ window.addEventListener("load", () => {
                 sche_box[step].cells[i].addEventListener('mouseover',() => {detail_show(sche_box[step])});
             }            
         }
+        const year_schedule=document.querySelectorAll(".year_schedule");
+        for(step =0;step<year_schedule.length;step++){
+            if(year_schedule[step].classList.contains("first")){
+                set_four_season(year_schedule[step],0,8);
+            }else if(year_schedule[step].classList.contains("second")){
+                set_four_season(year_schedule[step],8,16);
+            }else if(year_schedule[step].classList.contains("third")){
+                set_four_season(year_schedule[step],16,24);
+            }        
+        }
+        const schedule_data=document.getElementById("schedule_data");
+        schedule_data.remove();
+    }else if(url.includes("yearlist")){
+        const year_schedule=document.querySelectorAll(".year_schedule");
+        for(step =0;step<year_schedule.length;step++){
+            if(year_schedule[step].classList.contains("first")){
+                set_four_season(year_schedule[step],0,8);
+            }else if(year_schedule[step].classList.contains("second")){
+                set_four_season(year_schedule[step],8,16);
+            }else if(year_schedule[step].classList.contains("third")){
+                set_four_season(year_schedule[step],16,24);
+            }        
+        }
+        const schedule_data=document.getElementById("schedule_data");
+        schedule_data.remove();
     }
 }); 
+
 
 //セルををした時の関数
 function mousedown(td){

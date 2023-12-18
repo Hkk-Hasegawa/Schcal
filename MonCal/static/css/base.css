@@ -24,14 +24,17 @@ nav > a {
     border: 1px solid #000;
     float:right;
     width:300px;
+    border-collapse: collapse;
 }
 #MCbeforemonth{
     background-color:#d3d3d3;
     border: 1px solid #000;
+    width:28px;
 }
 #MCnextmonth{
     background-color:#d3d3d3;
     border: 1px solid #000;
+    width:28px;
 }
 .MCheader{
     width:28px;
@@ -105,4 +108,16 @@ nav > a {
     width:100%;
     border-collapse: collapse;
     
+}
+#schedule_data{
+    display: none;  
+}
+.year_schedule {
+    
+    border: 1px solid #000;
+    border-collapse: collapse;
+}
+.year_schedule td,th{
+    border: 1px solid #000;
+    width: 190px;
 }
