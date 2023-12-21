@@ -1,4 +1,4 @@
-	#ディレクトリの場所へ飛ぶ
+	#ディレクトリの場所へ飛ぶpath
 cd C:\Users\ttana\Desktop\python\Schcal 
 	#仮想環境作成
 python -m venv myvenv   
@@ -17,7 +17,7 @@ cd C:\Users\ttana\Desktop\python\Schcal\nginx & start nginx
 	#ウェブサーバー起動
 python manage.py runserver  
 	#共有サーバーで起動
-python manage.py runserver 192.168.11.34:8054
+start　python manage.py runserver 192.168.11.34:8054
 	#変更ファイルの確認
 git status  
 	#変更をGitに保存
@@ -34,12 +34,5 @@ cd hkkhasegawa.pythonanywhere.com
 PostgreSQL ポート番号:5432
 	#コマンドでユーザー作成
 python manage.py createsuperuser
-room=models.ManyToManyField('Suresubject', verbose_name='設備',blank=True)
-
+#path
 https://hkkhasegawa.pythonanywhere.com/
-   接続固有の DNS サフィックス . . . . .:
-   リンクローカル IPv6 アドレス. . . . .: fe80::9b2b:5fa:d615:17aa%15
-   IPv4 アドレス . . . . . . . . . . . .: 192.168.11.34
-   サブネット マスク . . . . . . . . . .: 255.255.255.0
-   デフォルト ゲートウェイ . . . . . . .: fe80::d62c:46ff:fe1c:2a00%15
-                                          192.168.11.1

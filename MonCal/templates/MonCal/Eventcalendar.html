@@ -3,70 +3,56 @@
 {% block content %}
 <div style="float:left;" >
 {% if schedule %}
-<span class="hide_elem">
-    <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
-    <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
-    <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
-</span>
     <h2>{{schedule.title}} 内容編集</h2>
     <h3><a href="{% url 'MonCal:Event_detail' schedule.pk %}">スケジュール詳細へ戻る</a></h3>
 {% else %}
-
     <h2>行事新規登録</h2>
     <h3><a href="{% url 'MonCal:event_list' %}">スケジュール一覧へ</a></h3>
 {% endif %}
+<button type="button" id="swap_button">縦横切り替え</button>
 </div>
-<table  id="monthcalednar" >
+<table  id="monthcalendar" >
     <thead>
         <tr>
             <th id ="MCbeforemonth">先月</th>
             <th id="moncal_cap" colspan="5">{{firstday.year}}年{{firstday.month}}月 </th>
             <th id ="MCnextmonth">来月</th>
         </tr>
-        <tr>
-            <th class="MCheader">月</th>
-            <th class="MCheader">火</th> 
-            <th class="MCheader">水</th> 
-            <th class="MCheader">木</th> 
-            <th class="MCheader">金</th> 
-            <th class="MCheader"><div style="color: blue;">土</div></th> 
-            <th class="MCheader"><div style="color: red;" >日</div></th>
+        <tr class="MCheader">
+            <th >月</th>
+            <th >火</th> 
+            <th >水</th> 
+            <th >木</th> 
+            <th >金</th> 
+            <th class="saturday">土</th> 
+            <th class="sunday">日</th>
         </tr>
     </thead>
+    <tbody>
     {% for weekdays in day_list %}
-    <tr style="font-size:16px">
+    <tr>
         {% for day in weekdays %}
-        {% if day == 0 %}
-        <td></td>
-        {% else %}
-        <td {% if day == base_date.day and firstday.month == base_date.month and firstday.year == base_date.year  %}
-                class="base_date"
-            {% endif %}>
-            {% if schedule %}
-                <a href="{% url 'MonCal:Event_edit' schedule.pk firstday.year firstday.month day %}"> 
+            {% if day == 0 %}
+                <td></td>
             {% else %}
-                <a href="{% url 'MonCal:eventcalendar'  firstday.year firstday.month day %}"> 
+                {% if day == start_day.day and firstday.month == start_day.month and firstday.year == start_day.year  %}
+                    <td class="base_date">
+                {% else %}
+                    <td>
+                {% endif %}
+                {% if schedule %}
+                    <a href="{% url 'MonCal:Event_edit' schedule.pk firstday.year firstday.month day %}"> 
+                {% else %}
+                    <a href="{% url 'MonCal:eventcalendar'  firstday.year firstday.month day %}"> 
+                {% endif %}
+                {{day}}</a></td>
             {% endif %}
-                {{day}}
-            </a>
-        </td>
-        {% endif %}
         {% endfor %}
-    {% endfor %}
     </tr>
+    {% endfor %}
+    </tbody>
 </table>
-    <table id="swapcalendar" class="hide_elem">
-        <caption>
-            {% if schedule %}
-            <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事予定編集
-            {% else %}
-            <a href="{% url 'MonCal:eventcalendar'%}">行事新規登録
-            {% endif %}
-            </a>
-            <br>
-            {{ start_day }} - {{ end_day }}
-        </caption>
-    </table>
+    <table id="swapcalendar" class="hide_elem" ></table>
 
     <table id="calendar">
         <caption>
@@ -81,79 +67,77 @@
         </caption>
         <thead>
             <tr>
-                <th class="headers_time">
+                <th class="{{headtime| date:'H:i'}} headers_time" id="headtime">
                     {% if schedule %}
-                    <a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">
+                        <a href="{% url 'MonCal:Event_edit' schedule.pk before.year before.month before.day %}">
                     {% else %}
-                    <a href="{% url 'MonCal:eventcalendar' before.year before.month before.day %}">
+                        <a href="{% url 'MonCal:eventcalendar' before.year before.month before.day %}">
                     {% endif %}
-                        前週
-                    </a>
-                    <br>{{ headtime }}
+                    前週</a><br>{{ headtime }}
                 </th>
-                {% for hour,span in hour_list.items %}
-                <th class="headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
+                {% for time in input_times %}
+                    {% if time in hour_list %}
+                        {% for hour,span in hour_list.items %}
+                            {% if time == hour %}
+                            <th class="{{time| date:'H:i'}} headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <th class="{{time| date:'H:i'}} hide_elem"></th>
+                    {% endif %}
                 {% endfor %}
-                <th class="headers_time" >
-                    <a href="{% if schedule %}
-                            {% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}
-                        {% else %}
-                            {% url 'MonCal:eventcalendar' next.year next.month next.day %}
-                        {% endif %}">次週</a>
-                    <br>{{tailtime}}
+
+                <th class="{{tailtime| date:'H:i'}} headers_time" id="tailtime">
+                    {% if schedule %}
+                        <a href="{% url 'MonCal:Event_edit' schedule.pk next.year next.month next.day %}">
+                    {% else %}
+                        <a href="{% url 'MonCal:eventcalendar' next.year next.month next.day %}">
+                    {% endif %}
+                    次週</a><br>{{tailtime}}
                 </th>
             </tr>
         </thead>
         <tbody>
-            <tr id="hide_times_tr" class ="hide_elem">
-                <td></td>
-                {% for time in input_times %}
-                <td class="{{time| date:'H:i'}}"></td>
-                {% endfor %}
-                <td id="tailtime" class="{{tailtime| date:'H:i'}}">{{tailtime| date:'H:i'}}</td>
-            </tr>
         {% for day, shcelist in calendar.items %}
             <tr class="{{day| date:'Y-m-d'}} input_caltr">
                 <th rowspan="{{shcelist.date_span}}"  hight="14" class="date_col">
                     {{ day| date:"d(D)" }}
                 </th>
                 {% for time in input_times %}
-                    <td class="{{time| date:'H:i'}} choice_cell
-                        {% if time in hour_list %}
-                            scale_time
-                        {% endif %} ">
-                    </td>
+                    {% if time in hour_list %}
+                        <td class="choice_cell scale_time"></td>
+                    {% else %}
+                        <td class="choice_cell"></td>
+                    {% endif %} 
                 {% endfor %}   
-                <th rowspan="{{shcelist.date_span}}" class="date_col">
-                    {{ day| date:"d(D)" }}
-                </th>
+                <th rowspan="{{shcelist.date_span}}" class="date_col">{{ day| date:"d(D)" }}</th>
             </tr>
             {% for shce in shcelist.shce_list %}
             <tr class="cal_sche_row input_caltr" >
                 <td class="date_col hide_elem"></td>
                 {% for time, book in shce.items %}
                     {% if book == 'Nothing' %}
-                        <td class="{{time| date:'H:i'}} 
-                            {% if time in hour_list %}
-                                scale_time
-                            {% endif %} ">
-                        </td>
+                        {% if time in hour_list %}
+                            <td class="scale_time"></td>
+                        {% else %}
+                            <td class=""></td>
+                        {% endif %} 
                     {% elif book == 'same' %}
-                    <td class ="{{time| date:'H:i'}} hide_elem"></td>
+                        <td class ="hide_elem"></td>
                     {% else %}
-                        <td class="{{time| date:'H:i'}} sche_box" colspan='{{book.col_span}}'>  
+                        <td class="sche_box" colspan='{{book.col_span}}'>  
                         {% if book.schedule.cycle_type.code != 'nocycle' %}
                             <a href="{% url 'MonCal:event_cycle_edit' book.schedule.pk day.year day.month day.day %}">
                         {% else %}
                             <a href="{% url 'MonCal:Event_detail' book.schedule.pk %}">
                         {% endif %}
-                            {{book.schedule.title}} <br>
+                            {{book.schedule.title}}<br>
                             {% for place in book.schedule.place.all %}
                                 {% if forloop.first %}
                                 {% else %}
                                     <br>
                                 {% endif %}
-                                {{place}}
+                                    {{place}}
                                 {% for room in book.schedule.room.all %}
                                     {% if room.place == place %}
                                         {{room.name}}
@@ -161,10 +145,9 @@
                                 {% empty %}
                                     なし
                                 {% endfor %}
-                                
                             {% endfor %}
-                            
-                            </a></td>
+                            </a>
+                        </td>
                     {% endif %}
                 {% endfor %} 
                 <td class="date_col hide_elem"></td>
@@ -207,12 +190,15 @@
                     {% endif %}
                     {% endfor %}
                 </td>
-                <td width="120px">
+                
                     {% for field in form %}
                         {% if field.label == '場所' %}
-                            {{field.label_tag}} 
-                            {% for choice in field %} 
-                            <br>{{choice}} 
+                            {% for choice in field %}
+                            <td width="120px">
+                                {% if forloop.first %}
+                                {{field.label_tag}} 
+                                {% endif %}
+                                <br>{{choice}} 
                                 {% for place,rooms in room_dic.items %}
                                     {% if choice.choice_label == place %}
                                         <ul id="place_room_{{rooms.1}}" style="display: none;">
@@ -226,14 +212,14 @@
                                         </ul>
                                     {% endif %}
                                 {% endfor %} 
-
+                                {% for error in field.errors %}
+                                    {{error}}
+                                {% endfor %}
+                            </td>
                             {% endfor %}
-                            {% for error in field.errors %}
-                                {{error}}
-                            {% endfor %} 
                         {% endif %}
                     {% endfor %}
-                </td>
+                
                 <td >
                     {% for field in form %}
                         {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
@@ -266,4 +252,11 @@
             </tr>
         </table> 
     </form>
+    {% if schedule %}
+        <span id="schedule_data">
+            <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>
+            <p id="sche_start">{{schedule.starttime| date:'H:i'}}</p>
+            <p id="sche_end">{{schedule.endtime| date:'H:i'}}</p>
+        </span>
+    {% endif %}
 {% endblock %}

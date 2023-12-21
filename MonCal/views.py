@@ -447,6 +447,10 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
         if eventform_savecheck(self,schedule,rooms,0):
             schedule.updateuser=self.request.user
             schedule.save()
+            for room_pk in rooms:
+                room = Room.objects.get(pk=room_pk)
+                schedule.room.add(room)
+            schedule.save()
             form.save_m2m()
             return redirect('MonCal:event_list')
         else:
@@ -536,7 +540,13 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         context = super().get_context_data(**kwargs)
         schedule = get_object_or_404(EventSchedule, pk=self.kwargs['pk'])
         # どの日を基準にカレンダーを表示するかの処理。年月日の指定がなければ今日からの表示。
-        base_date = datetime.date(year=schedule.date.year, month=schedule.date.month, day=schedule.date.day)
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        if year and month and day:
+            base_date = datetime.date(year=year, month=month, day=day)
+        else:
+            base_date = datetime.date(year=schedule.date.year, month=schedule.date.month, day=schedule.date.day)
         context['schedule'] =schedule
         placelist={}
         num=-1
@@ -552,7 +562,8 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         schedule_list= betweenschedule(EventSchedule,context['start_day'],context['end_day'])
         new_schedule_list=[]
         for sche_box in schedule_list:
-            new_schedule_list.append(sche_box)
+            if sche_box[2].pk!=schedule.pk:
+                new_schedule_list.append(sche_box)
         context['calendar']=calumndays(context['days'],context['input_times'],new_schedule_list)
         context=make_monthly_calendar(context,base_date)
         return context
@@ -567,6 +578,9 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
         rooms=form.cleaned_data.get('room')
         if eventform_savecheck(self,schedule,rooms,schedule.pk):
             schedule.updateuser=self.request.user
+            for room_pk in rooms:
+                room = Room.objects.get(pk=room_pk)
+                schedule.room.add(room)
             schedule.save()
             form.save_m2m()
             return redirect('MonCal:Event_detail', pk=schedule.pk)
@@ -847,7 +861,7 @@ def eventform_savecheck(self,schedule,rooms,sche_pk):
             if (sche.starttime < schedule.endtime or sche.endtime > schedule.starttime) and sche.pk !=sche_pk:
                 for room in sche.room.all():
                     if str(room.pk ) in rooms:
-                        messages.error(self.request,subject.name + 'にすでに予約がありました。')
+                        messages.error(self.request,room.name + 'にすでに予約がありました。')
                         return False
     #繰り返しありの場合
     elif schedule.cycle_type.code == 'week':

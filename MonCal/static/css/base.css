@@ -20,7 +20,7 @@ nav > a {
 
 
 /*月間カレンダー用*/
-#monthcalednar{
+#monthcalendar{
     border: 1px solid #000;
     float:right;
     width:300px;
@@ -36,7 +36,16 @@ nav > a {
     border: 1px solid #000;
     width:28px;
 }
-.MCheader{
+#monthcalendar .saturday{
+    color: blue;
+}
+#monthcalendar .sunday{
+    color: red;
+}
+#monthcalendar tbody{
+    font-size:16px;
+}
+.MCheader th{
     width:28px;
 }
 .base_date{
@@ -46,50 +55,57 @@ nav > a {
     background-color:#d3d3d3;
 }
 /* 予定登録用クラス */
-
-.input_caltr{
-    border: 1px solid #000;
-    height: 20px;
-    font-size:14px;
-}
-.headers_time{
-    border: 1px solid #000;
-    font-size:14px;
-}
-.sub_name_cell{
-    font-size:10px;
-    border: 1px solid #000;
-}
-
-.choice_cell{
-    width: 0.8%;
-    background:#d9e5ff;
-}
-.not_choice{
-    width: 0.8%;
-    background:#d3d3d3
-}
-.selecttime{
-    background-color: #00bfff;
-}
-.cal_sche_row{
-    border: 1px solid #000;
-    font-size:12px
-}
-.scale_time{
-    border-left: 1px solid #000;
-    
-}
-.sche_box{
-    border: 1px solid #000;
-    font-size:12px;
-    background-color: #d3d3d3;
-}
-.date_col{
+#calendar .date_col{
     border: 1px solid #000;
     background-color: #fff;
     
 }
+#calendar  .input_caltr{
+    border: 1px solid #000;
+    height: 20px;
+    font-size:14px;
+}
+#calendar  .headers_time{
+    border: 1px solid #000;
+    font-size:14px;
+}
+#calendar .sub_name_cell{
+    font-size:10px;
+    border: 1px solid #000;
+}
+
+#calendar .choice_cell{
+    width: 0.8%;
+    background:#d9e5ff;
+}
+#calendar .selecttime{
+    background-color: #00bfff;
+}
+#calendar .not_choice{
+    width: 0.8%;
+    background:#d3d3d3
+}
+
+#calendar  .cal_sche_row{
+    border: 1px solid #000;
+    font-size:12px
+}
+#calendar .scale_time{
+    border-left: 1px solid #000;
+    
+}
+#calendar .sche_box{
+    border: 1px solid #000;
+    font-size:12px;
+    background-color: #d3d3d3;
+}
+
+#calendar .date_col{
+    border: 1px solid #000;
+    background-color: #fff;
+    
+}
+
 #calendar{
     border:0px; 
     width:100%;
@@ -98,10 +114,67 @@ nav > a {
     clear: both;
 }
 
+#swapcalendar  .headers_time{
+    border: 1px solid #000;
+    font-size:14px;
+    width: 4%;
+    height: 40px;
+}
+#swapcalendar .sub_name_cell{
+    font-size:10px;
+    border: 1px solid #000;
+}
+
+#swapcalendar .choice_cell{
+    background:#d9e5ff;
+    
+}
+#swapcalendar .not_choice{
+    background:#d3d3d3
+}
+
+#swapcalendar .scale_time{
+    border-top: 1px solid #000;
+    
+}
+#swapcalendar .sche_box{
+    width: 100px;
+    border: 1px solid #000;
+    font-size:12px;
+    background-color: #d3d3d3;
+    
+}
+#swapcalendar td{
+    width: 90px;
+    border-left: 1px solid #000;
+    border-right: 1px solid #000;
+}
+#swapcalendar .selecttime{
+    background-color: #00bfff;
+}
+#swapcalendar .date_col{
+    width: 45px;
+    border: 1px solid #000;
+    background-color: #fff;
+    
+}
+#swapcalendar{
+    border:0px; 
+    width: 1000px;
+    height:600px;
+    border-collapse: collapse;
+    user-select: none;
+    clear: both;
+    
+}
+
+
+#swap_button{
+    clear: both;
+}
 #form_table{
     border:0px; 
     width:100%;
-    
 }
 
 #schedule_list{
