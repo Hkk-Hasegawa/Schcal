@@ -333,6 +333,7 @@ function swap_switch(){
         swap_cal.classList.remove("hide_elem");
     }
 }
+
 //セルを選択した時の関数
 function mousedown(td){
     const input_caltr = td.parentNode;

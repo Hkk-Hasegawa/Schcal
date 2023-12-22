@@ -14,7 +14,7 @@
 </script>
 <h4><a href="{% url 'MonCal:Working_day_list' %}">戻る</a></h4>
 <h3>稼働日・非稼働日：新規登録</a></h3>
-<table  border="1" style="border-collapse: collapse" width="50%">
+<table  border="1"  id="working_calendar">
     <caption>
         <a href="{% url 'MonCal:set_workingday' before.year before.month %}">先月</a> 
         {{year}}年{{month}}月 
