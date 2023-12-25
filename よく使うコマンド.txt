@@ -36,3 +36,6 @@ PostgreSQL ポート番号:5432
 python manage.py createsuperuser
 #path
 https://hkkhasegawa.pythonanywhere.com/
+
+
+<input type="checkbox" name="swap_mode" id="id_swap">

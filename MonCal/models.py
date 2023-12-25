@@ -32,6 +32,7 @@ class EventSchedule(models.Model):
     room=models.ManyToManyField('Room', verbose_name='設備',blank=True)
 
     detail=models.TextField('詳細',null=True,blank=True)
+    
     def __str__(self):
         start=self.starttime.strftime('%H:%M')
         end=self.endtime.strftime('%H:%M')

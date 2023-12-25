@@ -50,7 +50,7 @@
 </table>
 <br class="flout_stop">
 
-<form action="" method="POST" id="fixed_form" class="hide_elem">
+<form  method="POST" id="fixed_form" class="hide_elem">
     <button type="button" class="close_x" >X</button>
     <table border="0" width="100%" table-layout: fixed;>
         <tr>
@@ -119,10 +119,15 @@
             </td>
         </tr>
     </table> 
+    <input type="checkbox" name="swap" id="id_swap" class="hide_elem" {{swapmode}}>
 </form>
-
-<table id="swapcalendar" class="hide_elem" ></table>
-    <table id="calendar">
+    {% if swapmode == 'checked' %}
+    <table id="swapcalendar" class="" ></table>
+    <table id="calendar" class="hide_elem">
+    {% else %}
+    <table id="swapcalendar" class="hide_elem" ></table>
+    <table id="calendar" class="">
+    {% endif %}
         <caption>
             <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk %}">{{ subject.name }}</a>
             <br>{{ start_day }} - {{ end_day }}

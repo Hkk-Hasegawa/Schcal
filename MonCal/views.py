@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import generic
 from django.urls import reverse,reverse_lazy
-from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day,Cycle_pause,Room
+from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day,Cycle_pause,Room,Parson
 from .forms import Scheduleform,EventScheduleform,AllScheduleform
 import datetime,calendar
 
@@ -135,6 +135,11 @@ class AllPropertyCalendar(LoginRequiredMixin, generic.CreateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date =  datetime.date.today()
+        parson = get_object_or_404(Parson, user=self.request.user)
+        if parson.swap_mode:
+            context['swapmode'] ="checked"
+        else:
+            context['swapmode'] =""
         context=makecal(context,base_date,3)
         calender_dic={}
         for subject in subjects:
@@ -210,6 +215,11 @@ class AllPropertyEdit(LoginRequiredMixin,generic.UpdateView):
             calender_dic[subject]=subject_calender(context,subject,schedule.pk)
         moncal_base=display_period_days(base_date,1)[0]
         context=make_monthly_calendar(context,base_date)
+        parson = get_object_or_404(Parson, user=self.request.user)
+        if parson.swap_mode:
+            context['swapmode'] ="checked"
+        else:
+            context['swapmode'] =""
         context['base_date']=moncal_base
         context['calender_dic']=calender_dic
         context['subject_type']=subject_type
@@ -290,6 +300,11 @@ class PropertyCalendar(LoginRequiredMixin,generic.CreateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date =  datetime.date.today()
+        parson = get_object_or_404(Parson, user=self.request.user)
+        if parson.swap_mode:
+            context['swapmode'] ="checked"
+        else:
+            context['swapmode'] =""
         # カレンダーは、基準日から表示期間分の日付を作成しておく
         context=makecal(context,base_date,7)
         context['calender']=subject_calender(context,subject,0)
@@ -357,6 +372,11 @@ class PropertyEdit(LoginRequiredMixin,generic.UpdateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date=schedule.date
+        parson = get_object_or_404(Parson, user=self.request.user)
+        if parson.swap_mode:
+            context['swapmode'] ="checked"
+        else:
+            context['swapmode'] =""
         context=makecal(context,base_date,7)
         context['calender']=subject_calender(context,subject,schedule.pk)
         context['subject'] =subject
@@ -420,6 +440,11 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date =  datetime.date.today()
+        parson = get_object_or_404(Parson, user=self.request.user)
+        if parson.swap_mode:
+            context['swapmode'] ="checked"
+        else:
+            context['swapmode'] =""
         placelist={}
         num=-1
         for place in Event.objects.all():
@@ -444,6 +469,8 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
     def form_valid(self, form):
         schedule=form.save(commit=False)
         rooms = form.cleaned_data.get('room')
+        swap=form.cleaned_data.get('swap')
+        swap_save(swap,self.request.user)
         if eventform_savecheck(self,schedule,rooms,0):
             schedule.updateuser=self.request.user
             schedule.save()
@@ -547,6 +574,11 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
             base_date = datetime.date(year=year, month=month, day=day)
         else:
             base_date = datetime.date(year=schedule.date.year, month=schedule.date.month, day=schedule.date.day)
+        parson = get_object_or_404(Parson, user=self.request.user)
+        if parson.swap_mode:
+            context['swapmode'] ="checked"
+        else:
+            context['swapmode'] =""
         context['schedule'] =schedule
         placelist={}
         num=-1
@@ -576,6 +608,8 @@ class EventEdit(LoginRequiredMixin,generic.UpdateView):
     def form_valid(self, form):
         schedule = form.save(commit=False)
         rooms=form.cleaned_data.get('room')
+        swap=form.cleaned_data.get('swap')
+        swap_save(swap,self.request.user)
         if eventform_savecheck(self,schedule,rooms,schedule.pk):
             schedule.updateuser=self.request.user
             for room_pk in rooms:
@@ -1027,3 +1061,9 @@ def make_monthly_calendar(context,base_date):
     context['day_list']=day_list
     context['firstday']=firstday
     return context    
+
+def swap_save(swap,user):
+    parson = get_object_or_404(Parson, user=user)
+    print(swap)
+    parson.swap_mode=swap
+    parson.save()

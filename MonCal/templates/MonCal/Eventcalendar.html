@@ -54,7 +54,7 @@
     </tbody>
 </table>
 <br class="flout_stop">
-<form action="" method="POST" id="fixed_form" class="hide_elem">
+<form   method="POST" id="fixed_form" class="hide_elem">
     <button type="button" class="close_x" >X</button>
     <table id="form_table" >
         <tr valign="top">
@@ -120,7 +120,7 @@
             
             <td >
                 {% for field in form %}
-                    {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
+                    {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' or field.id_for_label == 'id_swap_mode' %}
                     <p>
                         {{field.label_tag}}
                         {{field}}
@@ -149,10 +149,16 @@
             </td>
         </tr>
     </table> 
+    <input type="checkbox" name="swap" id="id_swap" class="hide_elem" {{swapmode}}>
 </form>
+    {% if swapmode == 'checked' %}
+    <table id="swapcalendar" class="" ></table>
+    <table id="calendar" class="hide_elem">
+    {% else %}
     <table id="swapcalendar" class="hide_elem" ></table>
-
-    <table id="calendar">
+    <table id="calendar" class="">
+    {% endif %}
+    
         <caption>
             {% if schedule %}
             <a href="{% url 'MonCal:Event_edit' schedule.pk %}">行事予定編集
@@ -254,7 +260,7 @@
         {% endfor %}
         </tbody>
     </table>
-    
+   
 
     {% if schedule %}
         <span id="schedule_data">

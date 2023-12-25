@@ -341,12 +341,15 @@ function input_swap_cell(swap_tr,elem,cell){
 function swap_switch(){
     const cal_table=document.getElementById("calendar");
     const swap_cal=document.getElementById("swapcalendar");
+    const id_swap=document.getElementById("id_swap");
     if(cal_table.classList.contains("hide_elem")){
         cal_table.classList.remove("hide_elem");
         swap_cal.classList.add("hide_elem");
+        id_swap.checked=false;
     }else{
         cal_table.classList.add("hide_elem");
         swap_cal.classList.remove("hide_elem");
+        id_swap.checked=true;
     }
 }
 

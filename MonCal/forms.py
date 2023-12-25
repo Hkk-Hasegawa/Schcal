@@ -36,12 +36,12 @@ class AllScheduleform(forms.ModelForm):
 class EventScheduleform(forms.ModelForm):
     starttime = forms.ChoiceField(label='開始時間')
     endtime = forms.ChoiceField(label='終了時間')
-    
+    swap= forms.BooleanField(label='縦横切り替え',required=False)
     room= forms.MultipleChoiceField(label='設備',widget=forms.CheckboxSelectMultiple,required=False,)
     place= forms.MultipleChoiceField(label='場所',widget=forms.CheckboxSelectMultiple,required=True)
     class Meta:
         model =EventSchedule
-        fields = ('date','starttime','endtime','cycle_type' ,'place','room','title','detail')
+        fields = ('date','starttime','endtime','cycle_type' ,'place','room','title','detail','swap')
         widgets = {'date': AdminDateWidget()}
     
     def __init__(self, categories=None, *args, **kwargs):
