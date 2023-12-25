@@ -3,9 +3,9 @@ cd C:\Users\ttana\Desktop\python\Schcal
 	#仮想環境作成
 python -m venv myvenv   
 	#テーブル用ディレクトリ作成
-python manage.py makemigrations MonCal	
+python manage.py makemigrations MonCal
 	#テーブルを適用
-python manage.py migrate MonCal	
+python manage.py migrate MonCal
 	#静的ファイルを更新	
 python manage.py collectstatic	
 	#仮想環境起動

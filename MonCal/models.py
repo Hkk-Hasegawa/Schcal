@@ -103,3 +103,10 @@ class Working_day(models.Model):
     #Trueの時、土日
     def __str__(self):
         return str(self.date)
+    
+class Parson(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='ユーザー',
+                             on_delete=models.CASCADE, null=True,blank=True)
+    swap_mode=models.BooleanField("縦横切り替え",default=False)
+    def __str__(self):
+        return str(self.user)

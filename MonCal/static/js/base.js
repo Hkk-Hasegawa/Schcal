@@ -34,13 +34,13 @@ window.addEventListener("load", () => {
                 allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText)
                 input_reset.addEventListener("click",()=> {
                     allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText);
-                    fixed_form.classList.add("hide_elem");
+                    
                 });
             }else{
                 set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
                 input_reset.addEventListener("click",()=> {
                     set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
-                    fixed_form.classList.add("hide_elem");
+                    
                 });
             }
             const schedule_data=document.getElementById("schedule_data");
@@ -48,7 +48,7 @@ window.addEventListener("load", () => {
         }else{
             input_reset.addEventListener("click",()=> {
                 reset_timeform();
-                fixed_form.classList.add("hide_elem");
+                
             });}
         timebutton("start_up");
         timebutton("start_down");
