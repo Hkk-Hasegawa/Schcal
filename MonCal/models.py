@@ -70,6 +70,7 @@ class Room(models.Model):
     name=models.CharField('部屋名',max_length=31)
     place=models.ForeignKey('Event', verbose_name='場所'
                                  ,on_delete=models.SET_NULL, null=True,blank=True)
+    
     def __str__(self):
         return f'{self.place.name}_{self.name}'
 
