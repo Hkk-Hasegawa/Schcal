@@ -1,6 +1,7 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
+
 <div style="float:left;" >
 {% if schedule %}
     <h2>{{schedule.title}} 内容編集</h2>
@@ -52,6 +53,103 @@
     {% endfor %}
     </tbody>
 </table>
+<br class="flout_stop">
+<form action="" method="POST" id="fixed_form" class="hide_elem">
+    <button type="button" class="close_x" >X</button>
+    <table id="form_table" >
+        <tr valign="top">
+            <td width="300px" >
+                {% for field in form %}
+                {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
+
+                    {% if field.id_for_label == 'id_starttime' %}
+                        <p>
+                            <button type="button" id="start_up" >△</button>
+                            <button type="button" id="start_down" >▽</button>
+                            <span id ="s_timetext">{{field.label}}:</span>
+                        </p>
+                        <p class ="hide_elem">
+                    {% elif field.id_for_label == 'id_endtime' %}
+                        <p>
+                            <button type="button" id="end_up" >△</button>
+                            <button type="button" id="end_down" >▽</button>
+                            <span id ="e_timetext">{{field.label}}:</span>
+                        </p>
+                        <p class ="hide_elem" >
+                    {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' %}
+                    <p>
+                    {% endif %}
+                        {{field.label_tag}}
+                        {{field}}
+                    {% for error in field.errors %}
+                        {{error}}
+                    {% endfor %}
+                    </p>
+                {% endif %}
+                {% endfor %}
+            </td>
+            
+                {% for field in form %}
+                    {% if field.label == '場所' %}
+                        {% for choice in field %}
+                        <td width="120px">
+                            {% if forloop.first %}
+                            {{field.label_tag}} 
+                            {% endif %}
+                            <br>{{choice}} 
+                            {% for place,rooms in room_dic.items %}
+                                {% if choice.choice_label == place %}
+                                    <ul id="place_room_{{rooms.1}}" style="display: none;">
+                                    {% for room in rooms.0 %}
+                                    <li><input type="checkbox" name="room" value="{{room.pk}}" class="place_room_{{rooms.1}}" id="{{room.id}}"
+                                        {% if schedule and room.room in schedule.room.all %}
+                                        checked
+                                        {% endif %}>{{room.room.name}}
+                                    </li> 
+                                    {% endfor %} 
+                                    </ul>
+                                {% endif %}
+                            {% endfor %} 
+                            {% for error in field.errors %}
+                                {{error}}
+                            {% endfor %}
+                        </td>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            
+            <td >
+                {% for field in form %}
+                    {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
+                    <p>
+                        {{field.label_tag}}
+                        {{field}}
+                        {% for error in field.errors %}
+                            {{error}}
+                        {% endfor %}
+                    </p>
+                    {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                {% csrf_token %}
+                <button type="submit">
+                {% if schedule %}
+                    更新
+                {% else %}
+                    登録
+                {% endif %}
+                </button>
+                <button type="reset" id="input_reset">
+                    取消
+                </button>
+            </td>
+        </tr>
+    </table> 
+</form>
     <table id="swapcalendar" class="hide_elem" ></table>
 
     <table id="calendar">
@@ -157,101 +255,7 @@
         </tbody>
     </table>
     
-    <form action="" method="POST">
-        <table id="form_table">
-            <tr valign="top">
-                <td width="300px" >
-                    {% for field in form %}
-                    {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' or field.id_for_label == 'id_cycle_stopday' %}
 
-                        {% if field.id_for_label == 'id_starttime' %}
-                            <p>
-                                <button type="button" id="start_up" >△</button>
-                                <button type="button" id="start_down" >▽</button>
-                                <span id ="s_timetext">{{field.label}}:</span>
-                            </p>
-                            <p class ="hide_elem">
-                        {% elif field.id_for_label == 'id_endtime' %}
-                            <p>
-                                <button type="button" id="end_up" >△</button>
-                                <button type="button" id="end_down" >▽</button>
-                                <span id ="e_timetext">{{field.label}}:</span>
-                            </p>
-                            <p class ="hide_elem" >
-                        {% elif  field.id_for_label == 'id_date' or field.id_for_label == 'id_cycle_type' %}
-                        <p>
-                        {% endif %}
-                            {{field.label_tag}}
-                            {{field}}
-                        {% for error in field.errors %}
-                            {{error}}
-                        {% endfor %}
-                        </p>
-                    {% endif %}
-                    {% endfor %}
-                </td>
-                
-                    {% for field in form %}
-                        {% if field.label == '場所' %}
-                            {% for choice in field %}
-                            <td width="120px">
-                                {% if forloop.first %}
-                                {{field.label_tag}} 
-                                {% endif %}
-                                <br>{{choice}} 
-                                {% for place,rooms in room_dic.items %}
-                                    {% if choice.choice_label == place %}
-                                        <ul id="place_room_{{rooms.1}}" style="display: none;">
-                                        {% for room in rooms.0 %}
-                                        <li><input type="checkbox" name="room" value="{{room.pk}}" class="place_room_{{rooms.1}}" id="{{room.id}}"
-                                            {% if schedule and room.room in schedule.room.all %}
-                                            checked
-                                            {% endif %}>{{room.room.name}}
-                                        </li> 
-                                        {% endfor %} 
-                                        </ul>
-                                    {% endif %}
-                                {% endfor %} 
-                                {% for error in field.errors %}
-                                    {{error}}
-                                {% endfor %}
-                            </td>
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                
-                <td >
-                    {% for field in form %}
-                        {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
-                        <p>
-                            {{field.label_tag}}
-                            {{field}}
-                            {% for error in field.errors %}
-                                {{error}}
-                            {% endfor %}
-                        </p>
-                        {% endif %}
-                    {% endfor %}
-                </td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>
-                    {% csrf_token %}
-                    <button type="submit">
-                    {% if schedule %}
-                        更新
-                    {% else %}
-                        登録
-                    {% endif %}
-                    </button>
-                    <button type="reset" id="input_reset">
-                        取消
-                    </button>
-                </td>
-            </tr>
-        </table> 
-    </form>
     {% if schedule %}
         <span id="schedule_data">
             <p id="sche_date">{{schedule.date| date:'Y-m-d'}}</p>

@@ -58,6 +58,71 @@ alert( {{ message }} )
     {% endfor %}
     </tbody>
 </table>
+<br class="flout_stop">
+<form action="" method="POST" id="fixed_form" class="hide_elem">
+    <button type="button" class="close_x" >X</button>
+    <table border="0" width="100%" table-layout: fixed;>
+        <tr>
+            <td valign="top" width="40%" >
+                {% for field in form %}
+                {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  %}
+                    {% if field.id_for_label == 'id_starttime' %}
+                        <p>
+                            <button type="button" id="start_up">△</button>
+                            <button type="button" id="start_down">▽</button>
+                            <span id ="s_timetext">{{field.label}}:</span>
+                        </p>
+                        <p class ="hide_elem">
+                    {% elif field.id_for_label == 'id_endtime' %}
+                        <p>
+                            <button type="button" id="end_up" >△</button>
+                            <button type="button" id="end_down">▽</button>
+                            <span id ="e_timetext">{{field.label}}:</span>
+                        </p>
+                        <p class ="hide_elem" >
+                    {% elif  field.id_for_label == 'id_date' %}
+                    <p>
+                    {% endif %}
+                        {{field.label_tag}}
+                        {{field}}
+                    {% for error in field.errors %}
+                        {{error}}
+                    {% endfor %}
+                    </p>
+                {% endif %}
+                {% endfor %}
+            </td>
+            <td valign="top" >
+                {% for field in form %}
+                    {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
+                    <p>
+                        {{field.label_tag}}
+                        {{field}}
+                        {% for error in field.errors %}
+                            {{error}}
+                        {% endfor %}
+                    </p>
+                    {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                {% csrf_token %}
+                <button type="submit">
+                    {% if schedule %}
+                        更新
+                    {% else %}
+                        登録
+                    {% endif %}
+                </button>
+                <button type="reset" id="input_reset">取消</button>
+            </td>
+        </tr>
+    </table> 
+</form>
+
    <table id="swapcalendar" class="hide_elem" ></table>
     <table  id="calendar">
         <caption>
@@ -132,68 +197,7 @@ alert( {{ message }} )
         </tbody>
     </table>
 
-    <form action="" method="POST">
-        <table border="0" width="100%" table-layout: fixed;>
-            <tr>
-                <td valign="top" width="40%" >
-                    {% for field in form %}
-                    {% if field.id_for_label == 'id_starttime' or field.id_for_label == 'id_endtime' or field.id_for_label == 'id_date'  %}
-                        {% if field.id_for_label == 'id_starttime' %}
-                            <p>
-                                <button type="button" id="start_up">△</button>
-                                <button type="button" id="start_down">▽</button>
-                                <span id ="s_timetext">{{field.label}}:</span>
-                            </p>
-                            <p class ="hide_elem">
-                        {% elif field.id_for_label == 'id_endtime' %}
-                            <p>
-                                <button type="button" id="end_up" >△</button>
-                                <button type="button" id="end_down">▽</button>
-                                <span id ="e_timetext">{{field.label}}:</span>
-                            </p>
-                            <p class ="hide_elem" >
-                        {% elif  field.id_for_label == 'id_date' %}
-                        <p>
-                        {% endif %}
-                            {{field.label_tag}}
-                            {{field}}
-                        {% for error in field.errors %}
-                            {{error}}
-                        {% endfor %}
-                        </p>
-                    {% endif %}
-                    {% endfor %}
-                </td>
-                <td valign="top" >
-                    {% for field in form %}
-                        {% if field.id_for_label == 'id_title' or field.id_for_label == 'id_detail' %}
-                        <p>
-                            {{field.label_tag}}
-                            {{field}}
-                            {% for error in field.errors %}
-                                {{error}}
-                            {% endfor %}
-                        </p>
-                        {% endif %}
-                    {% endfor %}
-                </td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>
-                    {% csrf_token %}
-                    <button type="submit">
-                        {% if schedule %}
-                            更新
-                        {% else %}
-                            登録
-                        {% endif %}
-                    </button>
-                    <button type="reset" id="input_reset">取消</button>
-                </td>
-            </tr>
-        </table> 
-    </form>
+    
     {% if schedule %}
         <span id="schedule_data">
             <p id="sche_subject">{{schedule.subject_name}}</p>

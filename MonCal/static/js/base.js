@@ -22,6 +22,7 @@ window.addEventListener("load", () => {
         const input_reset=document.getElementById("input_reset");
         const input_caltr=document.querySelectorAll(".input_caltr");
         const palces = document.getElementsByName('place');
+        const fixed_form=document.getElementById("fixed_form");
         for(let step=0;step<palces.length;step++){
             palces[step].addEventListener("click",()=> {
                 room_view(palces[step])
@@ -33,20 +34,28 @@ window.addEventListener("load", () => {
                 allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText)
                 input_reset.addEventListener("click",()=> {
                     allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText);
+                    fixed_form.classList.add("hide_elem");
                 });
             }else{
                 set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
                 input_reset.addEventListener("click",()=> {
                     set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
+                    fixed_form.classList.add("hide_elem");
                 });
             }
             const schedule_data=document.getElementById("schedule_data");
             schedule_data.remove();
-        }else{input_reset.addEventListener("click",()=> {reset_timeform();});}
+        }else{
+            input_reset.addEventListener("click",()=> {
+                reset_timeform();
+                fixed_form.classList.add("hide_elem");
+            });}
         timebutton("start_up");
         timebutton("start_down");
         timebutton("end_up");
         timebutton("end_down");
+        const close_x=document.querySelectorAll(".close_x");
+            close_x[0].addEventListener("click",()=> {fixed_form.classList.add("hide_elem");});
         const MCnextmonth=document.getElementById("MCnextmonth");
             MCnextmonth.addEventListener('click', get_nextmonth);
         const MCbeforemonth=document.getElementById("MCbeforemonth");
@@ -62,6 +71,7 @@ window.addEventListener("load", () => {
                     let swap_td=swap_cal.rows[j].cells[i+1];
                     if((td.classList.contains("choice_cell"))){
                         td.addEventListener('mousedown', () => {
+                            fixed_form.classList.add("hide_elem");
                             mousedown(td);
                             swap_mousedown(swap_td);
                         });
@@ -80,6 +90,7 @@ window.addEventListener("load", () => {
                     let td =cal_table.rows[col].cells[step];
                     if((swap_td.classList.contains("choice_cell"))){
                         swap_td.addEventListener('mousedown', () => {
+                            fixed_form.classList.add("hide_elem");
                             mousedown(td);
                             swap_mousedown(swap_td);
                         });
@@ -102,6 +113,7 @@ window.addEventListener("load", () => {
                     let swap_td=swap_cal.rows[j].cells[i+1];
                     if(td.classList.contains("choice_cell")){
                         td.addEventListener('mousedown', () => {
+                            fixed_form.classList.add("hide_elem");
                             mousedown(td);
                             swap_mousedown(swap_td);
                         });
@@ -118,6 +130,7 @@ window.addEventListener("load", () => {
                     let td =cal_table.rows[col].cells[step];
                     if((swap_td.classList.contains("choice_cell"))){
                         swap_td.addEventListener('mousedown', () => {
+                            fixed_form.classList.add("hide_elem");
                             mousedown(td);
                             swap_mousedown(swap_td);
                         });
@@ -138,6 +151,7 @@ window.addEventListener("load", () => {
                         let swap_td=swap_cal.rows[j].cells[i+1];
                         let subject = input_caltr[i].cells[1].innerText;
                         td.addEventListener('mousedown', () => {
+                            fixed_form.classList.add("hide_elem");
                             all_car_mousedown(td,subject);
                             swap_mousedown(swap_td);
                         });
@@ -156,6 +170,7 @@ window.addEventListener("load", () => {
                     let subject = cal_table.rows[col].cells[1].innerText;
                     if((swap_td.classList.contains("choice_cell"))){
                         swap_td.addEventListener('mousedown', () => {
+                            fixed_form.classList.add("hide_elem");
                             all_car_mousedown(td,subject);
                             swap_mousedown(swap_td);
                         });
@@ -177,6 +192,7 @@ window.addEventListener("load", () => {
                 sche_box[step].cells[i].addEventListener('mouseover',() => {detail_show(sche_box[step])});
             }            
         }
+        
         const year_schedule=document.querySelectorAll(".year_schedule");
         for(step =0;step<year_schedule.length;step++){
             if(year_schedule[step].classList.contains("first")){
@@ -514,9 +530,16 @@ function get_column(time){
 //日時の入力を終了する関数<html>に入れる
 function select_finish(){
     const down_cell=document.getElementById("down_td");
-    if(down_cell !=null){down_cell.id = '';}
+    const fixed_form=document.getElementById("fixed_form");
+    if(down_cell !=null){
+        down_cell.id = '';
+        fixed_form.classList.remove("hide_elem");
+    }
     const swap_down=document.getElementById("swap_down");
-    if(swap_down !=null){swap_down.id = '';}
+    if(swap_down !=null){
+        swap_down.id = '';
+        fixed_form.classList.remove("hide_elem");
+    }
 }
 //時刻の入力をリセットする
 function reset_timeform(){

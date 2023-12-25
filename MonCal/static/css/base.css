@@ -18,6 +18,19 @@ nav > a {
     display: none;  
 }
 
+#fixed_form {
+    position: fixed;
+    border: 1px solid #000;
+    background: #fff;
+    top: 30%;
+    left: 15%;
+  }
+.close_x{
+    float:right;
+    background-color:red;
+    color:white;
+}
+
 /*月間カレンダー用*/
 #monthcalendar{
     border: 1px solid #000;
@@ -110,7 +123,6 @@ nav > a {
     width:100%;
     border-collapse: collapse;
     user-select: none;
-    clear: both;
 }
 
 #swapcalendar  .headers_time{
@@ -163,12 +175,12 @@ nav > a {
     height:600px;
     border-collapse: collapse;
     user-select: none;
-    clear: both;
+
     
 }
 
 
-#swap_button{
+.flout_stop{
     clear: both;
 }
 #form_table{

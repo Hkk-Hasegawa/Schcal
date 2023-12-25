@@ -61,3 +61,15 @@ function detail_show(tr){
     detail_tr.cells[0].colSpan =String( tr.cells.length)
     detail_tr.style.display = "";
 }
+
+function place_filter(place_num){
+    const schedule_list = document.getElementById("schedule_list");
+    const list_tr=schedule_list.rows
+    for(let step=1;step<list_tr.length;step++){
+        if(list_tr[step].cells[place_num]==""){
+            list_tr[step].classList.add("hide_elem");
+        }else{
+            list_tr[step].classList.remove("hide_elem");
+        }
+    }
+}
