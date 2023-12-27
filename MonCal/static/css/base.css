@@ -17,7 +17,15 @@ nav > a {
 .hide_elem{
     display: none;  
 }
-
+#fixed_detail {
+    position: fixed;
+    border: 1px solid #000;
+    background: #fff;
+    width:40%;
+    
+    top: 30%;
+    left: 15%;
+  }
 #fixed_form {
     position: fixed;
     border: 1px solid #000;
@@ -193,6 +201,9 @@ nav > a {
     width:100%;
     border-collapse: collapse;
     
+}
+#schedule_list th,#schedule_list td{
+    border: 1px solid #000;
 }
 #schedule_data{
     display: none;  

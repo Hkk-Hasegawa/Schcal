@@ -34,13 +34,13 @@ window.addEventListener("load", () => {
                 allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText)
                 input_reset.addEventListener("click",()=> {
                     allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText);
-                    
+                    fixed_form.classList.add("hide_elem");
                 });
             }else{
                 set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
                 input_reset.addEventListener("click",()=> {
                     set_selecttime(sche_date.innerText,sche_start.innerText,sche_end.innerText);
-                    
+                    fixed_form.classList.add("hide_elem");
                 });
             }
             const schedule_data=document.getElementById("schedule_data");
@@ -48,7 +48,7 @@ window.addEventListener("load", () => {
         }else{
             input_reset.addEventListener("click",()=> {
                 reset_timeform();
-                
+                fixed_form.classList.add("hide_elem");
             });}
         timebutton("start_up");
         timebutton("start_down");
@@ -184,15 +184,15 @@ window.addEventListener("load", () => {
         }
         const swap_button=document.getElementById("swap_button");
         swap_button.addEventListener('click',swap_switch,false);
-    }else if(url.includes("list")){
-        detail_hide();
+    }else if(url.includes("list") && url.includes("event")){
         const sche_box=document.querySelectorAll(".schedule");
         for(let step=0;step<sche_box.length;step++){
-            for(let i=0;i<sche_box[step].cells.length;i++){
-                sche_box[step].cells[i].addEventListener('mouseover',() => {detail_show(sche_box[step])});
-            }            
+            sche_box[step].addEventListener('click',() => {detail_show(sche_box[step])});          
         }
-        
+        const close_x=document.querySelectorAll(".close_x");
+        close_x[0].addEventListener('click',detail_hide,false);
+        const filter_select=document.getElementById("filter_select");
+        filter_select.addEventListener('change',schedule_filter,false);
         const year_schedule=document.querySelectorAll(".year_schedule");
         for(step =0;step<year_schedule.length;step++){
             if(year_schedule[step].classList.contains("first")){
@@ -571,6 +571,7 @@ function inputdate(date){
 function input_time(start,end){
     const starttime  = document.getElementById("id_starttime");
     const endtime    = document.getElementById("id_endtime");
+    
     starttime.value = start+":00";
     endtime.value = end+":00";
     outputtext("s_timetext",start);
