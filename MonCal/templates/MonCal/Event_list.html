@@ -9,7 +9,12 @@
         <option value="本社">本社</option>
         <option value="岡崎">岡崎</option>
     </select>
-    <table border="1" id="schedule_list">
+    <div id="fixed_detail" class="hide_elem">
+        <button type="button" class="close_x" >X</button>
+        <span id="title"></span>
+        <div id="detail"></div> 
+    </div>
+    <table  id="schedule_list">
         <thead>
             <tr>
                 <th width="30%">日時</th><th>予定</th>
@@ -22,6 +27,10 @@
         <tbody>
             {% for schedule in all_schedule %}
             <tr class="schedule">
+                <td class="hide_elem">
+                    内容<br>
+                    {{ schedule.1.detail|linebreaksbr }}
+                </td>
                 <td>{{ schedule.0 |date:"Y年m月d日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}</td>
                 <td>
                     {% if schedule.1.cycle_type.code == "nocycle" %}
@@ -47,13 +56,6 @@
                     {% if schedule.1.cycle_type.code == 'week' %}
                         毎週{{schedule.0 | date:"D" }}曜日
                     {% endif %}
-                </td>
-                
-            </tr>
-            <tr class="detail" style="display: none;">
-                <td>
-                    内容<br>
-                    {{ schedule.1.detail|linebreaksbr }}
                 </td>
             </tr>
             {% endfor %}
@@ -81,6 +83,12 @@
                         <a href="{% url 'MonCal:event_cycle_edit' schedule.1.pk schedule.0.year schedule.0.month schedule.0.day %}">
                     {% endif %}
                     {{schedule.1.title}}</a>
+                    <span class="hide_elem">
+                        {% for place in schedule.1.place.all %}
+                            <br>
+                            {{place}}
+                        {% endfor %}
+                    </span>
                 </td> 
                 {% endfor %}
             </tr>

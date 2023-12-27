@@ -146,11 +146,11 @@
                     {% if time in hour_list %}
                         {% for hour,span in hour_list.items %}
                             {% if time == hour %}
-                            <th class="{{time}} headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
+                            <th class="{{time| date:'H:i'}} headers_time" colspan='{{span}}'>{{ hour.hour }}</th>
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        <th class="{{time}} hide_elem"></th>
+                        <th class="{{time| date:'H:i'}} hide_elem"></th>
                     {% endif %}
                 {% endfor %}
                 <th class="{{tailtime| date:'H:i'}} date_col" id="tailtime">{{tailtime| date:'H:i'}}</th>
