@@ -367,15 +367,13 @@ class EventCalendar(LoginRequiredMixin,generic.CreateView):
                 schedule.room.add(room)
             schedule.save()
             form.save_m2m()
-            return redirect('MonCal:event_list')
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+        if year and month and day:
+            return redirect('MonCal:eventcalendar', year=year,month=month,day=day)
         else:
-            year = self.kwargs.get('year')
-            month = self.kwargs.get('month')
-            day = self.kwargs.get('day')
-            if year and month and day:
-                return redirect('MonCal:eventcalendar', year=year,month=month,day=day)
-            else:
-                return redirect('MonCal:eventcalendar')
+            return redirect('MonCal:eventcalendar')
 
 #営業所ごとの直近の行事予定
 class EventList(LoginRequiredMixin, generic.TemplateView):
