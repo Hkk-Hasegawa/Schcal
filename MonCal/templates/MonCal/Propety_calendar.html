@@ -4,11 +4,10 @@
 <div style="float:left;" >
     {% if schedule %}
         <h1>{{schedule.title}}の内容の変更</h1>
-        <h2><a href="{% url 'MonCal:Property_edit' schedule.pk %}">個別編集ページ</a></h2>
         <h3><a href="{% url 'MonCal:Property_detail' schedule.pk %}">スケジュール詳細</a></h3>
     {% else %}
         <h2>{{subject_type}} の新規予約</h2>
-        <h2><a href="{% url 'MonCal:all_property_list' subject_type.pk %}">スケジュール一覧へ</a></h2>
+        <h2><a href="{% url 'MonCal:property_list' subject_type.pk %}">スケジュール一覧へ</a></h2>
     {% endif %}
     <button type="button" id="swap_button">縦横切り替え</button>
 </div>
@@ -41,7 +40,7 @@
                 {% else %}
                     <td>
                 {% endif %}
-                <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk firstday.year firstday.month day %}">{{day}}</a></td>
+                <a href="{% url 'MonCal:property_calendar' subject_type.pk firstday.year firstday.month day %}">{{day}}</a></td>
             {% endif %}
         {% endfor %}
         </tr>
@@ -129,16 +128,16 @@
     <table id="calendar" class="">
     {% endif %}
         <caption>
-            <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk %}">{{ subject.name }}</a>
+            <a href="{% url 'MonCal:property_calendar' subject_type.pk %}">{{ subject.name }}</a>
             <br>{{ start_day }} - {{ end_day }}
         </caption>
         <thead>
             <tr class="headers_time">
                 <td id="before">
                     {% if schedule %}
-                        <a href="{% url 'MonCal:all_pr_edit' schedule.pk before.year before.month before.day %}"> 
+                        <a href="{% url 'MonCal:property_edit' schedule.pk before.year before.month before.day %}"> 
                     {% else %}
-                        <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk before.year before.month before.day %}"> 
+                        <a href="{% url 'MonCal:property_calendar' subject_type.pk before.year before.month before.day %}"> 
                     {% endif %}
                     前</a></td>
                 <th class="date_col" id="headtime">{{ headtime }}</th>
@@ -156,9 +155,9 @@
                 <th class="{{tailtime| date:'H:i'}} date_col" id="tailtime">{{tailtime| date:'H:i'}}</th>
                 <td id="next">
                     {% if schedule %}
-                        <a href="{% url 'MonCal:all_pr_edit' schedule.pk next.year next.month next.day %}">
+                        <a href="{% url 'MonCal:property_edit' schedule.pk next.year next.month next.day %}">
                     {% else %}
-                        <a href="{% url 'MonCal:all_pr_calendar' subject_type.pk next.year next.month next.day %}">
+                        <a href="{% url 'MonCal:property_calendar' subject_type.pk next.year next.month next.day %}">
                     {% endif %}
                     次</a>
                 </td>
@@ -177,13 +176,7 @@
                         {% else %}
                         <td class =" hide_elem"></td>
                         {% endif %}
-                        <th class="sub_name_cell">
-                            {% if schedule %}
-                                {{subject}}
-                            {% else %}
-                                <a href="{% url 'MonCal:calendar' subject.pk %}">{{subject}}</a>
-                            {% endif %}
-                        </th>
+                        <th class="sub_name_cell">{{subject}}</th>
                         {% for  date, sche_row in calendar.items %}
                         {% if day == date %}
                             {% for time,book in sche_row.items %}
@@ -205,13 +198,7 @@
                             {% endfor %}
                         {% endif %}
                         {% endfor %}
-                        <th class="sub_name_cell">
-                            {% if schedule %}
-                                {{subject}}
-                            {% else %}
-                                <a href="{% url 'MonCal:calendar' subject.pk %}">{{subject}}</a>
-                            {% endif %}
-                        </th>
+                        <th class="sub_name_cell">{{subject}}</th>
                         {% if forloop.first  %}
                         <th rowspan="{{datespan}}" class="date_col">
                             {{ day| date:"d(D)" }}

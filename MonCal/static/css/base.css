@@ -39,6 +39,19 @@ nav > a {
     color:white;
 }
 
+.year_calendar{
+    border-collapse: collapse;
+    float:left;
+    border: 1px solid #000;
+    width:25%;
+}
+.year_calendar caption{
+    text-align: left;
+}
+
+.year_calendar .today{
+    background-color:#00bfff;
+}
 /*月間カレンダー用*/
 #monthcalendar{
     border: 1px solid #000;
@@ -56,10 +69,10 @@ nav > a {
     border: 1px solid #000;
     width:28px;
 }
-#monthcalendar .saturday{
+.saturday{
     color: blue;
 }
-#monthcalendar .sunday{
+.sunday{
     color: red;
 }
 #monthcalendar tbody{

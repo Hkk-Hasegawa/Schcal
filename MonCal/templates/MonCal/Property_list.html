@@ -1,20 +1,22 @@
 {% extends 'MonCal/base.html' %}
 
 {% block content %}
-    <h1>{{ subject.name }}の直近の予約</h1>
-    <h2><a href="{% url 'MonCal:calendar' subject.pk %}">{{ subject.name }}の予約ページへ</a></h2>
-    
-    <table border="1"id="schedule_list">
+    <h1>{{ subject_type }}の直近の予約</h1>
+    <h2><a href="{% url 'MonCal:property_calendar' subject_type.pk %}">{{ subject_type }}の予約ページへ</a></h2>
+    <table border="1" id="schedule_list">
         <thead>
             <tr>
-                <th width="30%">日時</th><th>予定</th><th>登録者</th>
+                <th width="30%">日時</th><th>予約対象</th><th>予定</th><th>登録者</th>
             </tr>
         </thead>
-        <tbody >
+        <tbody>
             {% for schedule in all_schedule %}
             <tr class="schedule">
                 <td>
                     {{ schedule.0 |date:"Y年m月d日" }}{{ schedule.1.starttime }}~{{ schedule.1.endtime }}
+                </td>
+                <td>
+                    {{ schedule.1.subject_name }}
                 </td>
                 <td>
                     <a href="{% url 'MonCal:Property_detail' schedule.1.pk %}">

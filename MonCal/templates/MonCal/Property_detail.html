@@ -1,11 +1,11 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
     <h1>{{ event.title }}の詳細</h1>
-    <h2><a href="{% url 'MonCal:calendar' event.subject_name.pk %}">{{ event.subject_name  }}の予約ページへ</a></h2>
-    <h2><a href="{% url 'MonCal:property_list' event.subject_name.pk %}">{{ event.subject_name }}のスケジュール一覧へ</a></h2>
+    <h2><a href="{% url 'MonCal:property_calendar' event.subject_name.pk %}">{{ event.subject_name.subject_type  }}の予約ページへ</a></h2>
+    <h2><a href="{% url 'MonCal:property_list' event.subject_name.subject_type.pk %}">{{ event.subject_name.subject_type }}のスケジュール一覧へ</a></h2>
     <table frame="void">
         <tr>
-        <td><button  type="button" ><a href="{% url 'MonCal:Property_edit'  event.pk %}">編集</a></button></td>
+        <td><button  type="button" ><a href="{% url 'MonCal:property_edit'  event.pk %}">編集</a></button></td>
         <td>
             <form action="{% url 'MonCal:Property_delete' event.pk %}" method="POST">
                 {% csrf_token %}

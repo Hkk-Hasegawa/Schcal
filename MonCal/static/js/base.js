@@ -10,7 +10,30 @@ window.addEventListener("load", () => {
         }
         alert(messages);
     }
-    if( (url.includes("edit") ||  url.includes("calendar"))){
+    if(url.includes("year") && url.includes("calendar") ){
+        const year_calendar=document.querySelectorAll(".year_calendar");
+        const scheduledata=document.getElementById("scheduledata");
+        const schedule_list=[];
+        for(let step=0;step<scheduledata.rows.length;step++){
+            let tr=scheduledata.rows[step];
+            schedule_list[step]=[tr.cells[0].innerText,tr.cells[1].innerText,tr.cells[2].innerText];
+        }
+        for(let step=0;step<year_calendar.length;step++){
+            let month_calendar=year_calendar[step];
+            let month=month_calendar.caption.innerText.replace("月","");
+            for(let row =1;row<7;row++){
+                for(let column=0;column<7;column++){
+                    let td=month_calendar.rows[row].cells[column];
+                    let day=td.innerText;
+                    if(!(day=="")){
+                        td.addEventListener("click",()=> {show_day_schedule(month,day,schedule_list)});
+                    }
+                }
+            }
+        }
+
+    }
+    else if( (url.includes("edit") ||  url.includes("calendar"))){
         //どこでマウスを離してもいいように
         const html = document.getElementsByTagName('html')[0];
         html.addEventListener('mouseup', select_finish ,false );
@@ -24,13 +47,12 @@ window.addEventListener("load", () => {
         const palces = document.getElementsByName('place');
         const fixed_form=document.getElementById("fixed_form");
         for(let step=0;step<palces.length;step++){
-            palces[step].addEventListener("click",()=> {
-                room_view(palces[step])
-            });
-            room_view(palces[step])
+            palces[step].addEventListener("click",()=> {room_view(palces[step]);});
+            room_view(palces[step]);
         }
+        
         if(sche_date != null && sche_start != null && sche_end != null){
-            if(sche_subject !=null){
+            if(url.includes("property")){
                 allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText)
                 input_reset.addEventListener("click",()=> {
                     allpre_set_selecttime(sche_subject.innerText,sche_date.innerText,sche_start.innerText,sche_end.innerText);
@@ -104,45 +126,8 @@ window.addEventListener("load", () => {
                 }
             }
             
-        }//社用車予約の時
-        else if(url.includes("property")){
-            swapcalendar(cal_table,swap_cal);
-            for (let i = 0; i < input_caltr.length; i++) {
-                for(let j = 1; j < input_caltr[i].cells.length -1; j++){
-                    let td = input_caltr[i].cells[j];
-                    let swap_td=swap_cal.rows[j].cells[i+1];
-                    if(td.classList.contains("choice_cell")){
-                        td.addEventListener('mousedown', () => {
-                            fixed_form.classList.add("hide_elem");
-                            mousedown(td);
-                            swap_mousedown(swap_td);
-                        });
-                        td.addEventListener('mouseover', () => {
-                            mouseover(td);
-                            swap_mouseover(swap_td);
-                        });
-                    }
-                }
-            }
-            for(let step=1;step<swap_cal.rows.length-1;step++){
-                for(let col=1;col<swap_cal.rows[step].cells.length-1;col++){
-                    let swap_td=swap_cal.rows[step].cells[col];
-                    let td =cal_table.rows[col].cells[step];
-                    if((swap_td.classList.contains("choice_cell"))){
-                        swap_td.addEventListener('mousedown', () => {
-                            fixed_form.classList.add("hide_elem");
-                            mousedown(td);
-                            swap_mousedown(swap_td);
-                        });
-                        swap_td.addEventListener('mouseover', () => {
-                            mouseover(td);
-                            swap_mouseover(swap_td);
-                        });
-                    }
-                }
-            }
         }//全体社用車予約の時
-        else if(url.includes("allproperty")){
+        else if(url.includes("property")){
             all_swapcalender(cal_table,swap_cal);
             for (let i = 0; i < input_caltr.length; i++) {
                 for(let j = 1; j < input_caltr[i].cells.length -1; j++){
@@ -481,6 +466,16 @@ function swap_eff(startrow,endrow,swap_column){
         }
     }
 }
+function show_day_schedule(month,day,schedule_list){
+    for(let step=0;step<schedule_list.length;step++){
+        let sche_box=schedule_list[step];
+        let sche_date=sche_box[0].split("-");
+        console.log(sche_date[0]);console.log(sche_date[1]);
+        if(month==Number( sche_date[0]) && day==Number(sche_date[1])){
+            console.log(schedule_list[2].innerText);
+        }
+    }
+}
 //スケジュール編集ページの初期状態に戻す関数
 function set_selecttime(date,starttime,endtime){
     reset_timeform()
@@ -513,11 +508,15 @@ function allpre_set_selecttime(subject,date,starttime,endtime){
     }
     if(input_tr!=null){
         const cal_tail = input_tr.cells.length;
-        let selectF = false;
-        for(let step =1;step<cal_tail;step++){
-            let checktd=input_tr.cells[step];
-            selectF=select_cells(checktd,selectF,starttime,endtime);
+        const startcol= get_column(starttime)-1;
+        const endcol= get_column(endtime);
+        const row=input_tr.rowIndex;
+        for(let step=1;step<cal_tail-1;step++){
+            if(startcol<step && step <endcol){
+                input_tr.cells[step].classList.add("selecttime");
+            }
         }
+        swap_eff(startcol,endcol,row);
     }
 }
 function get_column(time){
@@ -527,8 +526,6 @@ function get_column(time){
             return step;
         }
     }
-    
-
 }
 //日時の入力を終了する関数<html>に入れる
 function select_finish(){
@@ -546,8 +543,8 @@ function select_finish(){
 }
 //時刻の入力をリセットする
 function reset_timeform(){
-    var selectcells=document.querySelectorAll(".selecttime");
-    var cellsnum=selectcells.length
+    const selectcells=document.querySelectorAll(".selecttime");
+    const cellsnum=selectcells.length
     for(let step=0;step < cellsnum;step++){
         selectcells[step].classList.remove("selecttime"); 
     }

@@ -7,11 +7,11 @@ python manage.py makemigrations MonCal
 	#テーブルを適用
 python manage.py migrate MonCal
 	#静的ファイルを更新	
-python manage.py collectstatic	
+python manage.py collectstatic
 	#仮想環境起動
 myvenv\Scripts\activate 
 	#仮想環境にDjangoインストール
-cd C:\Users\ttana\Desktop\python\Schcal & myvenv\Scripts\activate & pip install -r requirements.txt 
+cd C:\Users\ttana\Desktop\python\Schcal & myvenv\Scripts\activate & pip install -r requirements.txt & start　python manage.py runserver 192.168.11.34:8054
 	#nginx
 cd C:\Users\ttana\Desktop\python\Schcal\nginx & start nginx
 	#ウェブサーバー起動
@@ -19,9 +19,9 @@ python manage.py runserver
 	#共有サーバーで起動
 start　python manage.py runserver 192.168.11.34:8054
 	#変更ファイルの確認
-git status  
+git status
 	#変更をGitに保存
-git add --all . 
+git add --all .
 	#変更履歴を保存する
 git commit -m "<変更内容>"  
 	#Git HubとGitを結びつける
