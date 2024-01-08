@@ -1,5 +1,6 @@
 {% extends 'MonCal/base.html' %}
 {% block content %}
+<div >
 <h2>{{base_date.year}}年</h2>
     {% if  base_date.day == today.day and base_date.month == today.month and before_year == today.year %}
         <a href="{% url 'MonCal:year_calendar'%}">◁</a>
@@ -14,56 +15,60 @@
     {% endif %}
         
     <br class="flout_stop">
-    <div id="day_detail"></div>
-    {% for month,month_dic in year_dic.items %}
-    <table class="year_calendar">
-        <caption>{{month}}月</caption>
-        <thead>
-            <tr class="MCheader">
-                <th >月</th>
-                <th >火</th> 
-                <th >水</th> 
-                <th >木</th> 
-                <th >金</th> 
-                <th class="saturday">土</th> 
-                <th class="sunday">日</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for weekdays in month_dic.calendar %}
-            <tr>
-            {% for day in weekdays %}
-                {% if day == 0 %}
-                    <td></td>
-                {% else %}
-                    {% if  day == today.day and month == today.month and base_date.year == today.year %}
-                        <td class="today">{{day}}</td>
+    <div id="day_detail" class="hide_elem">
+        <div id="day_schedule"></div>
+    </div>
+    
+        {% for month,month_dic in year_dic.items %}
+        <table class="year_calendar">
+            <caption>{{month}}月</caption>
+            <thead>
+                <tr class="MCheader">
+                    <th >月</th>
+                    <th >火</th> 
+                    <th >水</th> 
+                    <th >木</th> 
+                    <th >金</th> 
+                    <th class="saturday">土</th> 
+                    <th class="sunday">日</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for weekdays in month_dic.calendar %}
+                <tr>
+                {% for day in weekdays %}
+                    {% if day == 0 %}
+                        <td></td>
                     {% else %}
-                        <td>{{day}}</td>
+                        {% if  day == today.day and month == today.month and base_date.year == today.year %}
+                            <td class="day_td today">{{day}}</td>
+                        {% elif day == base_date.day and month == base_date.month %}
+                            <td class="day_td base_day">{{day}}</td>
+                        {% else %}
+                            <td class="day_td">{{day}}</td>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
+                {% endfor %}
+                </tr>
             {% endfor %}
-            </tr>
+            </tbody>
+        </table>        
+        {% if month == 4 or month == 8 or month == 12 %}<br class="flout_stop">{% endif %}
         {% endfor %}
-        </tbody>
-    </table>
-    {% if month == 4 or month == 8 or month == 12 %}<br class="flout_stop">{% endif %}
-    {% endfor %}
-    <table id="scheduledata" class="hide_elem">
-        <tbody>
-        {% for sche_box in Event %}
-        <tr><td>{{sche_box.0.date |date:"m-d" }} </td>
-            <td>{{sche_box.0.time}}</td>
-            <td>
-                {% if sche_box.2.cycle_type.code != 'nocycle' %}
-                    <a href="{% url 'MonCal:event_cycle_edit' sche_box.2.pk sche_box.0.date.year sche_box.0.date.month sche_box.0.date.day %}">
-                {% else %}
-                    <a href="{% url 'MonCal:Event_detail' sche_box.2.pk %}">
-                {% endif %}
-                {{sche_box.2.title}}</a>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <table id="scheduledata" class="hide_elem">
+            <tbody>
+                {% for sche_box in Event %}
+                <tr>
+                    <td>{{sche_box.0.date |date:"m-d" }} </td>
+                    <td>{{sche_box.0.time}}</td>
+                    {% if sche_box.2.cycle_type.code != 'nocycle' %}
+                        <td><a href="{% url 'MonCal:event_cycle_edit' sche_box.2.pk sche_box.0.date.year sche_box.0.date.month sche_box.0.date.day %}">{{sche_box.2.title}}</a></td>
+                    {% else %}
+                        <td><a href="{% url 'MonCal:Event_detail' sche_box.2.pk %}">{{sche_box.2.title}}</a></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+</div>
 {% endblock %}

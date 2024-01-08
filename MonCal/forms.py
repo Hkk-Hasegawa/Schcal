@@ -24,7 +24,7 @@ class AllScheduleform(forms.ModelForm):
     class Meta:
         model =Schedule
         fields = ('date','starttime','endtime','subject','title','detail')
-        widgets = {'date': AdminDateWidget()}
+        widgets = {'date':forms.NumberInput(attrs={"type": "date"})}
     
     def __init__(self, categories=None, *args, **kwargs):
         self.base_fields["starttime"].choices =  categories['time']
@@ -42,7 +42,9 @@ class EventScheduleform(forms.ModelForm):
     class Meta:
         model =EventSchedule
         fields = ('date','starttime','endtime','cycle_type' ,'place','room','title','detail','swap')
-        widgets = {'date': AdminDateWidget()}
+        widgets = {
+            'date': forms.NumberInput(attrs={"type": "date"})
+        }
     
     def __init__(self, categories=None, *args, **kwargs):
         self.base_fields["starttime"].choices = categories['time']

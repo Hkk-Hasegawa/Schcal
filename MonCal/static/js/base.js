@@ -11,12 +11,23 @@ window.addEventListener("load", () => {
         alert(messages);
     }
     if(url.includes("year") && url.includes("calendar") ){
+        const day_detail=document.getElementById("day_detail");
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('#day_detail')) {
+              //ここに外側をクリックしたときの処理
+              if(day_detail.classList.contains("hide_elem") && e.target.closest('.day_td')){
+                day_detail.style.top=String(e.clientY)+"px";
+                day_detail.style.left=String(e.clientX+10)+"px";
+                day_detail.classList.remove("hide_elem");
+              }else{day_detail.classList.add("hide_elem");} 
+            }
+        })
         const year_calendar=document.querySelectorAll(".year_calendar");
         const scheduledata=document.getElementById("scheduledata");
         const schedule_list=[];
         for(let step=0;step<scheduledata.rows.length;step++){
             let tr=scheduledata.rows[step];
-            schedule_list[step]=[tr.cells[0].innerText,tr.cells[1].innerText,tr.cells[2].innerText];
+            schedule_list[step]=[tr.cells[0].innerText,tr.cells[1].innerText,tr.cells[2].innerHTML];
         }
         for(let step=0;step<year_calendar.length;step++){
             let month_calendar=year_calendar[step];
@@ -467,13 +478,19 @@ function swap_eff(startrow,endrow,swap_column){
     }
 }
 function show_day_schedule(month,day,schedule_list){
+    const day_schedule=document.getElementById("day_schedule");
+    let sche_set=false;
+    day_schedule.innerHTML="<div class=\"fix_detail\">"+String(month)+"月"+String(day) +"日</div>";
     for(let step=0;step<schedule_list.length;step++){
         let sche_box=schedule_list[step];
         let sche_date=sche_box[0].split("-");
-        console.log(sche_date[0]);console.log(sche_date[1]);
         if(month==Number( sche_date[0]) && day==Number(sche_date[1])){
-            console.log(schedule_list[2].innerText);
+            day_schedule.innerHTML=day_schedule.innerHTML+String(sche_box[1])+"   " +String(sche_box[2]) +"<br>";
+            sche_set=true;
         }
+    }
+    if(!sche_set){
+        day_schedule.innerHTML=day_schedule.innerHTML+"この日にスケジュール設定されている<br>予定はありません。"
     }
 }
 //スケジュール編集ページの初期状態に戻す関数
@@ -666,10 +683,7 @@ function makeMonthcalendar(firstday){
     }
     const calendar= document.getElementById("calendar");
     const basedate=calendar.caption.innerText.split(/\n| - /)[1].split(/年|月|日/);
-    console.log(basedate)
     const url= location.pathname.split("/")
-
-    console.log(checkmonth)
     monthcalendar.tHead.rows[0].cells[1].innerText=String(capyear) + "年"+String(checkmonth+1)+"月";
     for(step=2;step<8;step++){
         input_list=MW_list[step-2];

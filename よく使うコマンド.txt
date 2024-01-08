@@ -37,5 +37,9 @@ python manage.py createsuperuser
 #path
 https://hkkhasegawa.pythonanywhere.com/
 
-
-<input type="checkbox" name="swap_mode" id="id_swap">
+	#dockerのすべてのコンテナを調べる
+docker ps -a
+	#仮想OS起動
+docker start  centos7
+	#仮想OSに接続
+docker attach centos7
