@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.views import generic
 from django.urls import reverse,reverse_lazy
 from .models import Suresubject, Schedule,Event,EventSchedule,Subject_type,Booking_time,Working_day,Cycle_pause,Room,Parson
-from .forms import Scheduleform,EventScheduleform,AllScheduleform
+from .forms import EventScheduleform,AllScheduleform
 import datetime,calendar
 
 User = get_user_model()

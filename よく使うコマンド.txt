@@ -45,19 +45,26 @@ https://hkkhasegawa.pythonanywhere.com/
 	#dockerのすべてのコンテナを調べる
 docker ps -a
 	#新しい仮想OSコンテナを作成
-docker run -it --name="ubuntu22" ubuntu:py3.10 /bin/bash
+docker run -it --name="ubuntu22" ubuntu:Schcal /bin/bash
 	#仮想OS起動
 docker start  ubuntu22
 	#仮想OSに接続
 docker attach ubuntu22
 	#ubuntu22をubuntu:py3.10として保存
-docker commit ubuntu22 ubuntu:py3.10
+docker commit ubuntu22 ubuntu:Schcal
 
-python3.10 -m venv myvenv 
+	#仮想環境作成
+python3 -m venv myvenv 
 source myvenv/bin/activate
 
+	#python3.10インストール
 sudo wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz
 tar xvf Python-3.10.13.tgz
 cd Python-3.10*/
 ./configure --enable-optimizations
 sudo make altinstall
+	#gitを初期化してgit Hubから持ってくる
+git init
+git remote add origin https://github.com/Hkk-Hasegawa/Schcal.git
+git pull origin master
+
