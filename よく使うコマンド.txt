@@ -45,7 +45,7 @@ https://hkkhasegawa.pythonanywhere.com/
 	#dockerのすべてのコンテナを調べる
 docker ps -a
 	#新しい仮想OSコンテナを作成
-docker run -it --name="ubuntu22" ubuntu:Schcal /bin/bash
+docker run  -it -p 192.168.11.34:8054:8000 --name="ubuntu22" ubuntu:Schcal /bin/bash
 	#仮想OS起動
 docker start  ubuntu22
 	#仮想OSに接続
@@ -56,6 +56,8 @@ docker commit ubuntu22 ubuntu:Schcal
 	#仮想環境作成
 python3 -m venv myvenv 
 source myvenv/bin/activate
+
+cd home;source myvenv/bin/activate;pip install -r requirements.txt;python manage.py runserver 0.0.0.0:8000
 
 	#python3.10インストール
 sudo wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz
