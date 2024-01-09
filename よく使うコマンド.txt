@@ -9,9 +9,12 @@ python manage.py migrate MonCal
 	#静的ファイルを更新	
 python manage.py collectstatic
 	#仮想環境起動
-myvenv\Scripts\activate 
+(windows)
+myvenv\Scripts\activate
+
 	#仮想環境にDjangoインストール
 cd C:\Users\ttana\Desktop\python\Schcal & myvenv\Scripts\activate & pip install -r requirements.txt & start　python manage.py runserver 192.168.11.34:8054
+
 	#nginx
 cd C:\Users\ttana\Desktop\python\Schcal\nginx & start nginx
 	#ウェブサーバー起動
@@ -25,7 +28,7 @@ git add --all .
 	#変更履歴を保存する
 git commit -m "<変更内容>"  
 	#Git HubとGitを結びつける
-git remote add origin 
+git remote add origin https://github.com/Hkk-Hasegawa/Schcal.git
 	#GitHubに変更をアップロード
 git push    
 pa_autoconfigure_django.py --python=3.6 https://github.com/Hkk-Hasegawa/Schcal.git
@@ -37,9 +40,24 @@ python manage.py createsuperuser
 #path
 https://hkkhasegawa.pythonanywhere.com/
 
+
+
 	#dockerのすべてのコンテナを調べる
 docker ps -a
+	#新しい仮想OSコンテナを作成
+docker run -it --name="ubuntu22" ubuntu:py3.10 /bin/bash
 	#仮想OS起動
-docker start  centos7
+docker start  ubuntu22
 	#仮想OSに接続
-docker attach centos7
+docker attach ubuntu22
+	#ubuntu22をubuntu:py3.10として保存
+docker commit ubuntu22 ubuntu:py3.10
+
+python3.10 -m venv myvenv 
+source myvenv/bin/activate
+
+sudo wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz
+tar xvf Python-3.10.13.tgz
+cd Python-3.10*/
+./configure --enable-optimizations
+sudo make altinstall
